@@ -10,6 +10,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST = path.resolve(__dirname, '..', 'dist');
 const PORT = Number(process.env.PORT) || 8080;
 const MAX_PLAYERS = 8;
+// Abuse limits: token-bucket message rate per connection, and caps on shared room state
+const RATE = Number(process.env.WITCHERY_RATE) || 120; // messages per second, sustained
+const BURST = RATE * 2;
+const MAX_FLAGS = 4000;
+const MAX_FLAG_VALUE = 256; // bytes of JSON
 
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json',
@@ -72,8 +77,19 @@ function sendTo(room, id, msg) {
 wss.on('connection', (ws) => {
   let room = null;
   let id = null;
+  let tokens = BURST, last = Date.now(), dropped = 0;
 
   ws.on('message', (raw) => {
+    const now = Date.now();
+    tokens = Math.min(BURST, tokens + ((now - last) / 1000) * RATE);
+    last = now;
+    if (tokens < 1) {
+      // Over the limit: drop, and disconnect clients that keep flooding
+      if (++dropped > RATE * 5) ws.close(1008, 'rate limit');
+      return;
+    }
+    tokens -= 1;
+    dropped = Math.max(0, dropped - 1);
     let m;
     try { m = JSON.parse(raw); } catch { return; }
     if (!m || typeof m.t !== 'string') return;
@@ -97,7 +113,8 @@ wss.on('connection', (ws) => {
 
     switch (m.t) {
       case 'flag':
-        if (typeof m.k === 'string' && m.k.length < 64) {
+        if (typeof m.k === 'string' && m.k.length < 64 && JSON.stringify(m.v ?? null).length <= MAX_FLAG_VALUE
+          && (m.k in room.flags || Object.keys(room.flags).length < MAX_FLAGS)) {
           room.flags[m.k] = m.v;
           broadcast(room, m, id);
           scheduleSave();

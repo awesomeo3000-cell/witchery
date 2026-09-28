@@ -459,7 +459,8 @@ class Game {
       <h1>Witchery</h1>
       <h3>THE PAINTERS</h3>${names.map((n) => `<p>${esc(n)}</p>`).join('')}
       <h3>CHAMPIONS OF THE PRISM TRIALS</h3><p>Frostmaw · Magmaw · Shellback · Galewing</p>
-      <h3>WITH</h3><p>Elder Umber</p><p>Pip the Palette Keeper</p><p>${G.sprites ? `${Object.keys(G.flags).filter((k) => k.startsWith('sprite_')).length} Paint Sprites` : ''}</p>
+      <h3>WITH</h3><p>Elder Umber</p><p>Pip the Palette Keeper</p><p>Mira the Dyer · Tilly · Bram the Hunter</p><p>Painter Ochre · Sable the Brushwright</p><p>${G.sprites ? `${Object.keys(G.flags).filter((k) => k.startsWith('sprite_')).length} Paint Sprites` : ''}</p>
+      <h3>YOUR JOURNEY</h3><p>${G.fog ? Math.round(G.fog.explored() * 100) : 0}% of the island mapped</p><p>${G.puzzles ? `${G.puzzles.solvedCount()} / ${G.puzzles.total}` : 0} island puzzles solved</p><p>${Object.keys(G.flags).filter((k) => /^q_\w+_done$/.test(k) && G.flags[k]).length} / 4 villager quests</p>
       <h3>BUILT WITH</h3><p>Three.js · WebAudio · a lot of paint</p>
       <h3>&nbsp;</h3><p>Thank you for playing!</p>`;
     const c = $('credits');

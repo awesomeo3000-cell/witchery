@@ -13,7 +13,7 @@ let proc;
 
 function startServer() {
   return new Promise((resolve, reject) => {
-    const p = spawn(process.execPath, ['server/server.js'], { env: { ...process.env, PORT: String(PORT), WITCHERY_DATA: DATA }, stdio: ['ignore', 'pipe', 'pipe'] });
+    const p = spawn(process.execPath, ['server/server.js'], { env: { ...process.env, PORT: String(PORT), WITCHERY_DATA: DATA, WITCHERY_RATE: '50' }, stdio: ['ignore', 'pipe', 'pipe'] });
     const timer = setTimeout(() => reject(new Error('server did not start')), 10000);
     p.stdout.on('data', (d) => { if (String(d).includes('listening')) { clearTimeout(timer); resolve(p); } });
     p.on('exit', (code) => reject(new Error(`server exited ${code}`)));
@@ -48,7 +48,7 @@ function client(room, name) {
         await new Promise((r) => setTimeout(r, ms));
         return !inbox.some(pred);
       },
-      close: () => new Promise((r) => { ws.once('close', r); ws.close(); }),
+      close: () => new Promise((r) => { if (ws.readyState === WebSocket.CLOSED) { r(); return; } ws.once('close', r); ws.close(); }),
     };
     ws.on('open', async () => {
       c.send({ t: 'join', room, name });
@@ -127,4 +127,28 @@ test('rooms are capped at eight players', async () => {
   });
   assert.equal(msg.t, 'full');
   await Promise.all(players.map((p) => p.close()));
+});
+
+test('floods are rate limited', async () => {
+  const a = await client('flood', 'A');
+  const b = await client('flood', 'B');
+  let got = 0;
+  b.ws.on('message', (raw) => { if (JSON.parse(raw).t === 'chat') got++; });
+  for (let i = 0; i < 400; i++) a.send({ t: 'chat', text: `spam ${i}` });
+  await new Promise((r) => setTimeout(r, 600));
+  assert.ok(got > 50 && got < 200, `relayed ${got} of 400 (burst is 100)`);
+  await Promise.all([a.close(), b.close()]);
+});
+
+test('oversized flag values are rejected', async () => {
+  const a = await client('big', 'A');
+  const b = await client('big', 'B');
+  a.send({ t: 'flag', k: 'huge', v: 'x'.repeat(1000) });
+  a.send({ t: 'flag', k: 'ok', v: { t: 12.3, n: 'Ada' } });
+  const f = await b.next((m) => m.t === 'flag');
+  assert.equal(f.k, 'ok');
+  const c = await client('big', 'C');
+  assert.equal(c.welcome.flags.huge, undefined);
+  assert.deepEqual(c.welcome.flags.ok, { t: 12.3, n: 'Ada' });
+  await Promise.all([a.close(), b.close(), c.close()]);
 });

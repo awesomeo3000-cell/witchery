@@ -26,6 +26,13 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
     - Brazier Rings: light every brazier within a time limit.
 16. ✅ **Adaptive music layers** for races, night, sneaking and combat intensity.
 17. ✅ **Performance guard in CI.** The smoke test fails if village draw calls go over a budget. Also distance culling for NPC animation.
-18. **Final pass.** Full browser regression, README and credits update, roadmap closed out.
+18. ✅ **Final pass.** Full browser regression, README and credits update, roadmap closed out.
+
+## Next wave
+
+19. ✅ **Server hardening.** Per-connection message rate limits, payload validation, a flag-count cap per room, tests for all of it.
+20. **Camera options.** Field of view and camera distance sliders, and optional camera auto-centering while riding.
+21. **Paint Fox companion.** A small fox that follows you, sniffs toward the nearest unsolved puzzle or Paint Sprite, and fetches nearby Pigment.
+22. **Gallery of Echoes.** A post-game boss rush arena under the citadel with a timed run and a room record.
 
 The work continues through this list until the budget is used up.
