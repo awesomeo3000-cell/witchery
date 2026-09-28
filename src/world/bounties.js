@@ -1,5 +1,5 @@
 // Bounty board: a noticeboard at the edge of the plaza posts three odd jobs every twenty minutes
-// (defeat some ink creatures, catch fish, catch critters, cook). The posting is worked out from the
+// (defeat some ink creatures, catch fish or critters, cook, race, take a photo). The posting is worked out from the
 // wall clock, so friends in a room see the same notices; progress and rewards are your own and kept
 // in your local save. Finished bounties are paid out at the board.
 import * as THREE from 'three';
@@ -23,6 +23,10 @@ export const JOBS = [
   { id: 'fish', kind: 'fish', n: 3, pig: 8, text: 'Catch 3 fish from the ice' },
   { id: 'critter', kind: 'critter', n: 2, pig: 8, text: 'Catch 2 critters' },
   { id: 'cook', kind: 'cook', n: 2, pig: 6, text: 'Cook 2 meals' },
+  { id: 'race', kind: 'race', n: 1, pig: 8, text: 'Finish any Sky Race' },
+  { id: 'snapbuck', kind: 'photo', type: 'brushbuck', n: 1, pig: 8, text: 'Photograph a Brushbuck' },
+  { id: 'snapfish', kind: 'photo', type: 'fish', n: 1, pig: 7, text: 'Photograph a Glimmerfish' },
+  { id: 'snapknight', kind: 'photo', type: 'knight', n: 1, pig: 10, text: 'Photograph an Ink Knight' },
 ];
 
 // The three notices for a posting: always at least one that isn't a fight

@@ -119,6 +119,7 @@ export class Races {
   }
 
   _finish() {
+    G.bounties?.event('race');
     const { c, t } = this.active;
     const b = this.best(c);
     const record = !b || t < b.t;

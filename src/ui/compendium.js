@@ -56,14 +56,16 @@ export class Compendium {
   // Called with the freshly rendered canvas when a photo is taken
   onPhoto(canvas) {
     const cam = G.camera;
-    const found = [];
+    const found = [], seen = new Set();
     for (const [id, pos, range] of this._candidates()) {
-      if (this.got.has(id) || found.some((f) => f.id === id)) continue;
+      if (seen.has(id)) continue;
       if (pos.distanceTo(cam.position) > range) continue;
       this.v.copy(pos).project(cam);
       if (this.v.z > 1 || Math.abs(this.v.x) > 0.8 || Math.abs(this.v.y) > 0.8) continue;
-      found.push({ id, x: (this.v.x + 1) / 2, y: (1 - this.v.y) / 2 });
+      seen.add(id);
+      if (!this.got.has(id)) found.push({ id, x: (this.v.x + 1) / 2, y: (1 - this.v.y) / 2 });
     }
+    for (const id of seen) G.bounties?.event('photo', id); // photo bounties count creatures already registered too
     for (const f of found) {
       this.got.set(f.id, this._crop(canvas, f.x, f.y));
       const e = ENTRIES.find((q) => q.id === f.id);
