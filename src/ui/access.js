@@ -82,6 +82,7 @@ export class AccessUI {
     const s = G.settings;
     s.hudScale ??= 1;
     s.textScale ??= 1;
+    s.difficulty ??= 'normal';
     s.fov ??= 65;
     s.camDist ??= 1;
     s.fox ??= true;
@@ -101,6 +102,7 @@ export class AccessUI {
     };
     bind('set-hudscale', 'hudScale', parseFloat);
     bind('set-textscale', 'textScale', parseFloat);
+    bind('set-difficulty', 'difficulty', String);
     bind('set-fov', 'fov', parseFloat);
     bind('set-camdist', 'camDist', parseFloat);
     bind('set-symbols', 'colorSymbols');

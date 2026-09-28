@@ -120,4 +120,9 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 64. ✅ **Compendium.** Photograph creatures in photo mode to register them (21 entries), with snapshots cut from your photos, kept in your save and shown in the satchel.
 65. **Regression and docs.**
 
+## Wave seventeen
+
+66. ✅ **Guidance for new systems.** A side-goal line under the objective (nearest dormant tower, then nearest uncleared shrine) and first-time tips for towers, shrine arches, Brushbucks and the cold.
+67. ✅ **Difficulty.** Story, Normal and Hard settings that scale only the damage you take, per player.
+
 The work continues through this list until the budget is used up.

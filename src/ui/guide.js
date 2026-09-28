@@ -26,6 +26,10 @@ const TIPS = {
   sprite: () => 'A Paint Sprite is hiding nearby... Look for odd rocks, grey flower rings, withered saplings, sky hoops and sparkling peaks.',
   water: () => `Swimming. Hold ${k('sprint')} to swim faster, but watch your stamina.`,
   map: () => `Easels you visit become fast-travel points. Open the map with ${k('map')}.`,
+  tower: () => `A Painter's Tower! Its winds ground your brush. Paint vines (green) on the moss, bounce (yellow) from the ledge, then vine up the crown and paint the easel to reveal the map.`,
+  pshrine: () => `A Paint Shrine. Step through the arch with ${k('interact')}: a small colour puzzle with a Paint Sprite inside.`,
+  buck: () => `Brushbucks! Sneak up (${k('descend')}) and press ${k('interact')} to climb on, then hold on while it bucks. It costs stamina.`,
+  cold: () => 'Freezing! Eat a spicy (Bold) meal to stay warm, or stand by an easel.',
 };
 
 export class Guide {
@@ -57,6 +61,10 @@ export class Guide {
     if (p.ink.some((v) => v < 20)) this.tip('ink');
     if (TRIALS.some((t) => Math.hypot(p.pos.x - t.x, p.pos.z - t.z) < 25)) this.tip('shrine');
     if (G.enemies.decor && G.enemies.decor.items.some((it) => it.pos.distanceTo(p.pos) < 40)) this.tip('camp');
+    if (G.towers && G.towers.list.some((t) => !G.towers.active(t.i) && Math.hypot(p.pos.x - t.x, p.pos.z - t.z) < 45)) this.tip('tower');
+    if (G.shrines && G.shrines.list.some((sh) => !p.inDungeon && sh.surface.distanceTo(p.pos) < 20)) this.tip('pshrine');
+    if (G.steeds && !G.steeds.mine && G.steeds.list.some((b) => b.pos.distanceTo(p.pos) < 30)) this.tip('buck');
+    if (G.climate && G.climate.kind < 0 && G.climate.exposure > 1) this.tip('cold');
     if (G.sprites && G.sprites.list.some((s) => !s.done && s.pos.distanceTo(p.pos) < 18)) this.tip('sprite');
     if (p.state === 'swim') this.tip('water');
     if (Object.keys(G.flags).filter((f) => f.startsWith('wp_')).length > 1) this.tip('map');
@@ -82,8 +90,24 @@ export class Guide {
       title = 'Colour restored!';
       sub = `Paint Sprites found: ${spriteCount()}/${G.sprites ? G.sprites.total : 42}`;
     }
-    const html = `<div class="ot">${title}</div><div class="os">${sub}</div>`;
+    const side = this._side(p);
+    const html = `<div class="ot">${title}</div><div class="os">${sub}</div>${side ? `<div class="os side">${side}</div>` : ''}`;
     if (html !== this._objHtml) { this._objHtml = html; $('objective').innerHTML = html; }
+  }
+
+  // A nearby side goal worth doing next: towers first (they reveal the map), then shrines
+  _side(p) {
+    if (p.inDungeon) return '';
+    const near = (list, pos) => list.map((it) => [it, Math.hypot(p.pos.x - pos(it).x, p.pos.z - pos(it).z)]).sort((a, b) => a[1] - b[1])[0];
+    if (G.towers) {
+      const t = near(G.towers.list.filter((q) => !G.towers.active(q.i)), (q) => q);
+      if (t && t[1] < 450) return `Side: climb the ${t[0].name} · ${Math.round(t[1])} m`;
+    }
+    if (G.shrines) {
+      const s = near(G.shrines.list.filter((q) => !G.shrines.cleared(q.i)), (q) => q.site);
+      if (s && s[1] < 350) return `Side: ${s[0].def.name} · ${Math.round(s[1])} m`;
+    }
+    return '';
   }
 
   update(dt) {

@@ -303,3 +303,12 @@ test('compendium entries are unique and survive a save round trip', async () => 
   d.load({ ...c.serialize(), bogus: 'x' });
   assert.deepEqual([...d.got.keys()].sort(), ['bounder', 'fox']);
 });
+
+test('difficulty scales damage taken', async () => {
+  const { scaleDamage } = await import('../src/player/player.js');
+  assert.equal(scaleDamage(4, 'normal'), 4);
+  assert.equal(scaleDamage(4, 'story'), 2);
+  assert.equal(scaleDamage(1, 'story'), 1);
+  assert.equal(scaleDamage(3, 'hard'), 5);
+  assert.equal(scaleDamage(2, undefined), 2);
+});

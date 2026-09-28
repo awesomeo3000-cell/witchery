@@ -99,6 +99,7 @@ Bring every 4 sprites to Pip in Palette Hollow for a Heart Container or Stamina 
 ## The wider world
 
 ### Exploring
+- **Side goals.** Under the main objective, the HUD suggests a nearby side goal: the closest dormant Painter's Tower, then the closest uncleared Paint Shrine. New tips pop up the first time you meet a tower, shrine arch, Brushbuck herd or freezing weather.
 - **Painter's Towers.** Four tall painted towers stand between Palette Hollow and each trial (they show on the compass). Their winds ground your brush, so you climb: grow vines (Bloom) up the mossy base, paint a bounce pad (Spring) on the ledge, then vine up the mossy crown. Painting the easel at the top reveals a wide area of the map for everyone in the room. Active towers, and any Paint Shrine you've been inside, become fast-travel points on the map.
 - **Map exploration.** The map starts as blank parchment and fills in wherever you travel. Flying high reveals more, and activating an easel uncovers the land around it. A rotating minimap in the corner shows the same fog, plus trials, friends, quest targets, pings and race gates. You can turn it off in Accessibility.
 - **Weather** cycles between clear, cloudy, rain and storms. It snows in the mountains, rain puts out fire paint, and storms bring lightning. Wind veers slowly and blows harder in bad weather, pushing gliders and riders (the flight readout shows it). Rain makes vines slick, so climbing is slower and you'll slip now and then. When rain clears in daylight, a rainbow arcs across the sky opposite the sun.
@@ -161,6 +162,10 @@ Once the Hueless King falls, the village statue opens a way down to the **Galler
 Online rooms save their world progress on the server in `data/rooms.json`, so it survives restarts. Each browser also remembers where you were. Solo games keep everything in the browser's local storage. When a save exists, the title menu shows **Continue** plus a **Start over** button that erases this browser's save after asking to confirm. Shared room progress stays on the server.
 
 To back up your progress, open **Save backup** in the pause menu and download your save as a file. Loading a file back in restores it (the game reloads). Files are checked first, so a wrong file is simply rejected.
+
+## Difficulty
+
+The pause menu has a **Difficulty** setting that only changes the damage you take: **Story** halves it (never below half a heart), **Normal** is as designed, and **Hard** adds half again. Each player picks their own, even in co-op.
 
 ## Graphics options
 

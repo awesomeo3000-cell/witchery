@@ -9,6 +9,9 @@ import { brushStats } from '../world/shop.js';
 import { DOWN_TIME } from '../ui/revive.js';
 import { TROT, GALLOP, BUCK_JUMP, RIDE_Y } from '../world/steeds.js';
 
+// Difficulty only changes damage you take: Story halves it (never below 1), Hard adds half again
+export const scaleDamage = (n, level) => (level === 'story' ? Math.max(1, Math.floor(n / 2)) : level === 'hard' ? Math.ceil(n * 1.5) : n);
+
 const R = 0.4, H = 1.75, STEP = 0.6;
 const GRAV = 30;
 const WALK = 5.8, SPRINT = 10, AIM_WALK = 3.4;
@@ -125,6 +128,7 @@ export class Player {
   takeDamage(n, from, opts = {}) {
     if (this.alive && this.dodgeT > 0 && from && !(G.flurry > 0)) { this.triggerFlurry(); return false; }
     if (!this.alive || this.invuln > 0 || G.godMode) return false;
+    n = scaleDamage(n, G.settings.difficulty);
     const absorbed = Math.min(this.bonusHp, n);
     this.bonusHp -= absorbed;
     this.hp -= n - absorbed;
