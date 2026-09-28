@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { G, COLORS, COUNTER, inDungeonY } from '../core/ctx.js';
 import { damp, dampAngle, mulberry32 } from '../core/math.js';
 import {
-  buildBounder, buildInkling, buildSpitter, buildWisp, buildFrostmaw, buildMagmaw,
+  buildBounder, buildInkling, buildSpitter, buildWisp, buildInkbat, buildFrostmaw, buildMagmaw,
   buildShellback, buildGalewing, buildHueless, buildArcher, buildBlotGiant, buildSentinel, VARIANT_TINT,
 } from './models.js';
 import { smoothRockGeometry } from '../world/props.js';
@@ -23,6 +23,7 @@ export const TYPES = {
   hueless: { name: 'The Hueless King', hp: 700, speed: 2.5, aggro: 90, build: buildHueless, boss: true },
   blotgiant: { name: 'Blot Giant', hp: 360, speed: 2.6, aggro: 45, build: buildBlotGiant, boss: true, field: true },
   sentinel: { name: 'Stone Sentinel', hp: 300, speed: 1.8, aggro: 40, build: () => buildSentinel(smoothRockGeometry), boss: true, field: true },
+  inkbat: { name: 'Inkbat', hp: 7, speed: 13, aggro: 60, build: buildInkbat, fly: true },
 };
 const TYPE_KEYS = Object.keys(TYPES);
 const VARIANTS = ['none', 'fire', 'ice'];
@@ -229,6 +230,35 @@ export class EnemyManager {
     if (e.def.field) { e.state = e.type === 'blotgiant' ? 'sleep' : 'dormant'; e.weakCd = 0; }
     if (e.type === 'sentinel') e.collider = G.collision.addCylinder(pos.x, pos.z, 2.6, pos.y, pos.y + 6.2, { dynamic: true, tags: ['sentinel'] });
     return e;
+  }
+
+  // Flocks of Inkbats come out at night away from the village, and melt away at dawn
+  _nightBats(dt) {
+    const sky = G.sky;
+    if (!sky) return;
+    const bats = this.list.filter((e) => e.type === 'inkbat' && e.alive);
+    if (sky.night < 0.3) {
+      for (const b of bats) { this.fx('summon', b.pos); this.remove(b); }
+      this.batT = 20;
+      return;
+    }
+    for (const b of bats) if (!this.players().some((p) => p.pos.distanceTo(b.pos) < 220)) this.remove(b);
+    this.batT = (this.batT ?? 20) - dt;
+    if (this.batT > 0 || sky.night < 0.6) return;
+    this.batT = 45 + Math.random() * 30;
+    if (bats.length >= 8) return;
+    const cand = this.players().filter((p) => p.alive && p.pos.y > -200 && Math.hypot(p.pos.x - VILLAGE.x, p.pos.z - VILLAGE.z) > VILLAGE.r + 20);
+    if (!cand.length) return;
+    const p = cand[Math.floor(Math.random() * cand.length)];
+    const a = Math.random() * Math.PI * 2;
+    const c = p.pos.clone().add(new THREE.Vector3(Math.cos(a) * 45, 0, Math.sin(a) * 45));
+    c.y = Math.max(p.pos.y, G.terrain.heightAt(c.x, c.z)) + 14;
+    const n = 3 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < n; i++) {
+      const e = this.spawn('inkbat', c.clone().add(new THREE.Vector3((Math.random() - 0.5) * 6, Math.random() * 3, (Math.random() - 0.5) * 6)), {});
+      e.cool = 2 + i * 0.7;
+      this.fx('summon', e.pos);
+    }
   }
 
   remove(e) {
@@ -949,7 +979,7 @@ export class EnemyManager {
 
   update(dt) {
     const host = this.isHost;
-    if (host) this._updateCamps(dt);
+    if (host) { this._updateCamps(dt); this._nightBats(dt); }
     this.bossActive = null;
     for (const e of [...this.list]) {
       if (!e.alive) continue;
@@ -1269,6 +1299,38 @@ const AI = {
       setState(e, 'dive');
       e.hitSet = new Set();
       e.vel.copy(tp.sub(e.pos).normalize().multiplyScalar(16));
+    }
+  },
+
+  // Swirls above its target, then swoops; riders and gliders get chased at full speed
+  inkbat(e, dt, t, mgr) {
+    e.stateT += dt;
+    if (!t) {
+      const a = G.time * 0.8 + e.id;
+      const home = e.home.clone().add(new THREE.Vector3(Math.cos(a) * 8, Math.sin(a * 3), Math.sin(a) * 8));
+      e.vel.lerp(home.sub(e.pos).multiplyScalar(0.8).clampLength(0, 6), 1 - Math.exp(-2 * dt));
+      return;
+    }
+    const tp = t.pos.clone().setY(t.pos.y + 1);
+    if (e.state === 'dive') {
+      contactDamage(e, mgr, 1, 0.5);
+      if (e.stateT > 0.9) { setState(e, 'fly'); e.cool = 1.8 + Math.random() * 2.2; }
+      return;
+    }
+    const airborne = t.state === 'ride' || t.state === 'glide' || t.state === 'air';
+    const a = G.time * 1.8 + e.id * 1.7;
+    const want = airborne ? tp.clone().add(new THREE.Vector3(Math.cos(a) * 4, 2, Math.sin(a) * 4)) : tp.clone().add(new THREE.Vector3(Math.cos(a) * 7, 6 + Math.sin(a * 2), Math.sin(a) * 7));
+    const floor = G.terrain.heightAt(e.pos.x, e.pos.z) + 1.5;
+    if (want.y < floor) want.y = floor;
+    e.vel.lerp(want.sub(e.pos).multiplyScalar(1.5).clampLength(0, e.def.speed * (airborne ? 1.3 : 0.8)), 1 - Math.exp(-3 * dt));
+    faceTo(e, tp, dt, 10);
+    e.state = 'fly';
+    e.cool -= dt;
+    if (e.cool <= 0 && e.pos.distanceTo(tp) < 16) {
+      setState(e, 'dive');
+      e.hitSet = new Set();
+      e.vel.copy(tp.sub(e.pos).normalize().multiplyScalar(19));
+      G.audio.play('glide', 0.4);
     }
   },
 
@@ -1634,6 +1696,13 @@ const RENDER = {
     const m = e.model;
     m.bow.scale.set(1, 1, e.state === 'windup' ? 1.3 : 1);
     m.body.rotation.x = e.state === 'windup' ? -0.15 : 0;
+  },
+  inkbat(e) {
+    const m = e.model;
+    const flap = Math.sin(e.anim * (e.state === 'dive' ? 8 : 22));
+    m.wings.forEach((w, i) => { w.rotation.z = (i ? -1 : 1) * (flap * 0.9 + (e.state === 'dive' ? 0.9 : 0.1)); });
+    m.body.rotation.x = e.state === 'dive' ? 0.7 : 0.15;
+    m.body.position.y = 0.5 + flap * 0.08;
   },
   wisp(e) {
     const m = e.model;

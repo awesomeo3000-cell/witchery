@@ -150,6 +150,49 @@ export function buildWisp() {
   return { group: g, body, wings, height: 1.6, radius: 0.8 };
 }
 
+// Night Inkbat: a round ink body with scalloped membrane wings and glowing eyes
+export function buildInkbat() {
+  const g = new THREE.Group();
+  const body = new THREE.Group();
+  g.add(body);
+  const mat = lam(0x1e1a2a, { emissive: 0x120820 });
+  const core = new THREE.Mesh(new THREE.SphereGeometry(0.34, 16, 12), mat);
+  core.scale.set(1, 0.9, 1.15);
+  core.castShadow = true;
+  body.add(core);
+  for (const s of [-1, 1]) {
+    const ear = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.26, 6), mat);
+    ear.position.set(s * 0.15, 0.32, 0.02);
+    ear.rotation.z = -s * 0.3;
+    body.add(ear);
+  }
+  // Wing: finger bones fanning out with scalloped membrane between them
+  const sh = new THREE.Shape();
+  sh.moveTo(0, 0.12);
+  sh.lineTo(0.55, 0.28);
+  sh.lineTo(1.15, 0.12);
+  sh.quadraticCurveTo(0.98, -0.02, 0.95, -0.22);
+  sh.quadraticCurveTo(0.8, -0.1, 0.62, -0.3);
+  sh.quadraticCurveTo(0.45, -0.12, 0.28, -0.28);
+  sh.quadraticCurveTo(0.14, -0.08, 0, -0.12);
+  sh.closePath();
+  const wingGeo = new THREE.ShapeGeometry(sh, 6).rotateX(-Math.PI / 2);
+  const wingMat = lam(0x3a2a52, { side: THREE.DoubleSide, emissive: 0x100818 });
+  const wings = [];
+  for (const s of [-1, 1]) {
+    const pivot = new THREE.Group();
+    pivot.position.set(s * 0.22, 0.05, 0);
+    const w = new THREE.Mesh(wingGeo, wingMat);
+    w.scale.x = s;
+    pivot.add(w);
+    body.add(pivot);
+    wings.push(pivot);
+  }
+  eyes(body, 0.08, 0.3, 0.12, 0.06, 0xffd040);
+  body.position.y = 0.5;
+  return { group: g, body, wings, height: 0.9, radius: 0.6 };
+}
+
 // ------------------------------------------------------------------ bosses
 export function buildFrostmaw() {
   const g = new THREE.Group();
