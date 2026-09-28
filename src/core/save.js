@@ -17,6 +17,8 @@ export function writeSave() {
     ink: p.ink.map((v) => Math.round(v)),
     dayT: G.sky ? G.sky.dayT : 0.33,
     forage: G.forage ? G.forage.serialize() : undefined,
+    pigment: p.pigment,
+    upg: p.upg,
     // Online, progress lives on the server; solo keeps it here
     flags: G.net && G.net.connected ? undefined : G.flags,
     t: Date.now(),

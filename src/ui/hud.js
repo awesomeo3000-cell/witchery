@@ -216,7 +216,7 @@ export class HUD {
 
   setPrompt(text) {
     const p = $('prompt');
-    if (!text) { p.classList.add('hidden'); return; }
+    if (!text || this.choiceCb) { p.classList.add('hidden'); return; }
     p.classList.remove('hidden');
     p.querySelector('span').textContent = text;
     p.querySelector('kbd').textContent = G.input && G.input.usingPad ? 'A' : keyFor('KeyF');

@@ -498,6 +498,9 @@ export class EnemyManager {
         const kind = e.boss ? (i < 3 ? 'heart' : 'ink') : Math.random() < 0.4 ? 'heart' : 'ink';
         this.spawnPickup(kind, e.pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * 3, 0.8, (Math.random() - 0.5) * 3)));
       }
+      // Pigment for the Brushwright
+      const pig = e.boss ? (e.def.field ? 5 : 8) : e.elite ? 3 : Math.random() < 0.7 ? 1 : 0;
+      for (let i = 0; i < pig; i++) this.spawnPickup('pigment', e.pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * 3, 0.9, (Math.random() - 0.5) * 3)));
       if (e.camp !== undefined) {
         const c = this.camps[e.camp];
         c.members = c.members.filter((m) => m !== e);
@@ -554,6 +557,7 @@ export class EnemyManager {
     let mesh;
     if (kind === 'heart') mesh = new THREE.Mesh(this.heartGeo, new THREE.MeshLambertMaterial({ color: 0xff3a4a, emissive: 0x801020 }));
     else if (kind === 'buff') mesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.5), new THREE.MeshLambertMaterial({ color: 0xffd84a, emissive: 0xa07000 }));
+    else if (kind === 'pigment') mesh = new THREE.Mesh(this.pigmentGeo ||= new THREE.CylinderGeometry(0.28, 0.28, 0.08, 16).rotateX(Math.PI / 2), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffc84a).multiplyScalar(1.6) }));
     else {
       const c = Math.floor(Math.random() * 4);
       mesh = new THREE.Mesh(new THREE.IcosahedronGeometry(0.3, 1), new THREE.MeshBasicMaterial({ color: COLORS[c].hex }));
@@ -574,6 +578,9 @@ export class EnemyManager {
         if (player.hp >= player.maxHp) continue;
         player.heal(4);
         G.hud.toast('+2 Hearts', '#ff9aa8', 1);
+      } else if (k.kind === 'pigment') {
+        player.pigment += 5;
+        G.hud.toast(`+5 Pigment (${player.pigment})`, '#ffc84a', 1.2);
       } else if (k.kind === 'buff') {
         const keys = ['tonic', 'power', 'ink', 'swift'];
         const b = keys[Math.floor(Math.random() * keys.length)];

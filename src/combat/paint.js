@@ -6,6 +6,8 @@
 import * as THREE from 'three';
 import { G, COLORS } from '../core/ctx.js';
 import { makeSplatTexture } from '../world/props.js';
+import { brushStats } from '../world/shop.js';
+
 
 const UP = new THREE.Vector3(0, 1, 0);
 const GRAVITY = 16;
@@ -366,7 +368,7 @@ export class PaintSystem {
       return;
     }
     if (hit.enemy) {
-      G.enemies.localHit(hit.enemy, { dmg: g.small ? 3 : 7, element: el, dir: g.vel.clone().setY(0).normalize(), source: 'glob', hy: g.pos.y });
+      G.enemies.localHit(hit.enemy, { dmg: Math.round((g.small ? 3 : 7) * brushStats(G.player.upg).damage), element: el, dir: g.vel.clone().setY(0).normalize(), source: 'glob', hy: g.pos.y });
       G.particles.burst(g.pos, { count: 14, color: COLORS[g.color].hex, speed: 5, life: 0.5, size: 0.45, gravity: 10 });
       // Leave a splat under the enemy too
       const gp = hit.enemy.pos.clone();

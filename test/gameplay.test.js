@@ -130,3 +130,22 @@ test('race times format as m:ss.s', async () => {
   assert.equal(fmtTime(9.46), '0:09.5');
   assert.equal(fmtTime(83.2), '1:23.2');
 });
+
+test('brush upgrades cost pigment and scale stats', async () => {
+  const { purchase, brushStats, UPGRADES } = await import('../src/world/shop.js');
+  const w = { pigment: 50, upg: {} };
+  assert.equal(purchase(w, 'bristle'), true);
+  assert.equal(w.pigment, 20);
+  assert.equal(w.upg.bristle, 1);
+  assert.equal(purchase(w, 'bristle'), false, 'cannot afford level 2');
+  w.pigment = 1000;
+  assert.equal(purchase(w, 'bristle'), true);
+  assert.equal(purchase(w, 'bristle'), true);
+  assert.equal(purchase(w, 'bristle'), false, 'maxed out');
+  assert.equal(w.upg.bristle, UPGRADES[0].costs.length);
+  const s = brushStats({ bristle: 3, reservoir: 2, lacquer: 3 });
+  assert.ok(Math.abs(s.damage - 1.36) < 1e-9);
+  assert.equal(s.inkRegen, 1.5);
+  assert.ok(Math.abs(s.flightCost - 0.55) < 1e-9);
+  assert.deepEqual(brushStats(), { damage: 1, inkRegen: 1, flightCost: 1 });
+});

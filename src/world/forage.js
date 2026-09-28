@@ -137,7 +137,7 @@ export class Forage {
     this.pot = [];
     $('inventory').classList.remove('hidden');
     $('inv-pot').classList.toggle('hidden', !cooking);
-    $('inv-title').textContent = cooking ? 'Cooking Pot' : 'Satchel';
+    $('inv-title').innerHTML = cooking ? 'Cooking Pot' : `Satchel <span class="pig">● ${G.player.pigment} Pigment</span>`;
     G.input.enabled = false;
     G.input.unlock();
     this.render();

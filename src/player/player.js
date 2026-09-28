@@ -5,6 +5,7 @@ import { G, COLORS, inDungeonY } from '../core/ctx.js';
 import { clamp, damp, dampAngle, angleDiff, lerp } from '../core/math.js';
 import { makeCharacter } from './character.js';
 import { Ribbon, SwingTrail } from '../combat/trails.js';
+import { brushStats } from '../world/shop.js';
 
 const R = 0.4, H = 1.75, STEP = 0.6;
 const GRAV = 30;
@@ -69,6 +70,8 @@ export class Player {
     this.attackBuffer = 0;
     this.bonusHp = 0; // golden half-hearts from Prism Tonic
     this.buffs = { power: 0, ink: 0, swift: 0 };
+    this.pigment = 0;
+    this.upg = { bristle: 0, reservoir: 0, lacquer: 0 };
     this._tip = new THREE.Vector3();
     this._base = new THREE.Vector3();
   }
@@ -463,7 +466,7 @@ export class Player {
   _updateRide(dt, inp) {
     if (this.inDungeon) { this.state = 'air'; return; }
     const boost = (inp.down('ShiftLeft') || inp.down('ShiftRight')) && !this.exhausted;
-    if (!this.useStamina((boost ? 9 : 2.2) * dt) || this.exhausted) {
+    if (!this.useStamina((boost ? 9 : 2.2) * brushStats(this.upg).flightCost * dt) || this.exhausted) {
       this.state = 'glide';
       G.hud.toast('Out of stamina!', '#ffcf8a', 1.2);
       return;
@@ -761,7 +764,7 @@ export class Player {
       if (arc < Math.PI && d.normalize().dot(f) < Math.cos(arc)) continue;
       a.hit.add(e.id);
       any = true;
-      const bonus = (G.flurry > 0 ? 1.5 : 1) * (this.buffs.power > 0 ? 1.5 : 1) * (G.flags.charm_power ? 1.15 : 1);
+      const bonus = (G.flurry > 0 ? 1.5 : 1) * (this.buffs.power > 0 ? 1.5 : 1) * (G.flags.charm_power ? 1.15 : 1) * brushStats(this.upg).damage;
       G.enemies.localHit(e, { dmg: Math.round(dmg * bonus), element: el, dir: d.clone().normalize(), source: 'melee', hy: this.pos.y + 1.3 });
       // Ink splatter flies off in the direction of the blow
       const hp = e.pos.clone().setY(e.pos.y + e.height * 0.5);
@@ -831,7 +834,7 @@ export class Player {
   }
 
   _updateInk(dt) {
-    const regen = this.buffs.ink > 0 ? 14 : G.flags.charm_ink ? 3.75 : 2.5;
+    const regen = (this.buffs.ink > 0 ? 14 : G.flags.charm_ink ? 3.75 : 2.5) * brushStats(this.upg).inkRegen;
     for (let i = 0; i < 4; i++) this.ink[i] = Math.min(100, this.ink[i] + dt * (i === this.color && this.painting && regen < 5 ? 0 : regen));
   }
 

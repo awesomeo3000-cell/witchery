@@ -285,3 +285,4 @@ body.reduce-motion .potion.shake { animation: none; }
 .cmp .ic.race { border-radius: 50%; font: 900 12px var(--sans); color: #fff; }
 .cmp .ic.race.next { background: #ffd84a; color: #3a2a00; box-shadow: 0 0 10px #ffd84a; }
 .mm.mrace .dot { border-radius: 50%; box-shadow: 0 0 0 2px #ffd84a; }
+#inv-title .pig { font: 800 14px var(--sans); color: #ffc84a; margin-left: 12px; vertical-align: middle; }
