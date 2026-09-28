@@ -323,3 +323,6 @@ body.touch #minimap { display: none; }
 #captions { position: absolute; left: 50%; bottom: 210px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; zoom: var(--hud-scale, 1); }
 #captions div { background: rgba(0,0,0,0.72); color: #fff; font: 700 15px var(--sans); padding: 3px 12px; border-radius: 6px; }
 #captions .arr { display: inline-block; margin-right: 8px; color: #ffe070; font-weight: 900; }
+#photo-frame { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+#photo-frame.f1 { border: 3.5vmin solid #fbf7ee; border-bottom-width: 12vmin; box-shadow: inset 0 0 12px rgba(0,0,0,0.25); }
+#photo-frame.f2 { border: 3.5vmin solid transparent; border-image: repeating-linear-gradient(45deg, #e8442e 0 22px, #3a9ae8 22px 44px, #f2c229 44px 66px, #3fb54a 66px 88px) 30; }

@@ -34,7 +34,7 @@ If the page can't reach a server (for example, when the built `dist/` is opened 
 | F | Interact: talk, enter trials, continue dialogue |
 | M | Map, with fast travel to activated easels |
 | I / G | Open the satchel / quick-eat the best healing item |
-| P | Photo mode (free camera, filters, Enter saves a PNG) |
+| P | Photo mode: free camera, filters (1-6/E), frames (G: Polaroid, Painted), hero poses (R), hide friends (V). Enter saves a PNG |
 | Enter | Chat (the host can type `/weather rain`, `/time dusk`, `/greymoon`) |
 | V | Ping the spot under the crosshair for your friends |
 | B | Emote: wave, cheer or sit (friends see it too) |

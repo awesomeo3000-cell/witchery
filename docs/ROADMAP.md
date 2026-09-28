@@ -75,6 +75,6 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 
 41. ✅ **Closed captions.** An option that captions important sounds (boss roars, thunder, alarms, splashes, pickups nearby) with a direction arrow.
 42. ✅ **Wandering merchant.** Tinker travels between the easels, selling rare ingredients, meals and a Stamina Tonic for Pigment.
-43. **Photo mode extras.** Frames (polaroid, painted border), posing the hero with emotes, and a hide-friends toggle.
+43. ✅ **Photo mode extras.** Frames (polaroid, painted border), posing the hero with emotes, and a hide-friends toggle.
 
 The work continues through this list until the budget is used up.
