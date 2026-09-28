@@ -6,6 +6,7 @@ import { clamp, damp, dampAngle, angleDiff, lerp } from '../core/math.js';
 import { makeCharacter } from './character.js';
 import { Ribbon, SwingTrail } from '../combat/trails.js';
 import { brushStats } from '../world/shop.js';
+import { DOWN_TIME } from '../ui/revive.js';
 
 const R = 0.4, H = 1.75, STEP = 0.6;
 const GRAV = 30;
@@ -156,10 +157,12 @@ export class Player {
   die() {
     this.hp = 0;
     this.state = 'dead';
-    this.deadT = 3.5;
+    // With friends around you stay down a while so they can pick you up
+    const coop = G.net && G.net.connected && G.peers && G.peers.size > 0;
+    this.deadT = coop ? DOWN_TIME : 3.5;
     this.attack = null;
     this.lock = null;
-    G.hud.toast('You fainted...', '#ffb0b0');
+    G.hud.toast(coop ? 'You fainted! A friend can pick you up...' : 'You fainted...', '#ffb0b0', coop ? 4 : 2.2);
     G.net?.send({ t: 'fx', k: 'down', p: this.pos.toArray() });
   }
 
@@ -206,6 +209,8 @@ export class Player {
       this.vel.x = damp(this.vel.x, 0, 5, dt);
       this.vel.z = damp(this.vel.z, 0, 5, dt);
       this._physics(dt, true);
+      // Give up waiting: Interact respawns at the checkpoint
+      if (this.deadT < DOWN_TIME - 2 && inp.hit('KeyF')) this.deadT = 0;
       if (this.deadT <= 0) this.respawn();
       this._animate(dt);
       return;

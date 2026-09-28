@@ -29,6 +29,7 @@ import { Fox } from './world/fox.js';
 import { Gallery } from './trials/gallery.js';
 import { Stars } from './world/stars.js';
 import { Minimap } from './ui/minimap.js';
+import { Revive } from './ui/revive.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
 import { Player } from './player/player.js';
@@ -205,6 +206,7 @@ class Game {
     G.gallery = timed('gallery', () => new Gallery(G.trials.root));
     G.stars = timed('stars', () => new Stars());
     G.minimap = timed('minimap', () => new Minimap());
+    G.revive = timed('revive', () => new Revive());
     G.cine = timed('cine', () => new Cinematic());
     G.guide = timed('guide', () => new Guide());
     G.photo = timed('photo', () => new PhotoMode());
@@ -569,6 +571,7 @@ class Game {
       G.audio.play('chat');
     });
     net.on('ping', (m) => G.pings.onNet(m));
+    net.on('revive', (m) => G.revive.onNet(m));
     net.on('full', () => G.hud.toast('That room is full.', '#ffb0b0', 4));
     net.on('disconnect', () => {
       G.hud.toast('Disconnected from server - continuing solo.', '#ffb0b0', 4);
@@ -652,6 +655,7 @@ class Game {
     G.gallery.update(dt);
     G.stars.update(dt);
     G.minimap.update(dt);
+    G.revive.update(dt);
     G.greyMoon.update(dt);
     G.enemies.update(wdt);
     G.paint.update(wdt);

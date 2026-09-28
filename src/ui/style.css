@@ -304,3 +304,6 @@ body.touch #minimap { display: none; }
 .aware { position: absolute; transform: translate(-50%, -100%); font: 900 36px var(--serif); color: #ffe070; text-shadow: 0 0 4px #000, 0 2px 6px rgba(0,0,0,0.7); pointer-events: none; }
 .aware.alarm { color: #ff5a4a; animation: pop 0.25s ease-out; }
 @keyframes pop { from { transform: translate(-50%, -100%) scale(1.8); } to { transform: translate(-50%, -100%) scale(1); } }
+.revive { position: absolute; transform: translate(-50%, -100%); text-align: center; pointer-events: none; font: 800 14px var(--sans); text-shadow: 0 1px 3px #000; }
+.revive .bar { width: 120px; height: 7px; margin: 4px auto 0; border-radius: 4px; background: rgba(0,0,0,0.5); overflow: hidden; }
+.revive .bar div { height: 100%; width: 0; background: #a8f08c; }
