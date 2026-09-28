@@ -44,6 +44,24 @@ export class Cinematic {
     if (title) this._card(title, sub);
   }
 
+  // New game: a slow flight over the island that settles behind the hero. Any key skips it.
+  intro() {
+    const p = G.player;
+    const h = (x, z, up) => Math.max(G.terrain.heightAt(x, z), 0) + up;
+    const pts = [
+      new THREE.Vector3(-260, h(-260, 260, 55), 260),
+      new THREE.Vector3(-120, h(-120, 120, 45), 130),
+      new THREE.Vector3(40, h(40, 20, 55), 20),
+      new THREE.Vector3(30, h(30, 150, 30), 150),
+      p.pos.clone().add(new THREE.Vector3(0, 3, 6)),
+    ];
+    const looks = [new THREE.Vector3(0, 170, -140), new THREE.Vector3(0, 130, -140), new THREE.Vector3(0, 30, 90), new THREE.Vector3(0, 8, 100), p.pos.clone().add(new THREE.Vector3(0, 1.5, -6))];
+    this.active = { kind: 'path', t: 0, dur: 9, path: new THREE.CatmullRomCurve3(pts), looks, e: { alive: true } };
+    this._letterbox(true);
+    document.body.classList.add('cine-intro');
+    this._card('Witchery', 'The colour is fading. Pick up your brush.');
+  }
+
   _letterbox(on) { $('letterbox').classList.toggle('on', on); }
 
   _card(title, sub) {
@@ -67,6 +85,23 @@ export class Cinematic {
     a.t += dt;
     const k = a.t / a.dur;
     const e = a.e;
+    if (a.kind === 'path') {
+      const cam = G.camera;
+      const s = k * k * (3 - 2 * k); // ease in and out
+      cam.position.copy(a.path.getPoint(Math.min(1, s)));
+      const f = Math.min(a.looks.length - 1.001, s * (a.looks.length - 1));
+      const i = Math.floor(f);
+      cam.lookAt(a.looks[i].clone().lerp(a.looks[i + 1], f - i));
+      const skip = a.t > 0.6 && (G.input.pressed.size || G.input.mouse.down.size);
+      if (a.t >= a.dur || skip) {
+        this.active = null;
+        this._letterbox(false);
+        document.body.classList.remove('cine-intro');
+        G.player.camPos.copy(cam.position);
+        G.hud.banner('Palette Hollow', 'Talk to Elder Umber (F) near the statue', '#ffe08a');
+      }
+      return;
+    }
     const ang = a.start + (a.spin ?? 0.9) * Math.sin(k * Math.PI * 0.5) * Math.PI * 0.5;
     const d = a.dist * (1.15 - 0.25 * k);
     const cam = G.camera;

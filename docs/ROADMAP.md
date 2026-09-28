@@ -166,4 +166,6 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 
 87. ✅ **Ink Knights.** Shielded elite-camp leaders: frontal blows are blocked, they turn slowly so flanking works, and Spring knocks the shield aside for a stagger and bonus damage.
 
+88. ✅ **Opening flyover.** New games start with a letterboxed flight past the Sky Citadel and over Palette Hollow that settles behind the hero; any key skips it.
+
 The work continues through this list until the budget is used up.

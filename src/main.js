@@ -376,7 +376,8 @@ class Game {
     window.addEventListener('beforeunload', () => { if (!this._noAutosave) writeSave(); });
     $('menu').classList.add('hidden');
     G.hud.show(true);
-    G.hud.banner('Palette Hollow', 'Talk to Elder Umber (F) near the statue', '#ffe08a');
+    if (!save && (!this.params.has('autoplay') || this.params.has('intro'))) setTimeout(() => G.cine.intro(), 50);
+    else G.hud.banner('Palette Hollow', 'Talk to Elder Umber (F) near the statue', '#ffe08a');
     this.running = true;
     G.input.lock();
     if (G.net.connected) {

@@ -368,3 +368,6 @@ body.touch #minimap { display: none; }
 #photo-frame { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
 #photo-frame.f1 { border: 3.5vmin solid #fbf7ee; border-bottom-width: 12vmin; box-shadow: inset 0 0 12px rgba(0,0,0,0.25); }
 #photo-frame.f2 { border: 3.5vmin solid transparent; border-image: repeating-linear-gradient(45deg, #e8442e 0 22px, #3a9ae8 22px 44px, #f2c229 44px 66px, #3fb54a 66px 88px) 30; }
+
+/* During the opening flyover only the letterbox and title card show */
+body.cine-intro #hud > *:not(#letterbox):not(#bosscard) { visibility: hidden; }

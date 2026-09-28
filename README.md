@@ -19,6 +19,9 @@ For development with hot reload, run `npm run dev`. It starts the game server on
 
 If the page can't reach a server (for example, when the built `dist/` is opened from a static host), the game starts in solo mode.
 
+
+A brand-new game opens with a short flight over the island (any key skips it).
+
 ## Controls
 
 | Input | Action |
