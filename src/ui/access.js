@@ -61,6 +61,7 @@ export function applyBindings() {
   for (const a of ACTIONS) if (!used.has(a.code) && !(a.code in map)) map[a.code] = '';
   G.input.map = map;
   G.input.toggleCodes = new Set(G.settings.toggleSprint ? ['ShiftLeft'] : []);
+  G.input.settings = G.settings;
   G.input.keys.clear();
   G.hud?.renderControls();
 }
@@ -82,6 +83,7 @@ export class AccessUI {
     s.camDist ??= 1;
     s.fox ??= true;
     s.minimap ??= true;
+    s.rumble ??= true;
     s.binds ??= {};
     const bind = (id, key, parse) => {
       const el = $(id);
@@ -102,6 +104,7 @@ export class AccessUI {
     bind('set-togglesprint', 'toggleSprint');
     bind('set-fox', 'fox');
     bind('set-minimap', 'minimap');
+    bind('set-rumble', 'rumble');
     $('binds-reset').onclick = () => { s.binds = {}; applyBindings(); this.render(); this.save(); };
     // Capture the next key press while rebinding
     window.addEventListener('keydown', (e) => {

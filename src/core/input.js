@@ -155,6 +155,15 @@ export class Input {
     mbtn(2, b(6));
   }
 
+  // Gamepad rumble (dual-motor), when a pad is in use and the setting allows it
+  rumble(strong, weak, ms) {
+    if (!this.usingPad || (this.settings && this.settings.rumble === false)) return;
+    const gp = navigator.getGamepads ? [...navigator.getGamepads()].find((g) => g && g.connected) : null;
+    const act = gp && gp.vibrationActuator;
+    if (!act || !act.playEffect) return;
+    act.playEffect('dual-rumble', { duration: ms, strongMagnitude: Math.min(1, strong), weakMagnitude: Math.min(1, weak) }).catch(() => {});
+  }
+
   axis() {
     if (this.usingPad && (this.stick.x || this.stick.z)) {
       const l = Math.hypot(this.stick.x, this.stick.z);

@@ -131,6 +131,7 @@ export class Player {
     this.cameraShake = 0.35;
     G.audio.play('hurt');
     G.hud.flash('rgba(255,40,40,0.35)');
+    G.input.rumble(0.8, 0.6, 220);
     if (from) {
       const d = this.pos.clone().sub(from).setY(0).normalize();
       const kb = opts.knockback ?? 9;
@@ -152,6 +153,7 @@ export class Player {
     G.audio.play('flurry');
     G.hud.toast('Flurry Rush!', '#bfe8ff', 1.5);
     G.honours?.event('flurry');
+    G.input.rumble(0.4, 0.9, 320);
     G.particles.burst(this.pos.clone().setY(this.pos.y + 1), { count: 40, color: 0xbfe8ff, speed: 8, life: 0.6, size: 0.5, pool: 'glow', gravity: 0 });
   }
 
@@ -613,6 +615,7 @@ export class Player {
     }
     if (impact > 27) {
       const dmg = Math.min(8, 2 + Math.floor((impact - 27) / 5) * 2);
+      G.input.rumble(1, 0.8, 260);
       this.takeDamage(dmg, null);
       G.hud.toast('Ouch! Use your glider (Space) when falling.', '#ffb0b0', 2);
     }
@@ -805,6 +808,7 @@ export class Player {
       if (useInk) this.ink[this.color] -= 3;
       this.cameraShake = Math.max(this.cameraShake, 0.16);
       G.hitStop = Math.max(G.hitStop, 0.065 + dmg * 0.002);
+      G.input.rumble(0.25, 0.55, 70);
     }
     // Poke paint-reactive objects & ink flowers
     const tip = this.pos.clone().addScaledVector(f, 1.8).setY(this.pos.y + 1);

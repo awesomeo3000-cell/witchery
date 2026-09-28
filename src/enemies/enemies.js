@@ -553,7 +553,7 @@ export class EnemyManager {
       case 'flip': G.audio.play('bounce'); G.particles.burst(p.setY(p.y + 1), { count: 50, color: 0xf2c229, speed: 10, life: 0.8, size: 0.5, pool: 'glow' }); G.hud.toast('Shellback flipped over! Hit its belly!', '#fff09a', 2); break;
       case 'tangle': G.audio.play('vine'); G.particles.burst(p.setY(p.y + 3), { count: 50, color: 0x3fb54a, speed: 8, life: 1, size: 0.5 }); G.hud.toast('Vines drag Galewing to the ground!', '#a8f08c', 2); break;
       case 'shieldBreak': G.audio.play('break'); G.particles.burst(p.setY(p.y + 7), { count: 100, color: 0xffffff, speed: 15, life: 1.2, size: 0.7, pool: 'glow' }); G.hud.toast('The shield shatters! Paint it back into colour!', '#ffffff', 2.5); break;
-      case 'slam': G.audio.play('slam'); G.particles.burst(p.setY(p.y + 0.5), { count: 40, color: 0xd8d0c0, speed: 10, life: 0.8, size: 0.9, gravity: 6 }); if (G.player && G.player.pos.distanceTo(pos) < 30) G.player.cameraShake = 0.4; break;
+      case 'slam': G.audio.play('slam'); G.particles.burst(p.setY(p.y + 0.5), { count: 40, color: 0xd8d0c0, speed: 10, life: 0.8, size: 0.9, gravity: 6 }); if (G.player && G.player.pos.distanceTo(pos) < 30) { G.player.cameraShake = 0.4; G.input.rumble(0.7, 0.3, 300); } break;
       case 'roar': G.audio.play('bossRoar'); if (G.player) G.player.cameraShake = 0.6; break;
       case 'wake': {
         G.audio.play('bossRoar');

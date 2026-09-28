@@ -53,6 +53,7 @@ Gamepads (Xbox/PlayStation standard mapping) work too:
 - **RB / D-pad**: colours
 - **Y**: ride the brush
 - **R3**: quick eat
+- Rumble on hits, Flurry Rush, heavy landings, boss slams and damage (toggle in Accessibility)
 - **View**: tap for the map, hold for the quick menu (ping, emote)
 - **L3**: sneak on foot, descend while riding
 - **Start**: pause
