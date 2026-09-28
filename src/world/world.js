@@ -21,6 +21,7 @@ export class World {
     this.animated = [];
     this.inkFlowers = [];
     this.lavaZones = [];
+    this.islets = [];
     this.root = new THREE.Group();
     scene.add(this.root);
 
@@ -610,6 +611,7 @@ export class World {
       isl.position.set(ix, iy, iz);
       this.root.add(isl);
       this.col.addCylinder(ix, iz, ir * 0.85, iy - depth * 0.3, iy + 0.4, { tags: ['islet'] });
+      this.islets.push({ x: ix, y: iy + 0.4, z: iz, r: ir });
     });
   }
 

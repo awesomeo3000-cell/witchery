@@ -15,6 +15,7 @@ import { PaintSystem } from './combat/paint.js';
 import { Particles } from './combat/particles.js';
 import { EnemyManager } from './enemies/enemies.js';
 import { Trials } from './trials/trials.js';
+import { Sprites } from './world/sprites.js';
 import { Player } from './player/player.js';
 import { makeCharacter } from './player/character.js';
 import { Ribbon } from './combat/trails.js';
@@ -22,7 +23,7 @@ import { HUD } from './ui/hud.js';
 import { Net } from './net/net.js';
 import { PostFX } from './core/post.js';
 import { loadSave, writeSave } from './core/save.js';
-import { applyStats } from './core/progress.js';
+import { applyStats, spriteCount } from './core/progress.js';
 import { damp, dampAngle } from './core/math.js';
 
 const $ = (id) => document.getElementById(id);
@@ -167,6 +168,7 @@ class Game {
     G.world = new World(G.scene, G.terrain, G.collision);
     G.enemies = new EnemyManager(G.scene);
     G.trials = new Trials(G.scene);
+    G.sprites = new Sprites(G.scene);
     G.hud = new HUD();
     // Menu backdrop camera
     G.camera.position.set(60, 60, 200);
@@ -305,7 +307,7 @@ class Game {
     this.paused = v;
     if (!this.chatOpen) G.input.enabled = !v;
     if (v) {
-      $('pause-room').textContent = G.net?.connected ? `Room: ${G.net.room} · ${G.peers.size + 1} player(s)` : 'Solo game';
+      $('pause-room').textContent = `${G.net?.connected ? `Room: ${G.net.room} · ${G.peers.size + 1} player(s)` : 'Solo game'} · Paint Sprites ${spriteCount()}/${G.sprites.total}`;
     }
   }
 
@@ -481,8 +483,20 @@ class Game {
     if (G.flurry > 0) G.flurry -= dt;
     const wdt = G.flurry > 0 ? dt * 0.28 : dt;
     const p = G.player;
+    // Choice dialogs eat number keys before they can switch colours
+    if (G.hud.choiceCb) {
+      for (let i = 0; i < 3; i++) {
+        if (G.input.hit(`Digit${i + 1}`)) {
+          G.input.pressed.delete(`Digit${i + 1}`);
+          G.hud.answerChoice(i);
+          break;
+        }
+      }
+      if (G.hud.choiceCb && G.input.hit('Escape')) G.hud.answerChoice(G.hud.choiceN - 1);
+    }
     if (!this.mapOpen) p.update(dt);
     G.trials.update(wdt);
+    G.sprites.update(dt);
     G.enemies.update(wdt);
     G.paint.update(wdt);
     G.particles.update(wdt);

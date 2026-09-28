@@ -100,6 +100,7 @@ export class Audio {
       case 'break': this.noise(0.6, 2500, 0.6, 0.35 * vol, 'highpass', 600); this.tone(990, 0.5, 'triangle', 0.15 * vol, 0.4); break;
       case 'shoot': this.tone(500, 0.18, 'square', 0.08 * vol, 0.5); break;
       case 'glint': this.tone(2400, 0.18, 'sine', 0.08 * vol, 1.3); this.tone(3600, 0.12, 'sine', 0.05 * vol, 1, 0.04); break;
+      case 'sprite': [0, 4, 7, 12, 7, 12, 16].forEach((n, i) => this.tone(784 * Math.pow(2, n / 12), 0.18, 'triangle', 0.13 * vol, 1, i * 0.07)); break;
       case 'flurry': this.tone(1200, 0.6, 'sine', 0.15 * vol, 0.4); this.noise(0.6, 3000, 0.5, 0.2 * vol, 'highpass', 800); break;
       case 'chat': this.tone(880, 0.08, 'sine', 0.1 * vol); break;
       case 'waypoint': [0, 5, 9, 12].forEach((n, i) => this.tone(440 * Math.pow(2, n / 12), 0.5, 'sine', 0.12 * vol, 1, i * 0.1)); break;

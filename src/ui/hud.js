@@ -215,6 +215,39 @@ export class HUD {
     d.querySelector('.name').textContent = name;
     d.querySelector('.text').textContent = text;
     this.dialogTimer = 7;
+    this.choiceCb = null;
+    d.querySelector('.hint').textContent = 'F to continue';
+  }
+
+  // Multiple-choice dialog; answered with number keys / D-pad (see Game loop)
+  choice(name, text, options, cb) {
+    const d = $('dialog');
+    d.classList.remove('hidden');
+    d.querySelector('.name').textContent = name;
+    d.querySelector('.text').innerHTML = '';
+    d.querySelector('.text').append(text);
+    const list = document.createElement('div');
+    list.className = 'choices';
+    options.forEach((o, i) => {
+      const b = document.createElement('div');
+      b.innerHTML = `<kbd>${G.input.usingPad ? ['↑', '→', '↓'][i] || i + 1 : i + 1}</kbd> `;
+      b.append(o);
+      list.appendChild(b);
+    });
+    d.querySelector('.text').appendChild(list);
+    d.querySelector('.hint').textContent = 'Choose an option';
+    this.choiceCb = cb;
+    this.choiceN = options.length;
+    this.dialogTimer = 1e9;
+  }
+
+  answerChoice(i) {
+    if (!this.choiceCb || i >= this.choiceN) return;
+    const cb = this.choiceCb;
+    this.choiceCb = null;
+    this.dialogTimer = 0;
+    $('dialog').querySelector('.hint').textContent = 'F to continue';
+    cb(i);
   }
 
   flash(color) {

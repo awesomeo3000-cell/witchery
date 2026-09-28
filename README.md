@@ -37,6 +37,17 @@ If the page can't reach a server (for example, when the built `dist/` is opened 
 | H | Hide the controls panel |
 | Esc | Pause and settings |
 
+Gamepads (Xbox/PlayStation standard mapping) work too:
+- **A**: jump, or interact when something's in reach
+- **B**: sprint
+- **X / RT**: strike
+- **LT**: aim
+- **LB**: lock on
+- **RB / D-pad**: colours
+- **Y**: ride the brush
+- **View**: map
+- **Start**: pause
+
 ## Paint colours
 
 | Colour | Combat effect | World effect |
@@ -58,6 +69,21 @@ Coloured light beams mark the four trial shrines. Each trial has a puzzle built 
 - **Bloom Trial** (west, in the forest). Climb the mossy cliff on vines and grow a vine bridge. Boss: **Galewing**, which must be tangled and dragged down with Bloom.
 
 Each Prism Shard adds a heart container. With all four shards, the barrier around the **Sky Citadel** falls. At the top waits **the Hueless King**, whose shield changes colour. Break it with the opposite colour (Ember ↔ Frost, Spring ↔ Bloom), then attack while it's stunned.
+
+## Paint Sprites
+
+42 Paint Sprites are hidden around the island:
+- under odd lavender rocks (strike them)
+- in rings of grey flowers (paint the centre stone the colour its gem shows)
+- in withered saplings (paint them with Bloom)
+- in rainbow sky hoops (fly or glide through)
+- on lonely peaks and floating islets (touch the sparkle)
+
+Bring every 4 sprites to Pip in Palette Hollow for a Heart Container or Stamina Vessel. Upgrades are shared by the whole party.
+
+## Saving
+
+Online rooms save their world progress on the server in `data/rooms.json`, so it survives restarts. Each browser also remembers where you were. Solo games keep everything in the browser's local storage.
 
 ## Graphics options
 

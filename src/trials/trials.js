@@ -85,6 +85,7 @@ export class Trials {
   // Called whenever a flag changes (locally or from the network)
   onFlag(k, v) {
     if (k.startsWith('upg_')) applyStats(false);
+    if (k.startsWith('sprite_') && v && G.sprites) G.sprites.onFound(k);
     if (k.startsWith('trial_') && v) {
       const t = TRIALS.find((q) => `trial_${q.key}` === k);
       if (t && !this._announced?.[k]) {

@@ -172,3 +172,6 @@ button.secondary { background: rgba(255,255,255,0.15); color: #fff; box-shadow: 
 #flight small { font: 600 13px var(--sans); opacity: 0.85; margin-right: 4px; }
 #flight .ic { font-size: 18px; opacity: 0.9; }
 #flight .dot { font-size: 10px; opacity: 0.6; margin: 0 8px; }
+
+#dialog .choices { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+#dialog .choices div { font: 700 16px var(--sans); color: #fff09a; }
