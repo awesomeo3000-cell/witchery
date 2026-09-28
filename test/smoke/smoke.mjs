@@ -20,8 +20,9 @@ try {
   page.on('console', (m) => { if (m.type() === 'error' && !/fonts\.g|ERR_|AudioContext/.test(m.text())) errors.push(m.text()); });
   await page.goto(`http://localhost:${PORT}/?autoplay&solo`, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => window.G && window.G.player && window.G.game && window.G.game.running, null, { timeout: 180000 });
+  // Software GL compiles shaders slowly, so wait for the clock rather than assuming a frame rate
   const t0 = await page.evaluate(() => window.G.time);
-  await page.waitForTimeout(8000);
+  await page.waitForFunction((t) => window.G.time > t + 0.5, t0, { timeout: 120000, polling: 500 }).catch(() => {});
   const state = await page.evaluate(() => ({
     time: window.G.time,
     hp: window.G.player.hp,
