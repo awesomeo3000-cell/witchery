@@ -124,13 +124,23 @@ export class Input {
     this.mouse.dy += curve(ry) * 1000 * dt;
     const map = {
       1: 'ShiftLeft', 3: 'KeyR', 4: 'KeyQ', 5: 'KeyE', 10: 'KeyC', 11: 'KeyG',
-      12: 'Digit1', 15: 'Digit2', 13: 'Digit3', 14: 'Digit4', 8: 'KeyM',
+      12: 'Digit1', 15: 'Digit2', 13: 'Digit3', 14: 'Digit4',
     };
     const set = (code, on) => {
       if (on && !this.padHeld.has(code)) { this.padHeld.add(code); this.keys.add(code); this.pressed.add(code); }
       else if (!on && this.padHeld.has(code)) { this.padHeld.delete(code); this.keys.delete(code); this.released.add(code); }
     };
     for (const i in map) set(map[i], b(Number(i)));
+    // View: tap for the map, hold for the quick menu (ping, emote)
+    const view = b(8);
+    if (view) {
+      this._viewT = (this._viewT || 0) + dt;
+      if (this._viewT > 0.35 && !this._viewQuick) { this._viewQuick = true; if (this.onPadQuick) this.onPadQuick(); }
+    } else if (this._viewT) {
+      if (!this._viewQuick) this.pressed.add('KeyM');
+      this._viewT = 0;
+      this._viewQuick = false;
+    }
     // A is contextual: interact when something is in reach, otherwise jump / glide / rise
     const a = b(0);
     if (a && !this._aHeld) set(this.contextA ? 'KeyF' : 'Space', true);

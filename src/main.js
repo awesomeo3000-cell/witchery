@@ -338,6 +338,14 @@ class Game {
       if (e.target.checked) { G.guide.seen.clear(); G.guide._save(); e.target.checked = false; G.hud.toast('Tips will show again', '#ffe08a'); }
     });
     this.access = new AccessUI(saveSettings);
+    // Gamepad quick menu (hold View)
+    G.input.onPadQuick = () => {
+      if (!this.running || G.hud.choiceCb) return;
+      G.hud.choice('Quick menu', 'What would you like to do?', ['Ping this spot', 'Emote', 'Cancel'], (i) => {
+        if (i === 0) G.pings.cast();
+        else if (i === 1) setTimeout(() => G.player.openEmotes(), 0);
+      });
+    };
     const q = $('set-quality');
     q.value = G.settings.quality || 'high';
     q.addEventListener('change', () => { this.applyQuality(q.value); saveSettings(); });
@@ -385,8 +393,6 @@ class Game {
         G.input.unlock();
         setTimeout(() => input.focus(), 0);
         e.preventDefault();
-      } else if (G.input.logical(e.code) === 'KeyM' && G.input.enabled && !this.chatOpen) {
-        this.toggleMap();
       }
     });
     input.addEventListener('keydown', (e) => {
@@ -583,9 +589,11 @@ class Game {
     if (G.flurry > 0) G.flurry -= dt;
     const wdt = G.flurry > 0 ? dt * 0.28 : dt;
     const p = G.player;
+    // Map (keyboard, pad View tap, touch button all arrive as KeyM)
+    if (G.input.hit('KeyM') && !this.chatOpen && !G.hud.choiceCb && !G.photo.active) this.toggleMap();
     // Choice dialogs eat number keys before they can switch colours
     if (G.hud.choiceCb) {
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 4; i++) {
         if (G.input.hit(`Digit${i + 1}`)) {
           G.input.pressed.delete(`Digit${i + 1}`);
           G.hud.answerChoice(i);

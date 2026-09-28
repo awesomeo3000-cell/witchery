@@ -52,9 +52,9 @@ Gamepads (Xbox/PlayStation standard mapping) work too:
 - **LB**: lock on
 - **RB / D-pad**: colours
 - **Y**: ride the brush
-- **L3**: descend while riding
 - **R3**: quick eat
-- **View**: map
+- **View**: tap for the map, hold for the quick menu (ping, emote)
+- **L3**: sneak on foot, descend while riding
 - **Start**: pause
 
 On phones and tablets, touch controls appear automatically: a floating joystick on the left, drag anywhere else to look, and action buttons on the right.

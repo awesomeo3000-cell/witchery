@@ -11,10 +11,12 @@ const BUTTONS = [
   { id: 'lock', label: '◇', title: 'Lock', key: 'KeyQ' },
   { id: 'col', label: '🎨', title: 'Colour', key: 'KeyE' },
   { id: 'sprint', label: '»', title: 'Sprint', key: 'ShiftLeft' },
-  { id: 'down', label: '⇩', title: 'Descend', key: 'KeyC' },
-  { id: 'eat', label: '🍎', title: 'Eat', key: 'KeyG' },
-  { id: 'map', label: '🗺', title: 'Map', key: 'KeyM' },
-  { id: 'menu', label: '☰', title: 'Menu', menu: true },
+  { id: 'down', label: '⇩', title: 'Sneak', key: 'KeyC' },
+  { mini: true, id: 'ping', label: '📍', title: 'Ping', key: 'KeyV' },
+  { mini: true, id: 'emote', label: '☺', title: 'Emote', key: 'KeyB' },
+  { mini: true, id: 'eat', label: '🍎', title: 'Eat', key: 'KeyG' },
+  { mini: true, id: 'map', label: '🗺', title: 'Map', key: 'KeyM' },
+  { mini: true, id: 'menu', label: '☰', title: 'Menu', menu: true },
 ];
 
 export class TouchControls {
@@ -36,6 +38,10 @@ export class TouchControls {
     root.classList.remove('hidden');
     document.body.classList.add('touch');
     const btns = $('touch-buttons');
+    // Secondary actions live in a slim column on the left so the main cluster stays thumb-sized
+    const mini = document.createElement('div');
+    mini.id = 'touch-mini';
+    root.appendChild(mini);
     for (const b of BUTTONS) {
       const el = document.createElement('div');
       el.className = `tbtn t-${b.id}`;
@@ -58,7 +64,7 @@ export class TouchControls {
       };
       el.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); el.classList.add('down'); press(true); }, { passive: false });
       el.addEventListener('touchend', (e) => { e.preventDefault(); e.stopPropagation(); el.classList.remove('down'); press(false); }, { passive: false });
-      btns.appendChild(el);
+      (b.mini ? mini : btns).appendChild(el);
     }
     const zone = $('touch-zone');
     zone.addEventListener('touchstart', (e) => this._start(e), { passive: false });

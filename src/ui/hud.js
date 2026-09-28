@@ -284,7 +284,7 @@ export class HUD {
     list.className = 'choices';
     options.forEach((o, i) => {
       const b = document.createElement('div');
-      b.innerHTML = `<kbd>${G.input.usingPad ? ['↑', '→', '↓'][i] || i + 1 : i + 1}</kbd> `;
+      b.innerHTML = `<kbd>${G.input.usingPad ? ['↑', '→', '↓', '←'][i] || i + 1 : i + 1}</kbd> `;
       b.append(o);
       list.appendChild(b);
     });

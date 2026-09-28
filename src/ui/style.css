@@ -250,6 +250,10 @@ body.touch #controls { display: none; }
 #touch-stick.on { display: block; }
 #touch-knob { position: absolute; left: 30px; top: 30px; width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.55); }
 #touch-buttons { position: absolute; right: 12px; bottom: 120px; width: 250px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; pointer-events: auto; }
+#touch-mini { position: absolute; left: 10px; top: 70px; display: flex; flex-direction: column; gap: 6px; pointer-events: auto; }
+#touch-mini .tbtn { width: 42px; height: 42px; }
+#touch-mini .tbtn span { font-size: 16px; }
+#touch-mini .tbtn small { display: none; }
 .tbtn { width: 56px; height: 56px; border-radius: 50%; background: rgba(10,12,24,0.45); border: 2px solid rgba(255,255,255,0.5); display: grid; place-items: center; align-content: center; user-select: none; }
 .tbtn span { font: 800 20px var(--sans); line-height: 1; }
 .tbtn small { font: 700 8px var(--sans); opacity: 0.8; }
