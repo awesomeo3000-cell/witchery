@@ -432,6 +432,18 @@ export function makeCharacter(look = {}) {
     } else if (st === 'dead') {
       hipY = 0.25; bodyX = -1.45;
       lSh = [0, 0, 1.2]; rSh = [0, 0, -1.2];
+    } else if (st === 'emote_wave') {
+      rSh = [-2.7, 0, -0.35 + Math.sin(phase * 2.2) * 0.4]; rF = [-0.5, 0, 0];
+      lSh = [0.1, 0, 0.15]; brushRot = [0.4, 0, 0];
+    } else if (st === 'emote_cheer') {
+      hipY = 0.85 + Math.abs(Math.sin(phase * 1.6)) * 0.12;
+      lSh = [-2.9, 0, 0.35]; rSh = [-2.9, 0, -0.35]; lF = [-0.2, 0, 0]; rF = [-0.2, 0, 0];
+      brushRot = [0.6 + Math.sin(phase * 1.6) * 0.3, 0, 0];
+    } else if (st === 'emote_sit') {
+      hipY = 0.3; bodyX = -0.12;
+      lHip = [-1.45, 0, 0.18]; rHip = [-1.45, 0, -0.18]; lK = [0.35, 0, 0]; rK = [0.5, 0, 0];
+      lSh = [0.35, 0, 0.35]; rSh = [0.35, 0, -0.35]; lF = [-0.2, 0, 0]; rF = [-0.2, 0, 0];
+      brushRot = [1.3, 0, 0];
     } else if (st === 'dodge') {
       hipY = 0.55; bodyX = 0.9;
       lHip = [-1.4, 0, 0]; rHip = [-1.4, 0, 0]; lK = [2, 0, 0]; rK = [2, 0, 0];

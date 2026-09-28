@@ -213,6 +213,7 @@ export class Player {
     this._handleInteract(inp);
 
     if (inp.hit('KeyR')) this._toggleRide();
+    if (inp.hit('KeyB')) this.openEmotes();
 
     switch (this.state) {
       case 'ride': this._updateRide(dt, inp); break;
@@ -265,6 +266,14 @@ export class Player {
     inp.contextA = !!best;
     G.hud.setPrompt(best ? (typeof best.prompt === 'function' ? best.prompt() : best.prompt) : null);
     if (best && inp.hit('KeyF')) best.action(this);
+  }
+
+  openEmotes() {
+    if (this.state !== 'ground' || G.hud.choiceCb) return;
+    const list = ['wave', 'cheer', 'sit'];
+    G.hud.choice('Emote', 'Strike a pose for your friends:', ['Wave', 'Cheer', 'Sit down', 'Cancel'], (i) => {
+      if (i < list.length) { this.emote = list[i]; this.emoteT = 0; G.hud.dialogTimer = 0; }
+    });
   }
 
   _toggleRide() {
@@ -909,6 +918,12 @@ export class Player {
     if (st === 'ground') st = hv > 0.5 ? 'walk' : 'idle';
     if (st === 'air') st = this.vel.y > 0 ? 'jump' : 'fall';
     if (this.dodgeT > 0) st = 'dodge';
+    // Emotes play while standing still; moving, jumping or attacking cancels them
+    if (this.emote) {
+      this.emoteT += dt;
+      if (st !== 'idle' || this.attack || this.aiming || (this.emote !== 'sit' && this.emoteT > 3.5)) this.emote = null;
+      else st = `emote_${this.emote}`;
+    }
     this.animState = st;
     // Footsteps
     if (this.state === 'ground' && hv > 0.8) {

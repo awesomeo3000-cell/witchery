@@ -37,6 +37,7 @@ If the page can't reach a server (for example, when the built `dist/` is opened 
 | P | Photo mode (free camera, filters, Enter saves a PNG) |
 | Enter | Chat (the host can type `/weather rain`, `/time dusk`, `/greymoon`) |
 | V | Ping the spot under the crosshair for your friends |
+| B | Emote: wave, cheer or sit (friends see it too) |
 | H | Hide the controls panel |
 | Esc | Pause and settings |
 
