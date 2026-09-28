@@ -9,8 +9,8 @@ const DAY_LENGTH = 720; // seconds for a full cycle
 // Palettes lean on soft aerial perspective: pale hazy horizons, cool shadows, warm light.
 const KEYS = {
   night: { top: 0x0d1a3d, hor: 0x33507e, fog: 0x2e4670, sun: 0xa8bcff, sunI: 0.9, hemiS: 0x6a82c8, hemiG: 0x2e3660, hemiI: 1.35 },
-  dusk: { top: 0x5a6fa8, hor: 0xf0b894, fog: 0xd9ad9c, sun: 0xffb27a, sunI: 2.0, hemiS: 0xb8b0e0, hemiG: 0x806058, hemiI: 1.25 },
-  day: { top: 0x4c8fd6, hor: 0xd4e8f0, fog: 0xb4cddb, sun: 0xfff1da, sunI: 2.5, hemiS: 0xa8c8f0, hemiG: 0x6a6a48, hemiI: 1.05 },
+  dusk: { top: 0x5a6aa8, hor: 0xf4b890, fog: 0xdcaaa0, sun: 0xffae70, sunI: 2.2, hemiS: 0xb0a8e8, hemiG: 0x705a78, hemiI: 1.2 },
+  day: { top: 0x5a8fd0, hor: 0xe4e6ea, fog: 0xc4ccd8, sun: 0xffe8c8, sunI: 2.6, hemiS: 0xa8b8f0, hemiG: 0x6a5a78, hemiI: 1.0 },
   dungeon: { top: 0x10131c, hor: 0x1a1e2a, fog: 0x161a26, sun: 0xfff0e0, sunI: 0.5, hemiS: 0xb8bcd8, hemiG: 0x4a4050, hemiI: 1.6 },
 };
 

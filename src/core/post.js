@@ -126,8 +126,15 @@ export class PostFX {
           // Painterly grade: gentle warm highlights, cool shadows, a little extra saturation
           float l = dot(c, vec3(0.299, 0.587, 0.114));
           c = mix(vec3(l), c, uSat);
-          c += vec3(0.012, 0.0, -0.01) * smoothstep(0.3, 1.0, l);
-          c += vec3(-0.004, 0.002, 0.014) * (1.0 - smoothstep(0.0, 0.35, l));
+          // Pull loud greens toward olive so the paint colours own the saturation
+          float gx = max(0.0, c.g - max(c.r, c.b));
+          c -= vec3(-0.25, 0.45, 0.1) * gx * 0.35;
+          // Split tone: gold in the highlights, violet in the shadows
+          c *= mix(vec3(0.9, 0.9, 1.1), vec3(1.0), smoothstep(0.0, 0.45, l));
+          c += vec3(0.012, 0.006, 0.03) * (1.0 - smoothstep(0.0, 0.4, l));
+          c *= mix(vec3(1.0), vec3(1.05, 1.0, 0.9), smoothstep(0.35, 1.0, l));
+          // Gentle S-curve for a little more depth
+          c = mix(c, c * c * (3.0 - 2.0 * min(c, vec3(1.0))), 0.18);
           // Flurry Rush: desaturate & tint blue
           if (uFlurry > 0.0) {
             float g = dot(c, vec3(0.299, 0.587, 0.114));

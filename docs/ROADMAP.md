@@ -194,4 +194,10 @@ The whole budget goes to this roadmap, worked autonomously in waves. The session
 95. ✅ **Treasure maps.** Tinker sells a map (18 Pigment, one at a time): a pencil sketch drawn from the real place with a red X, plus a hint like "north-east of Cinder Steps" and a rough circle on the map. A heap of earth shows up within 30 m; digging pays 20-30 Pigment and three ingredients. His two ingredient bundles became one, so the menu still fits the gamepad. A Treasure Hunter honour for three finds.
 96. ✅ **More bounty jobs.** Finish any Sky Race, and photo jobs (a Brushbuck, a Glimmerfish, an Ink Knight) that count creatures already in your Compendium.
 
+## Wave twenty-three: art direction from the reference stills
+
+Reference stills live in `docs/inspo/`: golden-hour light with violet shadows, wheat-gold grass, painterly haze, flat cel paint effects, a wide paint ribbon and manga speed lines in flight, potion-flask colour pots and serif small-caps UI on brush-stroke panels.
+
+97. ✅ **Golden-hour grade.** Split-tone grade (gold highlights, violet shadows), gentle S-curve, loud greens pulled toward olive; grass goes teal in forests, olive in meadows and wheat-gold on dry slopes, with cool lavender roots and warm tips; warmer sun and a lavender bounce light.
+
 The work continues through this list until the budget is used up.

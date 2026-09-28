@@ -177,8 +177,8 @@ export class Terrain {
       if (k <= 0) return;
       c.r += col.r * k; c.g += col.g * k; c.b += col.b * k;
     };
-    add(PAL(v > 0.1 ? 0x7cb342 : 0x5f9e34), w.meadow);
-    add(PAL(v > 0 ? 0x3d7f33 : 0x2f6b2c), w.bloom);
+    add(PAL(v > 0.1 ? 0x93a04e : 0x74904a), w.meadow);
+    add(PAL(v > 0 ? 0x3a7248 : 0x2d5e40), w.bloom);
     add(PAL(v > 0.05 ? 0xd4a843 : 0xc08f35), w.spring);
     const snowy = smoothstep(18, 40, h);
     add(TMP.copy(PAL(0x6f9b52)).lerp(PAL(v > 0 ? 0xf2f6fb : 0xdfe8f2), snowy), w.frost);

@@ -134,13 +134,15 @@ export class Grass {
         varying float vGust; varying float vFlower; varying float vDist;
         uniform vec3 uTip;
         void main(){
-          vec3 forest = vec3(0.22, 0.46, 0.18);
-          vec3 meadow = vec3(0.45, 0.7, 0.24);
-          vec3 golden = vec3(0.86, 0.66, 0.26);
+          // Painted-meadow palette: teal forest floor, olive meadow, wheat-gold on the dry slopes
+          vec3 forest = vec3(0.24, 0.44, 0.3);
+          vec3 meadow = vec3(0.62, 0.68, 0.32);
+          vec3 golden = vec3(0.9, 0.72, 0.36);
           vec3 c = vHue < 0.3 ? mix(forest, meadow, vHue / 0.3) : mix(meadow, golden, (vHue - 0.3) / 0.7);
           c = pow(c, vec3(2.1)) * 1.5; // palette is authored in sRGB; lighting happens in linear space
-          c *= (0.45 + 0.5 * vH) * vShade;
-          c += vec3(0.08, 0.1, 0.02) * smoothstep(0.7, 1.0, vH);
+          // Cool lavender shade down at the roots, warm light on the tips
+          c = mix(c * vec3(0.42, 0.44, 0.62), c, smoothstep(0.0, 0.85, vH)) * vShade;
+          c += vec3(0.1, 0.08, 0.02) * smoothstep(0.7, 1.0, vH);
           // Sunlit tips + brighter streaks where gusts flatten the blades
           c += uTip * smoothstep(0.6, 1.0, vH) * 0.06;
           c += vec3(0.05, 0.07, 0.02) * vGust * vH;
