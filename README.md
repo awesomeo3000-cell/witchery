@@ -216,9 +216,10 @@ The pause menu's *Accessibility* section has:
 
 ```
 npm run lint    # ESLint
-npm test        # unit tests (math, terrain/collision, combat rules, progress, quests, shop, puzzles, map fog, honours, key bindings) + server protocol and hardening tests
+npm test        # unit tests (math, terrain/collision, world placement, combat and boss rules, progress, quests, shop and brush tips, puzzles, shrines, fishing, critters, cooking, Brushbucks, climate, compendium, map fog, honours, key bindings, saves) + server protocol and hardening tests
 npm run build   # production build into dist/
 npm run smoke   # boots the built game in headless Chromium against the real server and checks a draw-call budget (needs `npx playwright install chromium` once)
+npm run soak    # drives the built game with seeded random input around the island for 20 rounds (or `npm run soak 60`) and fails on page errors or NaN state
 ```
 
 GitHub Actions (`.github/workflows/ci.yml`) runs lint, tests, build and the smoke test on every push and pull request.
@@ -230,15 +231,19 @@ server/server.js      static file server + WebSocket rooms (relay, host election
 src/main.js           boot, menus, networking glue, main loop
 src/core/             shared context, input, procedural audio, math/noise, post-processing (haze, bloom, grade)
 src/world/            terrain & biomes, sky/day-night, weather, rainbows, Grey Moon, clouds, floating islands, water, GPU grass,
-                      painted textures & props, overworld population, Paint Sprites, foraging/cooking, villager quests,
-                      Brushwright shop, Sky Races, island puzzles, Paint Fox, Chroma Wyrm, shooting stars, collision
+                      painted textures & props (and a static-mesh merger), overworld population, Paint Sprites, foraging/cooking,
+                      villager quests, Brushwright shop & brush tips, Sky Races, island puzzles, Paint Fox, Chroma Wyrm, shooting
+                      stars, fishing, critters, Brushbucks & the stable, cold/heat, Painted Memories, Painter's Towers, the Colour
+                      Festival, tablets, Target Gallery, Tinker, collision
 src/player/           character model/animation and the player controller (walk, glide, climb, swim, ride, combat)
 src/combat/           paint globs/splats/elemental effects, particles, brush-stroke trails
 src/enemies/          enemy & boss models, AI, camps & chests, projectiles, shockwaves, loot, network snapshots
-src/trials/           the four dungeons, their puzzles and boss arenas, the final boss trigger, the Gallery of Echoes, the Paint Shrines
-src/ui/               HUD, minimap, map fog, tips & objectives, boss cinematics, photo mode, touch controls, pings, revives,
-                      honours, adventure log, accessibility & key bindings, styles
-test/                 node:test unit and server tests; test/smoke/ has the headless browser check
+src/trials/           the four dungeons, their puzzles and boss arenas, the final boss trigger, the Gallery of Echoes, the Paint
+                      Shrines, the Prism Vault
+src/ui/               HUD, minimap, map fog & pins, tips & objectives, boss cinematics, photo mode & Compendium, touch controls,
+                      pings, revives, party panel & quick chat, honours, adventure log & statistics, wardrobe, accessibility &
+                      key bindings, styles
+test/                 node:test unit and server tests; test/smoke/ has the headless browser check, test/soak/ the random-input soak
 src/core/save.js      local save; src/core/progress.js derives hearts/stamina from shared progress
 ```
 
