@@ -152,10 +152,14 @@ export class PostFX {
           // Speed lines
           if (uSpeed > 0.01) {
             float a = atan(p.y, p.x);
-            float seg = floor(a * 38.0);
-            float rnd = hh(seg * 7.13 + floor(uTime * 14.0));
-            float line = step(0.72, rnd) * smoothstep(0.3, 0.75, r) * (1.0 - fract(a * 38.0) * 1.6);
-            c = mix(c, vec3(1.0), clamp(line, 0.0, 1.0) * uSpeed * 0.55);
+            float seg = floor(a * 64.0);
+            float rnd = hh(seg * 7.13 + floor(uTime * 16.0));
+            float reach = 0.62 - fract(rnd * 17.3) * 0.3 * uSpeed; // how far each streak pokes in
+            float taper = 1.0 - abs(fract(a * 64.0) - 0.5) * 2.0;
+            float line = step(0.7, rnd) * smoothstep(reach, reach + 0.22, r) * smoothstep(0.35, 0.6, taper);
+            float ink = step(0.93, fract(rnd * 31.7)) * line;
+            c = mix(c, vec3(1.0), clamp(line - ink, 0.0, 1.0) * uSpeed * 0.7);
+            c = mix(c, vec3(0.08, 0.07, 0.12), ink * uSpeed * 0.5);
           }
           // Vignette + hurt pulse
           float vig = smoothstep(0.95, 0.35, r);

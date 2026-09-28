@@ -6,13 +6,13 @@ const trailMat = () => new THREE.ShaderMaterial({
   transparent: true,
   depthWrite: false,
   side: THREE.DoubleSide,
-  uniforms: { uColor: { value: new THREE.Color() }, uTime: { value: 0 }, uStyle: { value: 0 } },
+  uniforms: { uColor: { value: new THREE.Color() }, uTime: { value: 0 }, uStyle: { value: 0 }, uGain: { value: 1 } },
   vertexShader: /* glsl */`
     attribute float aAlpha; attribute vec2 aUv;
     varying float vA; varying vec2 vUv;
     void main(){ vA = aAlpha; vUv = aUv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
   fragmentShader: /* glsl */`
-    uniform vec3 uColor; uniform float uTime; uniform int uStyle;
+    uniform vec3 uColor; uniform float uTime, uGain; uniform int uStyle;
     varying float vA; varying vec2 vUv;
     vec3 hue(float x){ return clamp(abs(mod(x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0); }
     float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453); }
@@ -35,14 +35,15 @@ const trailMat = () => new THREE.ShaderMaterial({
         base = mix(vec3(1.0, 0.25, 0.05), vec3(1.0, 0.85, 0.3), fl) * (1.2 + fl);
       }
       vec3 c = base * (0.85 + 0.35 * streak) + vec3(0.08) * smoothstep(0.4, 0.5, abs(vUv.y - 0.5));
-      gl_FragColor = vec4(c, a);
+      gl_FragColor = vec4(c * uGain, a);
     }`,
 });
 
 // Camera-facing ribbon that follows a moving point (brush flight trail).
 export class Ribbon {
-  constructor(scene, { max = 48, width = 1.1, life = 0.9 } = {}) {
+  constructor(scene, { max = 48, width = 1.1, life = 0.9, solid = false } = {}) {
     this.max = max;
+    this.solid = solid; // full width and opacity until late in life, like a wet stroke of paint
     this.width = width;
     this.life = life;
     this.pts = [];
@@ -57,6 +58,7 @@ export class Ribbon {
     for (let i = 0; i < max - 1; i++) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
     this.geo.setIndex(idx);
     this.mat = trailMat();
+    if (solid) this.mat.uniforms.uGain.value = 0.72; // flat paint, not a glow
     this.mesh = new THREE.Mesh(this.geo, this.mat);
     this.mesh.frustumCulled = false;
     this.mesh.renderOrder = 4;
@@ -86,12 +88,13 @@ export class Ribbon {
       toCam.subVectors(cam, this.pts[i].p).normalize();
       side.crossVectors(t, toCam).normalize();
       const k = this.pts[i].age / this.life;
-      const w = this.width * (1 - k) * Math.min(1, (i + 1) / 3);
+      const fade = this.solid ? 1 - Math.max(0, (k - 0.55) / 0.45) ** 2 : 1 - k;
+      const w = this.width * fade * Math.min(1, (i + 1) / 3) * (this.solid ? 0.85 + 0.15 * Math.sin(i * 0.35) : 1);
       const p = this.pts[i].p;
       const o = i * 6;
       this.pos[o] = p.x + side.x * w; this.pos[o + 1] = p.y + side.y * w; this.pos[o + 2] = p.z + side.z * w;
       this.pos[o + 3] = p.x - side.x * w; this.pos[o + 4] = p.y - side.y * w; this.pos[o + 5] = p.z - side.z * w;
-      const al = (1 - k) * 0.9;
+      const al = this.solid ? Math.min(1, fade * 1.4) * 0.97 : (1 - k) * 0.9;
       this.alpha[i * 2] = al; this.alpha[i * 2 + 1] = al;
       this.uv[i * 4] = i / n; this.uv[i * 4 + 1] = 0; this.uv[i * 4 + 2] = i / n; this.uv[i * 4 + 3] = 1;
     }

@@ -828,7 +828,7 @@ class Game {
     G.input.endFrame();
     const speed = p.state === 'ride' ? Math.hypot(p.vel.x, p.vel.y, p.vel.z) : 0;
     this._render({
-      speed: Math.max(0, Math.min(1, (speed - 24) / 14)),
+      speed: Math.max(0, Math.min(1, (speed - 16) / 16)),
       flurry: Math.min(1, (G.flurry || 0) * 3),
       hurt: p.hurtFlash > 0 ? p.hurtFlash * 2 : (p.hp <= 2 && p.alive ? 0.25 + Math.sin(G.time * 6) * 0.15 : 0),
       sat: this._saturation(dt),

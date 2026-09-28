@@ -70,7 +70,7 @@ export class Player {
     this.cameraShake = 0;
     this.aimPoint = new THREE.Vector3();
     this.char.setBrushColor(COLORS[0].hex);
-    this.rideTrail = new Ribbon(G.scene, { width: 0.7, life: 0.85 });
+    this.rideTrail = new Ribbon(G.scene, { width: 0.62, life: 1.5, max: 96, solid: true });
     this.swingTrail = new SwingTrail(G.scene);
     this.attackBuffer = 0;
     this.bonusHp = 0; // golden half-hearts from Prism Tonic

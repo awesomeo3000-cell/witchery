@@ -199,5 +199,6 @@ The whole budget goes to this roadmap, worked autonomously in waves. The session
 Reference stills live in `docs/inspo/`: golden-hour light with violet shadows, wheat-gold grass, painterly haze, flat cel paint effects, a wide paint ribbon and manga speed lines in flight, potion-flask colour pots and serif small-caps UI on brush-stroke panels.
 
 97. ✅ **Golden-hour grade.** Split-tone grade (gold highlights, violet shadows), gentle S-curve, loud greens pulled toward olive; grass goes teal in forests, olive in meadows and wheat-gold on dry slopes, with cool lavender roots and warm tips; warmer sun and a lavender bounce light.
+98. ✅ **Flight feel.** The brush leaves a long, solid stroke of flat paint (1.5 s, full width until it frays out at the end) instead of a short glowing wisp; manga speed lines start from 16 m/s, are denser, streak in from the edges and mix in a few dark ink strokes. (FOV kick and the height/speed readout were already in.)
 
 The work continues through this list until the budget is used up.
