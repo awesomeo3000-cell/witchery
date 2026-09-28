@@ -148,7 +148,7 @@ export function makeBrush(colorHex = 0xe8442e) {
   const basePoint = new THREE.Object3D();
   basePoint.position.y = 1.1;
   brush.add(basePoint);
-  return { group: brush, tipMat, tipPoint, basePoint };
+  return { group: brush, tipMat, tipPoint, basePoint, tip };
 }
 
 export function makeCharacter(look = {}) {
@@ -587,5 +587,7 @@ export function makeCharacter(look = {}) {
   return {
     group: root, brush, brushTip: brushParts.tipPoint, brushBase: brushParts.basePoint, animate, setBrushColor, setHurt,
     hand: armR.hand, head: headG, glider, setShadow, setLod,
+    // Brush tip shapes from the Brushwright
+    setTipShape: (k) => { const sc = { broad: [1.45, 0.9, 1.45], fine: [0.65, 1.15, 0.65], splatter: [1.2, 1, 1.2] }[k] || [1, 1, 1]; brushParts.tip.scale.set(...sc); },
   };
 }

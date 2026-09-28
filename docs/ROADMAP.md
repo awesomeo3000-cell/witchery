@@ -125,4 +125,10 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 66. ✅ **Guidance for new systems.** A side-goal line under the objective (nearest dormant tower, then nearest uncleared shrine) and first-time tips for towers, shrine arches, Brushbucks and the cold.
 67. ✅ **Difficulty.** Story, Normal and Hard settings that scale only the damage you take, per player.
 
+## Wave eighteen
+
+68. ✅ **Art pass on new creatures.** Brushbucks get the painted-cloth coat and soft rim light the characters use; Rainmane's hide is painted; fish get rim light.
+69. ✅ **Brush tips.** Sable sells Broad, Fine and Splatter tips that change reach, swing speed, damage, flick ink cost and flick spread; bought once, swapped freely, saved per player, and visible on the brush.
+70. **Regression and docs.**
+
 The work continues through this list until the budget is used up.

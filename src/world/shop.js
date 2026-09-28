@@ -12,6 +12,30 @@ export const UPGRADES = [
   { key: 'lacquer', name: 'Wind Lacquer', desc: 'Flying costs 15% less stamina per level', costs: [30, 70, 140] },
 ];
 
+// Brush tips change how the brush handles; bought once, then swapped freely at Sable's stall
+export const TIPS = [
+  { key: 'round', name: 'Round Tip', desc: 'Balanced, as the old Painters made it', cost: 0 },
+  { key: 'broad', name: 'Broad Tip', desc: 'Longer, wider, harder strikes, but slower swings', cost: 35, reach: 1.3, arc: 1.25, dmg: 1.2, swing: 1.2 },
+  { key: 'fine', name: 'Fine Tip', desc: 'Flicks cost 40% less ink and fly faster; strikes are lighter', cost: 35, dmg: 0.85, swing: 0.9, flickCost: 0.6, flickSpeed: 1.3 },
+  { key: 'splatter', name: 'Splatter Tip', desc: 'Each flick bursts into three globs, for more ink', cost: 50, flickCost: 1.6, spread: 3 },
+];
+export const tipStats = (key) => ({ reach: 1, arc: 1, dmg: 1, swing: 1, flickCost: 1, flickSpeed: 1, spread: 1, ...(TIPS.find((t) => t.key === key) || {}) });
+
+// Buy (if needed) and equip a tip; returns 'equipped', 'bought' or false
+export function takeTip(wallet, key) {
+  const t = TIPS.find((x) => x.key === key);
+  if (!t) return false;
+  if (!wallet.tips.includes(key)) {
+    if (wallet.pigment < t.cost) return false;
+    wallet.pigment -= t.cost;
+    wallet.tips.push(key);
+    wallet.tip = key;
+    return 'bought';
+  }
+  wallet.tip = key;
+  return 'equipped';
+}
+
 // Multipliers derived from a player's upgrade levels
 export const brushStats = (upg = {}) => ({
   damage: 1 + 0.12 * (upg.bristle || 0),
@@ -53,9 +77,10 @@ export class Shop {
       const lvl = p.upg[u.key] || 0;
       return lvl >= u.costs.length ? `${u.name} (max)` : `${u.name} ${'I'.repeat(lvl + 1)} · ${u.costs[lvl]} pigment`;
     });
-    opts.push('Leave');
+    opts.push('Brush tips…', 'Leave');
     G.hud.choice('Sable the Brushwright', `Bring me Pigment from the ink creatures and I'll rework that brush. You carry ${p.pigment} Pigment.`, opts, (i) => {
-      if (i >= UPGRADES.length) { G.hud.dialog('Sable the Brushwright', 'Mind the bristles out there.'); return; }
+      if (i === UPGRADES.length) { this.tips(); return; }
+      if (i > UPGRADES.length) { G.hud.dialog('Sable the Brushwright', 'Mind the bristles out there.'); return; }
       const u = UPGRADES[i];
       if (purchase(p, u.key)) {
         G.audio.play('solve');
@@ -66,6 +91,19 @@ export class Shop {
         const lvl = p.upg[u.key] || 0;
         G.hud.dialog('Sable the Brushwright', lvl >= u.costs.length ? "That's as good as it gets, friend." : `You'll need ${u.costs[lvl] - p.pigment} more Pigment for that.`);
       }
+    });
+  }
+
+  tips() {
+    const p = G.player;
+    const opts = TIPS.map((t) => (p.tip === t.key ? `${t.name} (in use)` : p.tips.includes(t.key) ? `Use ${t.name}` : `${t.name} · ${t.cost} pigment`));
+    G.hud.choice('Sable the Brushwright', `A new tip changes how the brush handles. ${TIPS.map((t) => `${t.name}: ${t.desc}.`).join(' ')}`, opts, (i) => {
+      const t = TIPS[i];
+      const r = takeTip(p, t.key);
+      if (!r) { G.hud.dialog('Sable the Brushwright', `The ${t.name} costs ${t.cost} Pigment. You're ${t.cost - p.pigment} short.`); return; }
+      p.char.setTipShape(p.tip);
+      G.audio.play(r === 'bought' ? 'solve' : 'pickup');
+      G.hud.toast(`${r === 'bought' ? 'Bought and fitted' : 'Fitted'} the ${t.name}`, '#ffd84a', 2);
     });
   }
 

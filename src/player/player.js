@@ -5,7 +5,7 @@ import { G, COLORS, inDungeonY } from '../core/ctx.js';
 import { clamp, damp, dampAngle, angleDiff, lerp } from '../core/math.js';
 import { makeCharacter } from './character.js';
 import { Ribbon, SwingTrail } from '../combat/trails.js';
-import { brushStats } from '../world/shop.js';
+import { brushStats, tipStats } from '../world/shop.js';
 import { DOWN_TIME } from '../ui/revive.js';
 import { TROT, GALLOP, BUCK_JUMP, RIDE_Y } from '../world/steeds.js';
 
@@ -77,6 +77,8 @@ export class Player {
     this.buffs = { power: 0, ink: 0, swift: 0, hush: 0 };
     this.pigment = 0;
     this.upg = { bristle: 0, reservoir: 0, lacquer: 0 };
+    this.tips = ['round'];
+    this.tip = 'round';
     this.mounted = null; // the Brushbuck you're riding
     this._tip = new THREE.Vector3();
     this._base = new THREE.Vector3();
@@ -671,14 +673,15 @@ export class Player {
           this.streamTimer -= dt;
           if (this.streamTimer <= 0 && this.ink[this.color] >= 2) {
             this.streamTimer = 0.085;
-            this.ink[this.color] -= 2.2;
+            this.ink[this.color] -= 2.2 * Math.min(1, tipStats(this.tip).flickCost);
             this._flick(true);
           }
         }
       }
       if (inp.btnUp(0) && this.aimHold <= 0.22) {
-        if (this.ink[this.color] >= 8) {
-          this.ink[this.color] -= 8;
+        const cost = 8 * tipStats(this.tip).flickCost;
+        if (this.ink[this.color] >= cost) {
+          this.ink[this.color] -= cost;
           this._flick(false);
         } else {
           G.hud.toast(`Out of ${COLORS[this.color].name} ink!`, COLORS[this.color].light, 1);
@@ -736,8 +739,9 @@ export class Player {
       } else {
         if (!a.done && a.t > 0.3) {
           a.done = true;
-          const reach = a.kind === 2 ? 3.7 : 3.4;
-          this._meleeHits(reach, 1.25, a.kind === 2 ? 13 : 9, a);
+          const ts = tipStats(this.tip);
+          const reach = (a.kind === 2 ? 3.7 : 3.4) * ts.reach;
+          this._meleeHits(reach, 1.25 * ts.arc, Math.round((a.kind === 2 ? 13 : 9) * ts.dmg), a);
           this._swingPaint(a.kind);
         }
         // Recovery cancel: moving out of the tail of a swing feels snappier
@@ -776,7 +780,7 @@ export class Player {
     const kind = this.combo % 3;
     this.combo++;
     this.comboTimer = 0.9;
-    this.attack = { kind, t: 0, dur: kind === 2 ? 0.5 : 0.36, hit: new Set() };
+    this.attack = { kind, t: 0, dur: (kind === 2 ? 0.5 : 0.36) * tipStats(this.tip).swing, hit: new Set() };
     G.audio.play('swing');
     // Face the input direction (camera-relative), then snap to a nearby enemy in that cone
     const move = this._moveInput(G.input);
@@ -852,12 +856,18 @@ export class Player {
     const from = this.pos.clone().setY(this.pos.y + 1.4).lerp(tip, 0.5);
     const to = this.aimPoint.clone();
     const dist = from.distanceTo(to);
-    const speed = small ? 30 : 36;
+    const ts = tipStats(this.tip);
+    const speed = (small ? 30 : 36) * ts.flickSpeed;
     const t = dist / speed;
-    const vel = to.clone().sub(from).normalize().multiplyScalar(speed);
-    vel.y += 0.5 * 16 * t; // gravity compensation
-    G.paint.throwGlob(from, vel, this.color, 'local', { small });
-    G.net?.send({ t: 'glob', p: from.toArray().map((v) => +v.toFixed(2)), v: vel.toArray().map((v) => +v.toFixed(2)), c: this.color, s: small ? 1 : 0 });
+    const base = to.clone().sub(from).normalize().multiplyScalar(speed);
+    base.y += 0.5 * 16 * t; // gravity compensation
+    // The Splatter Tip fans a full flick into three globs
+    const n = small ? 1 : ts.spread;
+    for (let i = 0; i < n; i++) {
+      const vel = base.clone().applyAxisAngle(UP, n > 1 ? (i - (n - 1) / 2) * 0.12 : 0);
+      G.paint.throwGlob(from, vel, this.color, 'local', { small: small || n > 1 });
+      G.net?.send({ t: 'glob', p: from.toArray().map((v) => +v.toFixed(2)), v: vel.toArray().map((v) => +v.toFixed(2)), c: this.color, s: small || n > 1 ? 1 : 0 });
+    }
     if (!small) G.audio.play('flick');
   }
 

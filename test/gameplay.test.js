@@ -312,3 +312,17 @@ test('difficulty scales damage taken', async () => {
   assert.equal(scaleDamage(3, 'hard'), 5);
   assert.equal(scaleDamage(2, undefined), 2);
 });
+
+test('brush tips are bought once, then swapped freely', async () => {
+  const { takeTip, tipStats, TIPS } = await import('../src/world/shop.js');
+  const w = { pigment: 40, tips: ['round'], tip: 'round' };
+  assert.equal(takeTip(w, 'splatter'), false);
+  assert.equal(takeTip(w, 'broad'), 'bought');
+  assert.equal(w.pigment, 5);
+  assert.equal(w.tip, 'broad');
+  assert.equal(takeTip(w, 'round'), 'equipped');
+  assert.equal(takeTip(w, 'broad'), 'equipped');
+  assert.equal(w.pigment, 5);
+  assert.ok(tipStats('broad').reach > 1 && tipStats('fine').flickCost < 1 && tipStats('splatter').spread === 3);
+  assert.deepEqual(tipStats('round'), { ...tipStats('nope'), key: 'round', name: TIPS[0].name, desc: TIPS[0].desc, cost: 0 });
+});

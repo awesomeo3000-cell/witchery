@@ -23,7 +23,7 @@ import { AccessUI } from './ui/access.js';
 import { Wardrobe, applyCosmetics } from './ui/wardrobe.js';
 import { Pings } from './ui/ping.js';
 import { Races } from './world/races.js';
-import { Shop } from './world/shop.js';
+import { Shop, TIPS } from './world/shop.js';
 import { MapFog } from './ui/mapfog.js';
 import { Puzzles } from './world/puzzles.js';
 import { Fox } from './world/fox.js';
@@ -343,6 +343,8 @@ class Game {
       if (save.forage) G.forage.load(save.forage);
       if (typeof save.pigment === 'number') G.player.pigment = save.pigment;
       if (save.upg) Object.assign(G.player.upg, save.upg);
+      if (Array.isArray(save.tips)) G.player.tips = ['round', ...save.tips.filter((k) => k !== 'round' && TIPS.some((t) => t.key === k))];
+      if (G.player.tips.includes(save.tip)) { G.player.tip = save.tip; G.player.char.setTipShape(save.tip); }
       if (save.fog) G.fog.load(save.fog);
       if (save.honours) G.honours.load(save.honours);
       if (save.tablets) G.tablets.load(save.tablets);

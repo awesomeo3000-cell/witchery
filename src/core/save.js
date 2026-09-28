@@ -19,6 +19,8 @@ export function writeSave() {
     forage: G.forage ? G.forage.serialize() : undefined,
     pigment: p.pigment,
     upg: p.upg,
+    tips: p.tips,
+    tip: p.tip,
     fog: G.fog ? G.fog.serialize() : undefined,
     honours: G.honours ? G.honours.serialize() : undefined,
     tablets: G.tablets ? G.tablets.serialize() : undefined,
