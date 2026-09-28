@@ -24,6 +24,7 @@ export function adventureStats() {
     const b = f[`race_${c.id}`];
     stats.push({ label: `${c.name} record`, value: b ? `${fmtTime(b.t)} (${b.n})` : 'None yet', done: !!b });
   }
+  stats.push({ label: 'Target Gallery record', value: f.tg_best ? `${f.tg_best.s} pts (${f.tg_best.n})` : 'None yet', done: !!f.tg_best });
   if (f.final) stats.push({ label: 'Gallery of Echoes', value: f.rush_best ? `${fmtTime(f.rush_best.t)} (${f.rush_best.n})` : 'Uncleared', done: !!f.rush_best });
   return stats;
 }

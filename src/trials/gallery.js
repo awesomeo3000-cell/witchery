@@ -127,7 +127,7 @@ export class Gallery {
       const r = this.run;
       const b = G.flags.rush_best;
       G.hud.setRush?.(this.cleared && !r ? 'The echoes are stilled. Return through the portal.' : r ? `Echo ${Math.min(r.stage + 1, RUSH.length)} / ${RUSH.length} · ${fmtTime(r.t)}${b ? ` · record ${fmtTime(b.t)}` : ''}` : 'Step into the light to begin');
-    } else G.hud.setRush?.(null);
+    } else if (!G.targets?.run) G.hud.setRush?.(null);
     if (!G.enemies.isHost) return;
     const pls = G.enemies.players().filter((q) => q.alive && this.inside(q.pos));
     const echo = G.enemies.list.find((e) => e.rush && e.alive);

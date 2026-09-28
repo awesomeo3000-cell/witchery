@@ -173,12 +173,12 @@ export class HUD {
   }
 
   // Gallery of Echoes status line (shares the race HUD slot)
-  setRush(text) {
+  setRush(text, title = 'Gallery of Echoes') {
     const el = $('race');
     if (!text) { if (this._rushShown) { el.classList.add('hidden'); this._rushShown = false; } return; }
     this._rushShown = true;
     el.classList.remove('hidden');
-    el.innerHTML = `<b>Gallery of Echoes</b><span>${text}</span>`;
+    el.innerHTML = `<b>${title}</b><span>${text}</span>`;
   }
 
   removeMarker(m) {

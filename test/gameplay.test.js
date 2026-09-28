@@ -209,3 +209,11 @@ test('wardrobe cosmetics unlock with honours and apply from a sync code', async 
   applyCosmetics(char, ribbon, undefined);
   assert.equal(ribbon.style, 0);
 });
+
+test('target gallery scoring and payout', async () => {
+  const { scoreFor, payout } = await import('../src/world/targets.js');
+  assert.equal(scoreFor(2, 2), 3);
+  assert.equal(scoreFor(2, 0), 1);
+  assert.equal(payout(0), 0);
+  assert.equal(payout(17), 8);
+});
