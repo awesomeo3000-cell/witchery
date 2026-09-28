@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { G, COLORS } from '../core/ctx.js';
 import { mulberry32 } from '../core/math.js';
 import { FLAT_SPOTS, VILLAGE } from './layout.js';
-import { jitter } from './props.js';
+import { jitter, mergeColored, T, MAT } from './props.js';
 import { makeCharacter } from '../player/character.js';
 import { spriteCount, upgradeCount } from '../core/progress.js';
 
@@ -113,17 +113,22 @@ export class Sprites {
         const glyph = new THREE.Mesh(new THREE.OctahedronGeometry(0.28), new THREE.MeshBasicMaterial({ color: COLORS[s.color].hex }));
         glyph.position.y = 1.25;
         g.add(stone, glyph);
-        s.flowers = [];
-        for (let i = 0; i < 7; i++) {
-          const a = (i / 7) * Math.PI * 2;
-          const f = new THREE.Mesh(new THREE.IcosahedronGeometry(0.25, 0), new THREE.MeshLambertMaterial({ color: 0x9a9a9a, flatShading: true }));
-          const fx = Math.cos(a) * 2.6, fz = Math.sin(a) * 2.6;
-          f.position.set(fx, G.terrain.heightAt(s.pos.x + fx, s.pos.z + fz) - s.pos.y + 0.45, fz);
-          const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.45, 3), this.mats.grey);
-          stem.position.set(fx, f.position.y - 0.22, fz);
-          g.add(f, stem);
-          s.flowers.push(f);
-        }
+        // Grey flower ring (one merged mesh), swapped for a coloured one when solved
+        const ring = (colored) => {
+          const parts = [];
+          for (let i = 0; i < 7; i++) {
+            const a = (i / 7) * Math.PI * 2;
+            const fx = Math.cos(a) * 2.6, fz = Math.sin(a) * 2.6;
+            const fy = G.terrain.heightAt(s.pos.x + fx, s.pos.z + fz) - s.pos.y;
+            parts.push([T(new THREE.IcosahedronGeometry(0.25, 0), fx, fy + 0.45, fz), colored ? COLORS[(s.color + i) % 4].hex : 0x9a9a9a]);
+            parts.push([T(new THREE.CylinderGeometry(0.03, 0.03, 0.45, 3), fx, fy + 0.22, fz), colored ? 0x4f8a3a : 0x8a8a8a]);
+          }
+          return new THREE.Mesh(mergeColored(parts), MAT.vertex);
+        };
+        s.greyRing = ring(false);
+        s.colorRing = ring(true);
+        s.colorRing.visible = false;
+        g.add(s.greyRing, s.colorRing);
         react({
           pos: s.pos.clone().setY(s.pos.y + 0.5), radius: 1.2, hitbox: 1.0,
           onPaint: (el) => {
@@ -140,12 +145,9 @@ export class Sprites {
         const branch = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.05, 0.6, 3), this.mats.twig);
         branch.position.set(0.2, 1.1, 0);
         branch.rotation.z = -0.8;
-        const bloom = new THREE.Group();
-        for (let i = 0; i < 5; i++) {
-          const l = new THREE.Mesh(new THREE.IcosahedronGeometry(0.45, 0), this.mats.leaf);
-          l.position.set((Math.random() - 0.5) * 0.9, 1.4 + Math.random() * 0.6, (Math.random() - 0.5) * 0.9);
-          bloom.add(l);
-        }
+        const leaves = [];
+        for (let i = 0; i < 5; i++) leaves.push([T(new THREE.IcosahedronGeometry(0.45, 0), (Math.random() - 0.5) * 0.9, 1.4 + Math.random() * 0.6, (Math.random() - 0.5) * 0.9), i % 2 ? 0x6acb4a : 0xf29ac0]);
+        const bloom = new THREE.Mesh(mergeColored(leaves), MAT.vertex);
         bloom.visible = false;
         s.bloom = bloom;
         g.add(twig, branch, bloom);
@@ -243,7 +245,7 @@ export class Sprites {
 
   _solvedLook(s) {
     if (s.kind === 'rock') s.group.children[0].position.set(1.4, 0.3, 0.6);
-    if (s.kind === 'ring') s.flowers.forEach((f, i) => f.material.color.setHex(COLORS[(s.color + i) % 4].hex));
+    if (s.kind === 'ring') { s.greyRing.visible = false; s.colorRing.visible = true; }
     if (s.kind === 'sapling') s.bloom.visible = true;
     if (s.kind === 'hoop' || s.kind === 'summit') s.group.visible = false;
   }

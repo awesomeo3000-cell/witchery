@@ -17,7 +17,7 @@ export class Grass {
       this.mesh.geometry.dispose();
     }
     if (quality <= 0) { this.mesh = null; return; }
-    const N = Math.round(110 + 60 * quality);
+    const N = Math.round(120 + 42 * quality);
     const spacing = 0.72;
     const W = N * spacing;
 

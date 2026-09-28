@@ -255,9 +255,40 @@ export class Terrain {
           diffuseColor.rgb *= 1.0 - uWet * 0.25;
           diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.9, 0.95, 1.08), uWet);`);
     };
-    this.mesh = new THREE.Mesh(geo, mat);
-    this.mesh.receiveShadow = true;
+    // Split into tiles that share the vertex buffers so off-screen parts get frustum-culled
+    this.mesh = new THREE.Group();
     this.mesh.name = 'terrain';
+    const T = 8, per = this.seg / T;
+    const posAttr = geo.attributes.position, colAttr = geo.attributes.color, nAttr = geo.attributes.normal;
+    for (let ty = 0; ty < T; ty++) {
+      for (let tx = 0; tx < T; tx++) {
+        const tIdx = [];
+        for (let j = ty * per; j < (ty + 1) * per; j++) {
+          for (let i = tx * per; i < (tx + 1) * per; i++) {
+            const a = j * n + i, b = a + 1, c = a + n, d = c + 1;
+            tIdx.push(a, c, b, b, c, d);
+          }
+        }
+        const tg = new THREE.BufferGeometry();
+        tg.setAttribute('position', posAttr);
+        tg.setAttribute('normal', nAttr);
+        tg.setAttribute('color', colAttr);
+        tg.setIndex(tIdx);
+        // Bounding sphere from the tile's own vertices
+        const box = new THREE.Box3();
+        const v = new THREE.Vector3();
+        for (const k of [tIdx[0], tIdx[tIdx.length - 1], (ty * per) * n + (tx + 1) * per, ((ty + 1) * per) * n + tx * per]) box.expandByPoint(v.fromBufferAttribute(posAttr, k));
+        let minH = Infinity, maxH = -Infinity;
+        for (let q = 0; q < tIdx.length; q += 6) { const hh = posAttr.getY(tIdx[q]); minH = Math.min(minH, hh); maxH = Math.max(maxH, hh); }
+        box.min.y = minH - 2; box.max.y = maxH + 2;
+        tg.boundingBox = box;
+        tg.boundingSphere = box.getBoundingSphere(new THREE.Sphere());
+        const m = new THREE.Mesh(tg, mat);
+        m.receiveShadow = true;
+        this.mesh.add(m);
+      }
+    }
+    this.geometry = geo;
   }
 
   _buildTexture() {

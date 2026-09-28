@@ -105,7 +105,7 @@ class Peer {
     this.char.animate({ state: this.state, speed: this.speed, attack: this.attack, aim: this.aim, aimPitch: -this.pitch * 0.6, pitch: this.rp, roll: this.rr }, dt);
     this.char.group.updateMatrixWorld(true);
     this.char.brushTip.getWorldPosition(this._tip);
-    this.trail.update(dt, this._tip, this.state === 'ride', COLORS[this.color].hex);
+    this.trail.update(dt, this._tip, this.state === 'ride' && this.speed > 5, COLORS[this.color].hex);
     if (this.state === 'ride' && Math.random() < dt * 30) {
       G.particles.burst(this.pos.clone().setY(this.pos.y + 0.6).addScaledVector(new THREE.Vector3(-Math.sin(this.yaw), 0, -Math.cos(this.yaw)), 1.6),
         { count: 1, color: COLORS[this.color].hex, speed: 0.6, life: 1.2, size: 0.45, gravity: 1, pool: 'glow', alpha: 0.8 });

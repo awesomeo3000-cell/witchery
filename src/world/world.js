@@ -9,6 +9,7 @@ import { islandGeometry, makeWaterfall, makeWaterfallMaterial } from './islands.
 import { makeCharacter } from '../player/character.js';
 
 const CHUNK = 400;
+const LOD_FAR = 320; // chunk-centre distance at which foliage swaps to low-poly
 
 export class World {
   constructor(scene, terrain, collision) {
@@ -42,18 +43,34 @@ export class World {
     this.root.updateMatrixWorld(true);
     const groups = new Map();
     const victims = [];
+    // Plain, non-glowing Lambert colours get baked into vertex colours so they share one draw call
+    const bakeable = (m) => m.type === 'MeshLambertMaterial' && !m.transparent && !m.map && !m.userData.keep
+      && m.emissive.r + m.emissive.g + m.emissive.b === 0 && !m.onBeforeCompile.toString().includes('diffuseColor');
     const visit = (obj) => {
       if (obj.userData.dynamic) return;
       if (obj.isMesh && !obj.isInstancedMesh && !Array.isArray(obj.material)) {
         const mat = obj.material;
-        let g = groups.get(mat);
-        if (!g) groups.set(mat, (g = { geos: [], cast: false }));
+        const bake = bakeable(mat);
+        const key = bake ? MAT.vertex : mat;
+        let g = groups.get(key);
+        if (!g) groups.set(key, (g = { geos: [], cast: false }));
         let geo = obj.geometry.clone().applyMatrix4(obj.matrixWorld);
         if (geo.index) geo = geo.toNonIndexed();
         for (const k of Object.keys(geo.attributes)) {
-          if (k !== 'position' && k !== 'normal' && !(k === 'color' && mat.vertexColors)) geo.deleteAttribute(k);
+          if (k !== 'position' && k !== 'normal' && !(k === 'color' && (mat.vertexColors || bake))) geo.deleteAttribute(k);
         }
         if (!geo.attributes.normal) geo.computeVertexNormals();
+        if (bake) {
+          const n = geo.attributes.position.count;
+          const src = mat.vertexColors && geo.attributes.color ? geo.attributes.color : null;
+          const arr = new Float32Array(n * 3);
+          for (let i = 0; i < n; i++) {
+            arr[i * 3] = (src ? src.getX(i) : 1) * mat.color.r;
+            arr[i * 3 + 1] = (src ? src.getY(i) : 1) * mat.color.g;
+            arr[i * 3 + 2] = (src ? src.getZ(i) : 1) * mat.color.b;
+          }
+          geo.setAttribute('color', new THREE.BufferAttribute(arr, 3));
+        }
         g.geos.push(geo);
         g.cast ||= obj.castShadow;
         victims.push(obj);
@@ -83,6 +100,7 @@ export class World {
   _foliage() {
     const rand = mulberry32(42);
     const geos = treeGeometries();
+    const geosLow = treeGeometries(true);
     const buckets = new Map();
     const push = (type, x, y, z, s, rot, tint) => {
       const k = `${type}|${Math.floor(x / CHUNK)}|${Math.floor(z / CHUNK)}`;
@@ -135,6 +153,7 @@ export class World {
       const isRock = b.type === 'rock';
       const geo = isRock ? rockGeo : geos[b.type];
       const mesh = new THREE.InstancedMesh(geo, isRock ? rockMat : MAT.foliage, b.items.length);
+      const low = isRock ? null : new THREE.InstancedMesh(geosLow[b.type], MAT.foliage, b.items.length);
       b.items.forEach(([x, y, z, s, rot, tint], i) => {
         q.setFromAxisAngle(up, rot);
         if (isRock) {
@@ -150,11 +169,25 @@ export class World {
         m4.compose(ps, q, sc);
         mesh.setMatrixAt(i, m4);
         mesh.setColorAt(i, col);
+        if (low) { low.setMatrixAt(i, m4); low.setColorAt(i, col); }
       });
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      mesh.computeBoundingSphere();
-      this.root.add(mesh);
+      for (const m of [mesh, low]) {
+        if (!m) continue;
+        m.castShadow = true;
+        m.receiveShadow = true;
+        m.computeBoundingSphere();
+      }
+      if (low) {
+        // LOD levels are picked per chunk from its centre
+        const lod = new THREE.LOD();
+        const c = mesh.boundingSphere.center.clone();
+        lod.position.copy(c);
+        mesh.position.sub(c);
+        low.position.sub(c);
+        lod.addLevel(mesh, 0);
+        lod.addLevel(low, LOD_FAR);
+        this.root.add(lod);
+      } else this.root.add(mesh);
     }
   }
 
@@ -471,6 +504,7 @@ export class World {
         g.add(l);
       });
       const canvasMat = new THREE.MeshLambertMaterial({ color: 0xf4eee0, emissive: 0x000000 });
+      canvasMat.userData.keep = true; // emissive animates when the easel is activated
       const canvas = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.3, 0.08), canvasMat);
       canvas.position.set(0, 2.2, 0.28);
       canvas.rotation.x = -0.12;

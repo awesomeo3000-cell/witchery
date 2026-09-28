@@ -130,8 +130,9 @@ const T = (g, x, y, z, sx = 1, sy = 1, sz = 1, ry = 0, rx = 0, rz = 0) => {
 export { T };
 
 // Lumpy blob for canopies
+let BLOB_DETAIL = 1;
 function blob(r, seed) {
-  let g = jitter(new THREE.IcosahedronGeometry(r, 1), r * 0.22, seed);
+  let g = jitter(new THREE.IcosahedronGeometry(r, BLOB_DETAIL), r * 0.22, seed);
   g.deleteAttribute('normal');
   g.deleteAttribute('uv');
   g = mergeVertices(g);
@@ -156,7 +157,9 @@ function shadeCanopy(geo) {
   return geo;
 }
 
-export function treeGeometries() {
+// lod=true builds cheap far-distance versions (low-poly canopies)
+export function treeGeometries(lod = false) {
+  BLOB_DETAIL = lod ? 0 : 1;
   const trunk = 0x6b4a2e;
   const round = shadeCanopy(mergeColored([
     [T(new THREE.CylinderGeometry(0.25, 0.42, 4, 7), 0, 2, 0), trunk],
@@ -204,6 +207,7 @@ export function treeGeometries() {
     [T(blob(0.7, 12), 0.7, 0.45, 0.2), 0x5ea040],
     [T(blob(0.6, 13), -0.6, 0.4, -0.3), 0x5ea040],
   ]));
+  BLOB_DETAIL = 1;
   return { round, tall, pine, snowPine, acacia, dead, bush };
 }
 

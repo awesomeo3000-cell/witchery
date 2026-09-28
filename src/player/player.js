@@ -934,7 +934,7 @@ export class Player {
     this.char.brushBase.getWorldPosition(this._base);
     const swinging = !!this.attack && (this.attack.kind === 'spin' || this.attack.kind === 'plunge' || (this.attack.t > 0.2 && this.attack.t < 0.7));
     this.swingTrail.update(dt, this._tip, this._base, swinging, COLORS[this.color].hex);
-    this.rideTrail.update(dt, this._tip, this.state === 'ride', COLORS[this.color].hex);
+    this.rideTrail.update(dt, this._tip, this.state === 'ride' && hv > 5, COLORS[this.color].hex);
     if (this.invuln > 0 && this.state !== 'dead' && this.invuln < 0.9) g.visible = Math.floor(G.time * 20) % 2 === 0 || this.dodgeT > 0;
     else g.visible = true;
   }
