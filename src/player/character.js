@@ -3,6 +3,54 @@ import * as THREE from 'three';
 import { lerp, damp } from '../core/math.js';
 import { softLit } from '../world/props.js';
 import { paintTex } from '../world/textures.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+
+// Fold the static meshes under each joint into one mesh per material kind, baking each part's colour
+// into vertex colours. Joints (groups) keep animating; meshes in `keep` and the brush are untouched.
+// Cuts a character from ~48 draw calls to about a dozen.
+function compactCharacter(root, keep, skip) {
+  const groups = [];
+  root.traverse((o) => { if (!o.isMesh && o !== skip) groups.push(o); });
+  for (const g of groups) {
+    if (g === skip) continue;
+    const buckets = new Map();
+    for (const m of g.children) {
+      if (!m.isMesh || m.isInstancedMesh || m.children.length || keep.has(m) || Array.isArray(m.material) || !m.visible) continue;
+      const mat = m.material;
+      if (!(mat.isMeshToonMaterial || mat.isMeshBasicMaterial) || mat.vertexColors) continue;
+      const key = `${mat.type}|${mat.map ? mat.map.uuid : ''}|${mat.side}|${mat.transparent}|${mat.opacity}|${mat.depthWrite}`;
+      if (!buckets.has(key)) buckets.set(key, []);
+      buckets.get(key).push(m);
+    }
+    for (const list of buckets.values()) {
+      if (list.length < 2) continue;
+      const geos = list.map((m) => {
+        m.updateMatrix();
+        let geo = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone();
+        geo.applyMatrix4(m.matrix);
+        for (const k of Object.keys(geo.attributes)) if (!['position', 'normal', 'uv'].includes(k)) geo.deleteAttribute(k);
+        if (!geo.attributes.uv) geo.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(geo.attributes.position.count * 2), 2));
+        if (!geo.attributes.normal) geo.computeVertexNormals();
+        const c = m.material.color;
+        const col = new Float32Array(geo.attributes.position.count * 3);
+        for (let i = 0; i < col.length; i += 3) { col[i] = c.r; col[i + 1] = c.g; col[i + 2] = c.b; }
+        geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+        return geo;
+      });
+      const merged = mergeGeometries(geos, false);
+      if (!merged) continue;
+      const mat = list[0].material;
+      mat.vertexColors = true;
+      mat.color.setRGB(1, 1, 1);
+      mat.needsUpdate = true;
+      const mesh = new THREE.Mesh(merged, mat);
+      mesh.castShadow = list.some((m) => m.castShadow);
+      mesh.receiveShadow = list.some((m) => m.receiveShadow);
+      for (const m of list) { g.remove(m); if (m.material !== mat) m.material.dispose(); }
+      g.add(mesh);
+    }
+  }
+}
 
 let gradientMap = null;
 function toon(color, extra = {}) {
@@ -447,6 +495,8 @@ export function makeCharacter(look = {}) {
       }
     });
   }
+
+  compactCharacter(root, new Set([tail, cape, glider]), brush);
 
   return {
     group: root, brush, brushTip: brushParts.tipPoint, brushBase: brushParts.basePoint, animate, setBrushColor, setHurt,
