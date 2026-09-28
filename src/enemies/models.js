@@ -2,7 +2,8 @@
 import * as THREE from 'three';
 import { softLit } from '../world/props.js';
 
-const lam = (c, o = {}) => softLit(new THREE.MeshLambertMaterial({ color: c, flatShading: true, ...o }), { rim: 0.4 });
+// Smooth shading with a soft rim; rocky bosses opt back into facets with { flatShading: true }
+const lam = (c, o = {}) => softLit(new THREE.MeshLambertMaterial({ color: c, ...o }), { rim: 0.4, wrap: 0.3 });
 
 function eyes(group, y, z, spread = 0.18, size = 0.09, color = 0x111111) {
   const m = new THREE.MeshBasicMaterial({ color });
@@ -20,7 +21,7 @@ export function buildBounder(tint) {
   const body = new THREE.Group();
   g.add(body);
   const furMat = lam(tint ?? 0xf4f0ea);
-  const puffGeo = new THREE.IcosahedronGeometry(0.55, 1);
+  const puffGeo = new THREE.IcosahedronGeometry(0.55, 3);
   const puffs = [[0, 0.9, 0, 1.3], [0.45, 1.1, -0.2, 0.9], [-0.45, 1.1, -0.2, 0.9], [0, 1.35, -0.35, 0.9], [0.3, 0.7, 0.3, 0.8], [-0.3, 0.7, 0.3, 0.8], [0, 0.95, -0.6, 0.9]];
   for (const [x, y, z, s] of puffs) {
     const p = new THREE.Mesh(puffGeo, furMat);
@@ -57,7 +58,7 @@ export function buildInkling(tint) {
   const body = new THREE.Group();
   g.add(body);
   const mat = lam(tint ?? 0x3a3448, { emissive: 0x100818 });
-  const blob = new THREE.Mesh(new THREE.SphereGeometry(0.7, 12, 10), mat);
+  const blob = new THREE.Mesh(new THREE.SphereGeometry(0.7, 24, 18), mat);
   blob.scale.set(1, 0.8, 1);
   blob.position.y = 0.55;
   blob.castShadow = true;
@@ -88,7 +89,7 @@ export function buildSpitter(tint) {
   const head = new THREE.Group();
   head.position.y = 1.9;
   body.add(head);
-  const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.6, 10, 8), lam(tint ?? 0x8a3a8a));
+  const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.6, 20, 16), lam(tint ?? 0x8a3a8a));
   bulb.castShadow = true;
   head.add(bulb);
   const mouth = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.2, 0.5, 8), lam(0x2a1a2a));
@@ -131,7 +132,7 @@ export function buildWisp() {
   const body = new THREE.Group();
   g.add(body);
   const mat = lam(0x2a2438, { emissive: 0x1a0a2a });
-  const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55, 1), mat);
+  const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55, 3), mat);
   core.castShadow = true;
   body.add(core);
   const wingMat = lam(0x4a3a6a, { side: THREE.DoubleSide });
@@ -154,8 +155,8 @@ export function buildFrostmaw() {
   const g = new THREE.Group();
   const body = new THREE.Group();
   g.add(body);
-  const rock = lam(0x6a7a90);
-  const ice = lam(0xbfe8ff, { emissive: 0x3070a0, emissiveIntensity: 0.4, transparent: true, opacity: 0.9 });
+  const rock = lam(0x6a7a90, { flatShading: true });
+  const ice = lam(0xbfe8ff, { emissive: 0x3070a0, emissiveIntensity: 0.4, transparent: true, opacity: 0.9, flatShading: true });
   const torso = new THREE.Mesh(new THREE.DodecahedronGeometry(2.2, 0), rock);
   torso.position.y = 4.2;
   torso.scale.set(1.2, 1, 0.9);
@@ -205,10 +206,10 @@ export function buildMagmaw() {
   g.add(body);
   const crust = lam(0x3a2a2a);
   const lava = new THREE.MeshBasicMaterial({ color: 0xff6a20 });
-  const blob = new THREE.Mesh(new THREE.IcosahedronGeometry(3, 1), crust);
+  const blob = new THREE.Mesh(new THREE.IcosahedronGeometry(3, 4), crust);
   blob.position.y = 3;
   blob.scale.set(1.1, 0.9, 1.1);
-  const core = new THREE.Mesh(new THREE.IcosahedronGeometry(2.7, 1), lava);
+  const core = new THREE.Mesh(new THREE.IcosahedronGeometry(2.7, 4), lava);
   core.position.y = 3;
   core.scale.set(1.12, 0.93, 1.12);
   const cracks = new THREE.Group();
@@ -224,7 +225,7 @@ export function buildMagmaw() {
   mouth.position.set(0, 2.6, 3);
   body.add(blob, core, cracks, mouth);
   eyes(body, 4, 2.8, 0.8, 0.3, 0xffee60);
-  const ice = new THREE.Mesh(new THREE.IcosahedronGeometry(3.6, 1), lam(0xcdefff, { transparent: true, opacity: 0.6, emissive: 0x3070a0 }));
+  const ice = new THREE.Mesh(new THREE.IcosahedronGeometry(3.6, 2), lam(0xcdefff, { transparent: true, opacity: 0.6, emissive: 0x3070a0, flatShading: true }));
   ice.position.y = 3;
   ice.visible = false;
   body.add(ice);
@@ -238,10 +239,10 @@ export function buildShellback() {
   g.add(body);
   const shellMat = lam(0xd8a030);
   const belly = lam(0xf0d8a0);
-  const shell = new THREE.Mesh(new THREE.SphereGeometry(3.2, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), shellMat);
+  const shell = new THREE.Mesh(new THREE.SphereGeometry(3.2, 28, 14, 0, Math.PI * 2, 0, Math.PI / 2), shellMat);
   shell.position.y = 1.4;
   shell.scale.set(1, 0.8, 1.2);
-  const plate = new THREE.Mesh(new THREE.CylinderGeometry(3.1, 3.1, 0.6, 12), belly);
+  const plate = new THREE.Mesh(new THREE.CylinderGeometry(3.1, 3.1, 0.6, 28), belly);
   plate.position.y = 1.4;
   plate.scale.set(1, 1, 1.2);
   const head = new THREE.Mesh(new THREE.DodecahedronGeometry(1.1, 0), lam(0x8a6a3a));
@@ -271,10 +272,10 @@ export function buildGalewing() {
   const body = new THREE.Group();
   g.add(body);
   const featherMat = lam(0x6a8aa8);
-  const torso = new THREE.Mesh(new THREE.SphereGeometry(1.6, 12, 10), featherMat);
+  const torso = new THREE.Mesh(new THREE.SphereGeometry(1.6, 24, 18), featherMat);
   torso.scale.set(1, 1.3, 1);
   torso.position.y = 0;
-  const face = new THREE.Mesh(new THREE.SphereGeometry(1.2, 12, 10), lam(0xe8e0d0));
+  const face = new THREE.Mesh(new THREE.SphereGeometry(1.2, 24, 18), lam(0xe8e0d0));
   face.position.set(0, 1.4, 0.8);
   face.scale.set(1, 0.9, 0.6);
   const beak = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.8, 5), lam(0xe8a030));
@@ -312,7 +313,7 @@ export function buildHueless() {
   const body = new THREE.Group();
   g.add(body);
   const ink = lam(0x2a2630, { emissive: 0x0a0810 });
-  const core = new THREE.Mesh(new THREE.IcosahedronGeometry(4, 2), ink);
+  const core = new THREE.Mesh(new THREE.IcosahedronGeometry(4, 5), ink);
   core.position.y = 7;
   const crown = new THREE.Group();
   for (let i = 0; i < 7; i++) {
@@ -336,7 +337,7 @@ export function buildHueless() {
     tendrils.push(t);
   }
   const shieldMat = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.AdditiveBlending });
-  const shield = new THREE.Mesh(new THREE.IcosahedronGeometry(6.2, 2), shieldMat);
+  const shield = new THREE.Mesh(new THREE.IcosahedronGeometry(6.2, 4), shieldMat);
   shield.position.y = 7;
   const eye = new THREE.Mesh(new THREE.SphereGeometry(1.2, 12, 10), new THREE.MeshBasicMaterial({ color: 0xffffff }));
   eye.position.set(0, 7.5, 3.6);

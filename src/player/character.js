@@ -2,22 +2,49 @@
 import * as THREE from 'three';
 import { lerp, damp } from '../core/math.js';
 import { softLit } from '../world/props.js';
+import { paintTex } from '../world/textures.js';
 
 let gradientMap = null;
 function toon(color, extra = {}) {
   if (!gradientMap) {
-    const data = new Uint8Array([120, 185, 255]);
-    gradientMap = new THREE.DataTexture(data, 3, 1, THREE.RedFormat);
-    gradientMap.minFilter = gradientMap.magFilter = THREE.NearestFilter;
+    // Soft cel ramp: a gentle step into shadow instead of hard facets
+    const data = new Uint8Array([125, 140, 205, 235, 255]);
+    gradientMap = new THREE.DataTexture(data, 5, 1, THREE.RedFormat);
+    gradientMap.minFilter = gradientMap.magFilter = THREE.LinearFilter;
     gradientMap.needsUpdate = true;
   }
   return softLit(new THREE.MeshToonMaterial({ color, gradientMap, ...extra }), { rim: 0.5 });
 }
 
 function capsule(r, len, mat) {
-  const m = new THREE.Mesh(new THREE.CapsuleGeometry(r, len, 4, 8), mat);
+  const m = new THREE.Mesh(new THREE.CapsuleGeometry(r, len, 6, 12), mat);
   m.castShadow = true;
   return m;
+}
+
+// Cloth-textured toon material
+function cloth(color, extra = {}) { return toon(color, { map: paintTex('cloth'), ...extra }); }
+
+// Smooth flared garment from a profile of [radius, y] points
+function lathe(profile, segs = 20) {
+  const g = new THREE.LatheGeometry(profile.map(([r, y]) => new THREE.Vector2(r, y)), segs);
+  g.computeVertexNormals();
+  return g;
+}
+
+// Cape: a curved sheet hanging from the shoulders
+function capeGeometry() {
+  const g = new THREE.PlaneGeometry(0.62, 0.9, 6, 8);
+  const p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i);
+    const t = (0.45 - y) / 0.9; // 0 at top
+    p.setX(i, x * (0.75 + t * 0.55));
+    p.setZ(i, -Math.cos(x * 3) * 0.06 - t * 0.12);
+  }
+  g.translate(0, -0.45, 0);
+  g.computeVertexNormals();
+  return g;
 }
 
 function gliderGeometry() {
@@ -43,14 +70,14 @@ function gliderGeometry() {
 
 export function makeBrush(colorHex = 0xe8442e) {
   const brush = new THREE.Group();
-  const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.06, 2.1, 6), toon(0x7a4a2a));
+  const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.06, 2.1, 10), toon(0x7a4a2a, { map: paintTex('bark') }));
   handle.position.y = 0.5;
-  const knob = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 5), toon(0x5a3a1a));
+  const knob = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 10), toon(0x5a3a1a));
   knob.position.y = -0.55;
-  const ferrule = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.07, 0.22, 8), toon(0xd8b050));
+  const ferrule = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.07, 0.22, 16), toon(0xd8b050));
   ferrule.position.y = 1.62;
   const tipMat = toon(colorHex, { emissive: colorHex, emissiveIntensity: 0.35 });
-  const bristleGeo = new THREE.SphereGeometry(0.17, 10, 8);
+  const bristleGeo = new THREE.SphereGeometry(0.17, 18, 14);
   bristleGeo.scale(1, 2.4, 1);
   bristleGeo.translate(0, 0.28, 0);
   const pos = bristleGeo.attributes.position;
@@ -89,14 +116,19 @@ export function makeCharacter(look = {}) {
 
   const torso = new THREE.Group();
   hips.add(torso);
-  const body = capsule(0.26, 0.42, toon(tunicC));
-  body.position.y = 0.33;
-  torso.add(body);
-  const cloak = new THREE.Mesh(new THREE.ConeGeometry(0.42, 0.75, 10, 1, true), toon(hoodC, { side: THREE.DoubleSide }));
-  cloak.position.set(0, 0.35, -0.04);
-  cloak.castShadow = true;
-  torso.add(cloak);
-  const belt = new THREE.Mesh(new THREE.TorusGeometry(0.27, 0.05, 5, 12), toon(0x6a4a2a));
+  // Tunic: chest tapering to the waist, then a flared skirt
+  const tunic = new THREE.Mesh(lathe([[0.001, 0.78], [0.2, 0.74], [0.27, 0.62], [0.25, 0.4], [0.22, 0.2], [0.28, 0.08], [0.36, -0.12], [0.4, -0.2]]), cloth(tunicC, { side: THREE.DoubleSide }));
+  tunic.castShadow = true;
+  torso.add(tunic);
+  const hem = new THREE.Mesh(new THREE.TorusGeometry(0.39, 0.025, 6, 24), toon(scarfC));
+  hem.rotation.x = Math.PI / 2;
+  hem.position.y = -0.18;
+  torso.add(hem);
+  const cape = new THREE.Mesh(capeGeometry(), cloth(hoodC, { side: THREE.DoubleSide }));
+  cape.position.set(0, 0.72, -0.2);
+  cape.castShadow = true;
+  torso.add(cape);
+  const belt = new THREE.Mesh(new THREE.TorusGeometry(0.235, 0.045, 8, 24), toon(0x6a4a2a));
   belt.rotation.x = Math.PI / 2;
   belt.position.y = 0.12;
   torso.add(belt);
@@ -104,40 +136,68 @@ export function makeCharacter(look = {}) {
   const headG = new THREE.Group();
   headG.position.y = 0.86;
   torso.add(headG);
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.27, 14, 10), toon(skinC));
+  const headGeo = new THREE.SphereGeometry(0.27, 24, 18);
+  headGeo.scale(1, 1.02, 0.96);
+  const head = new THREE.Mesh(headGeo, toon(skinC));
   head.castShadow = true;
   headG.add(head);
-  const hood = new THREE.Mesh(new THREE.SphereGeometry(0.33, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.62), toon(hoodC));
+  const hood = new THREE.Mesh(new THREE.SphereGeometry(0.33, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.62), cloth(hoodC, { side: THREE.DoubleSide }));
   hood.rotation.x = -0.45;
   hood.position.set(0, 0.04, -0.05);
   hood.castShadow = true;
   headG.add(hood);
-  const hoodTip = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.55, 8), toon(hoodC));
-  hoodTip.position.set(0, 0.2, -0.32);
-  hoodTip.rotation.x = -1.2;
+  // Soft drooping hood tip: a tapered tube along a curve
+  const tipCurve = new THREE.CatmullRomCurve3([new THREE.Vector3(0, 0.12, -0.22), new THREE.Vector3(0, 0.26, -0.42), new THREE.Vector3(0, 0.14, -0.62), new THREE.Vector3(0, -0.06, -0.7)]);
+  const tipGeo = new THREE.TubeGeometry(tipCurve, 16, 0.16, 10, false);
+  const tp = tipGeo.attributes.position;
+  for (let i = 0; i < tp.count; i++) {
+    const seg = Math.floor(i / 11) / 16; // taper along the tube
+    const c = tipCurve.getPoint(Math.min(1, seg));
+    const k = 1 - seg * 0.9;
+    tp.setXYZ(i, c.x + (tp.getX(i) - c.x) * k, c.y + (tp.getY(i) - c.y) * k, c.z + (tp.getZ(i) - c.z) * k);
+  }
+  tipGeo.computeVertexNormals();
+  const hoodTip = new THREE.Mesh(tipGeo, cloth(hoodC));
+  hoodTip.castShadow = true;
   headG.add(hoodTip);
   // Pointed ears poking out of the hood, and a fringe of hair
   const skinMat = toon(skinC);
   for (const sd of [-1, 1]) {
-    const ear = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.34, 5), skinMat);
+    const earGeo = new THREE.ConeGeometry(0.07, 0.34, 12);
+    earGeo.scale(1, 1, 0.45);
+    const ear = new THREE.Mesh(earGeo, skinMat);
     ear.position.set(sd * 0.29, 0.02, -0.02);
     ear.rotation.z = -sd * 1.25;
     ear.rotation.y = sd * 0.3;
     headG.add(ear);
   }
+  // Soft swept fringe of hair under the hood
   const hairMat = toon(look.hair ?? 0xd8a860);
-  for (let i = 0; i < 5; i++) {
-    const lock = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.22, 4), hairMat);
-    lock.position.set((i - 2) * 0.07, 0.15, 0.24 - Math.abs(i - 2) * 0.02);
-    lock.rotation.x = Math.PI + 0.5;
-    lock.rotation.z = (i - 2) * 0.15;
+  for (let i = 0; i < 6; i++) {
+    const lockGeo = new THREE.SphereGeometry(0.075, 12, 10);
+    lockGeo.scale(0.85, 1.5, 0.6);
+    const lock = new THREE.Mesh(lockGeo, hairMat);
+    const a = (i - 2.5) * 0.28;
+    lock.position.set(Math.sin(a) * 0.23, 0.14 - Math.abs(i - 2.5) * 0.025, Math.cos(a) * 0.2);
+    lock.rotation.set(0.5, a, (i - 2.5) * 0.25);
     headG.add(lock);
   }
-  const eyeMat = new THREE.MeshBasicMaterial({ color: 0x1a1a24 });
+  // Big expressive eyes with a highlight, and rosy cheeks
+  const eyeMat = new THREE.MeshBasicMaterial({ color: 0x241e30 });
+  const shineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const blushMat = new THREE.MeshBasicMaterial({ color: 0xf08a8a, transparent: true, opacity: 0.45, depthWrite: false });
   for (const s of [-1, 1]) {
-    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.035, 6, 5), eyeMat);
-    eye.position.set(s * 0.09, 0.02, 0.25);
-    headG.add(eye);
+    const eyeGeo = new THREE.SphereGeometry(0.042, 12, 10);
+    eyeGeo.scale(0.8, 1.15, 0.5);
+    const eye = new THREE.Mesh(eyeGeo, eyeMat);
+    eye.position.set(s * 0.095, 0.01, 0.245);
+    eye.rotation.y = s * 0.35;
+    const shine = new THREE.Mesh(new THREE.SphereGeometry(0.012, 6, 5), shineMat);
+    shine.position.set(s * 0.085 + 0.01, 0.03, 0.265);
+    const blush = new THREE.Mesh(new THREE.CircleGeometry(0.035, 12), blushMat);
+    blush.position.set(s * 0.15, -0.06, 0.225);
+    blush.rotation.y = s * 0.55;
+    headG.add(eye, shine, blush);
   }
   const satchel = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.2, 0.12), toon(0x7a5230));
   satchel.position.set(-0.26, 0.08, 0.1);
@@ -148,12 +208,16 @@ export function makeCharacter(look = {}) {
   strap.rotation.set(Math.PI / 2, 0.55, 0);
   strap.scale.set(1, 1.25, 1);
   torso.add(strap);
-  const scarf = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.08, 6, 12), toon(scarfC));
+  const scarf = new THREE.Mesh(new THREE.TorusGeometry(0.19, 0.075, 10, 24), cloth(scarfC));
   scarf.rotation.x = Math.PI / 2;
   scarf.position.y = 0.66;
   torso.add(scarf);
-  const tail = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.6, 0.05), toon(scarfC));
-  tail.geometry.translate(0, -0.3, 0);
+  const tailGeo = new THREE.PlaneGeometry(0.16, 0.6, 1, 6);
+  const ttp = tailGeo.attributes.position;
+  for (let i = 0; i < ttp.count; i++) ttp.setZ(i, Math.sin(ttp.getY(i) * 6) * 0.03);
+  tailGeo.computeVertexNormals();
+  tailGeo.translate(0, -0.3, 0);
+  const tail = new THREE.Mesh(tailGeo, cloth(scarfC, { side: THREE.DoubleSide }));
   tail.position.set(0.1, 0.66, -0.2);
   tail.castShadow = true;
   torso.add(tail);
@@ -162,15 +226,24 @@ export function makeCharacter(look = {}) {
   const mkArm = (side) => {
     const sh = new THREE.Group();
     sh.position.set(side * 0.34, 0.6, 0);
-    const upper = capsule(0.075, 0.28, toon(tunicC));
+    const upper = capsule(0.078, 0.28, cloth(tunicC));
     upper.position.y = -0.2;
     sh.add(upper);
+    const shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.1, 14, 10), cloth(tunicC));
+    sh.add(shoulder);
     const fore = new THREE.Group();
     fore.position.y = -0.38;
     sh.add(fore);
-    const lower = capsule(0.07, 0.24, toon(skinC));
+    const lower = capsule(0.066, 0.22, toon(skinC));
     lower.position.y = -0.16;
     fore.add(lower);
+    const cuff = new THREE.Mesh(new THREE.TorusGeometry(0.07, 0.025, 8, 16), toon(0x6a4a2a));
+    cuff.rotation.x = Math.PI / 2;
+    cuff.position.y = -0.2;
+    fore.add(cuff);
+    const fist = new THREE.Mesh(new THREE.SphereGeometry(0.075, 12, 10), toon(0x7a5a3a));
+    fist.position.y = -0.33;
+    fore.add(fist);
     const hand = new THREE.Group();
     hand.position.y = -0.34;
     fore.add(hand);
@@ -184,19 +257,25 @@ export function makeCharacter(look = {}) {
   const mkLeg = (side) => {
     const hip = new THREE.Group();
     hip.position.set(side * 0.14, 0, 0);
-    const thigh = capsule(0.09, 0.3, toon(0x4a3a2a));
+    const thigh = capsule(0.092, 0.3, cloth(0x4a3a2a));
     thigh.position.y = -0.2;
     hip.add(thigh);
     const knee = new THREE.Group();
     knee.position.y = -0.42;
     hip.add(knee);
-    const shin = capsule(0.085, 0.26, toon(0x4a3a2a));
+    const shin = capsule(0.088, 0.24, toon(0x5a3a22));
     shin.position.y = -0.18;
     knee.add(shin);
-    const boot = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.12, 0.28), toon(0x3a2418));
+    // Rounded boot with a folded cuff
+    const bootGeo = new THREE.SphereGeometry(0.11, 14, 10);
+    bootGeo.scale(0.85, 0.6, 1.4);
+    const boot = new THREE.Mesh(bootGeo, toon(0x3a2418));
     boot.position.set(0, -0.37, 0.05);
     boot.castShadow = true;
-    knee.add(boot);
+    const bootCuff = new THREE.Mesh(new THREE.TorusGeometry(0.095, 0.03, 8, 16), toon(0x6a4a2a));
+    bootCuff.rotation.x = Math.PI / 2;
+    bootCuff.position.y = -0.14;
+    knee.add(boot, bootCuff);
     hips.add(hip);
     return { hip, knee };
   };
@@ -353,6 +432,7 @@ export function makeCharacter(look = {}) {
     // Scarf tail flutters with speed
     cur.lean = damp(cur.lean, Math.min(1.3, sp * 0.08 + (st === 'ride' ? 0.9 : 0) + (st === 'glide' ? 0.6 : 0)), 5, dt);
     tail.rotation.x = cur.lean + Math.sin(phase * 2.3) * 0.12 * (0.3 + cur.lean);
+    cape.rotation.x = cur.lean * 0.75 + Math.sin(phase * 1.7) * 0.05 * (0.4 + cur.lean);
   }
 
   function setBrushColor(hex) {

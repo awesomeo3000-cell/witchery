@@ -138,6 +138,7 @@ export class Grass {
           vec3 meadow = vec3(0.45, 0.7, 0.24);
           vec3 golden = vec3(0.86, 0.66, 0.26);
           vec3 c = vHue < 0.3 ? mix(forest, meadow, vHue / 0.3) : mix(meadow, golden, (vHue - 0.3) / 0.7);
+          c = pow(c, vec3(2.1)) * 1.5; // palette is authored in sRGB; lighting happens in linear space
           c *= (0.45 + 0.5 * vH) * vShade;
           c += vec3(0.08, 0.1, 0.02) * smoothstep(0.7, 1.0, vH);
           // Sunlit tips + brighter streaks where gusts flatten the blades
