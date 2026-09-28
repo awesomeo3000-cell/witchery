@@ -165,6 +165,7 @@ The pause menu's *Accessibility* section has:
 - colour symbols (▲ Ember, ❄ Frost, ● Spring, ✿ Bloom) on the potions, colour wheel and compass
 - *Reduce motion*, which removes speed lines, the FOV kick and the underwater wobble
 - *Reduce screen flashes*
+- *Captions for important sounds* (boss roars, thunder, ground shakes, enemies spotting you, shooting stars, the Wyrm...), with an arrow toward the source when it's known
 - toggle sprint
 
 *Key bindings* remaps any keyboard action. If the key is already taken, the two actions swap.

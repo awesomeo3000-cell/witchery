@@ -153,7 +153,7 @@ export class HUD {
       if (!e.alive || e.boss || e.def.fly) continue;
       const d = e.pos.distanceTo(p.pos);
       const calm = CALM.includes(e.state);
-      if (e._wasCalm && !calm && d < 50) { e.alarmT = 1.4; if (d < 30) G.audio.play('glint', 0.5); }
+      if (e._wasCalm && !calm && d < 50) { e.alarmT = 1.4; if (d < 30) G.audio.play('glint', 0.5); this.caption(`${e.name} spotted you`, e.pos); }
       e._wasCalm = calm;
       e.alarmT = Math.max(0, (e.alarmT || 0) - dt);
       const sus = calm && p.sneaking && d < e.def.aggro && e.state !== 'sleep' && e.state !== 'dormant';
@@ -170,6 +170,30 @@ export class HUD {
       l.style.top = `${s.y}px`;
     }
     for (const [id, l] of this.awareLabels) if (!seen.has(id)) { l.remove(); this.awareLabels.delete(id); }
+  }
+
+  // Closed captions: a short stack of lines, with an arrow toward the source when it's known
+  caption(text, pos = null) {
+    if (!G.settings.captions) return;
+    const now = performance.now();
+    this._capLast ||= new Map();
+    if (now - (this._capLast.get(text) || 0) < 1500) return;
+    this._capLast.set(text, now);
+    let arrow = '';
+    const p = G.player;
+    if (pos && p) {
+      const dx = pos.x - p.pos.x, dz = pos.z - p.pos.z;
+      if (Math.hypot(dx, dz) > 3) {
+        const rel = angleDiff(-p.camYaw, Math.atan2(dx, -dz));
+        arrow = `<span class="arr" style="transform:rotate(${rel}rad)">↑</span>`;
+      }
+    }
+    const box = $('captions');
+    const d = document.createElement('div');
+    d.innerHTML = `${arrow}[ ${text} ]`;
+    box.appendChild(d);
+    while (box.children.length > 3) box.firstChild.remove();
+    setTimeout(() => d.remove(), 4500);
   }
 
   // Gallery of Echoes status line (shares the race HUD slot)

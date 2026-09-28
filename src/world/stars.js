@@ -16,6 +16,7 @@ export class Stars {
     const from = pos.clone().add(new THREE.Vector3(70, 160, -40));
     this.streaks.push({ from, to: pos.clone(), t: 0 });
     G.audio.play('glint', 1);
+    G.hud.caption('A shooting star whistles down', pos);
     if (G.player && G.player.pos.distanceTo(pos) < 200) G.hud.toast('A shooting star! It landed nearby...', '#fff4c0', 3);
   }
 

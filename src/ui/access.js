@@ -102,6 +102,7 @@ export class AccessUI {
     bind('set-symbols', 'colorSymbols');
     bind('set-motion', 'reduceMotion');
     bind('set-flash', 'reduceFlash');
+    bind('set-captions', 'captions');
     bind('set-togglesprint', 'toggleSprint');
     bind('set-fox', 'fox');
     bind('set-minimap', 'minimap');

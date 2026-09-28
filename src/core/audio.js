@@ -1,6 +1,13 @@
 // Tiny procedural sound engine: every effect is synthesised with WebAudio, no assets.
 import { G } from './ctx.js';
 
+// Closed captions for sounds that carry information (direction is added by callers that know it)
+const CAPTIONS = {
+  bossRoar: 'A deep roar', thunder: 'Thunder rumbles', hurt: 'You take a hit', shard: 'A Prism Shard rings out',
+  sprite: 'A bright chime', waypoint: 'An easel hums awake', break: 'Something shatters', shield: 'Your strike is blocked',
+  quest: 'A cheerful fanfare', flurry: 'Time slows', solve: 'A satisfying chime',
+};
+
 export class Audio {
   constructor() {
     this.ctx = null;
@@ -121,6 +128,7 @@ export class Audio {
   }
 
   play(name, vol = 1) {
+    if (G.settings.captions && CAPTIONS[name]) G.hud?.caption(CAPTIONS[name]);
     if (!this.ctx) return;
     switch (name) {
       case 'swing': this.noise(0.18, 900, 0.8, 0.25 * vol, 'bandpass', 3000); break;

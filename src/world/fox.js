@@ -136,10 +136,14 @@ export class Fox {
       if (this.goal.t <= 0 || p.pos.distanceTo(this.goal.pos) < 3) this.goal = null;
       else { target = this.goal.pos; mode = 'scent'; }
     }
-    if (!target) target = p.pos;
+    if (!target) {
+      // Heel on the player's right, a little ahead, so the fox stays out of the camera's way
+      const yaw = p.camYaw;
+      target = p.pos.clone().add(new THREE.Vector3(Math.cos(yaw) * 1.8 - Math.sin(yaw) * 0.6, 0, -Math.sin(yaw) * 1.8 - Math.cos(yaw) * 0.6));
+    }
     const to = target.clone().sub(this.pos).setY(0);
     const d = to.length();
-    const stop = mode === 'follow' ? 2.4 : mode === 'carry' ? 1.2 : 0.4;
+    const stop = mode === 'follow' ? 0.8 : mode === 'carry' ? 1.2 : 0.4;
     if (d > stop) {
       speed = Math.min(d * 2, mode === 'follow' ? Math.min(14, Math.max(4, Math.hypot(p.vel.x, p.vel.z) * 1.1, d > 8 ? d * 0.6 : 0)) : 8);
       this.pos.addScaledVector(to.normalize(), speed * dt);

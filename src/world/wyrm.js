@@ -112,6 +112,9 @@ export class Wyrm {
     }
     this.group.visible = !!p && !p.inDungeon && this.segs[0].distanceTo(G.camera.position) < 900;
     if (!this.group.visible) return;
+    const near = p && this.segs[0].distanceTo(p.pos) < 160;
+    if (near && !this.sang) G.hud.caption('The Chroma Wyrm sings overhead', this.segs[0]);
+    this.sang = near;
     // Sparkling trail
     if (Math.random() < dt * 20) {
       const s = this.segs[SEGMENTS - 1];
