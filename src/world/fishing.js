@@ -6,6 +6,7 @@ import { G } from '../core/ctx.js';
 import { mulberry32 } from '../core/math.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { LAKE } from './layout.js';
+import { softLit } from './props.js';
 
 export const SCHOOLS = 12;
 export const PER_SCHOOL = 5;
@@ -42,7 +43,7 @@ export class Fishing {
     const geo = mergeGeometries([body, tail, fin]);
     this.sites = fishSites(G.terrain);
     const count = this.sites.length * PER_SCHOOL;
-    this.mesh = new THREE.InstancedMesh(geo, new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x223344 }), Math.max(1, count));
+    this.mesh = new THREE.InstancedMesh(geo, softLit(new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x223344 }), { rim: 0.5 }), Math.max(1, count));
     this.mesh.frustumCulled = false;
     this.mesh.count = count;
     scene.add(this.mesh);

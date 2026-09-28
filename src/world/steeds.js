@@ -8,7 +8,8 @@ import { G } from '../core/ctx.js';
 import { mulberry32 } from '../core/math.js';
 import { VILLAGE } from './layout.js';
 import { makeCharacter } from '../player/character.js';
-import { MAT } from './props.js';
+import { MAT, softLit } from './props.js';
+import { paintTex } from './textures.js';
 import { mergeStatic } from './merge.js';
 
 export const COATS = [
@@ -65,7 +66,6 @@ function buckGeometry() {
     new THREE.ConeGeometry(0.16, 0.42, 10).rotateX(Math.PI / 2).translate(0, 1.93, 1.42),
     new THREE.ConeGeometry(0.12, 0.34, 6).rotateX(-2.2).translate(0, 1.32, -0.95),
   ].map((g) => g.toNonIndexed());
-  body.forEach((g) => g.deleteAttribute('uv'));
   const parts = [];
   // Cream belly patch and white painted spots along the back
   parts.push(tint(new THREE.SphereGeometry(0.36, 10, 8).scale(0.9, 0.5, 1.9).translate(0, 0.98, 0.02), 0xf2e6cc));
@@ -102,7 +102,7 @@ function buckGeometry() {
 export class Steeds {
   constructor(scene) {
     this.geo = buckGeometry();
-    this.detailMat = new THREE.MeshLambertMaterial({ vertexColors: true });
+    this.detailMat = softLit(new THREE.MeshLambertMaterial({ vertexColors: true }), { rim: 0.35, wrap: 0.3 });
     this.root = new THREE.Group();
     scene.add(this.root);
     this.sites = herdSites(G.terrain);
@@ -189,8 +189,9 @@ export class Steeds {
   // Just the model (also used to show friends' mounts)
   visual(coat) {
     const g = new THREE.Group();
-    const mat = new THREE.MeshLambertMaterial({ color: COATS[coat].hex });
-    const legMat = new THREE.MeshLambertMaterial({ color: COATS[coat].hex, vertexColors: true });
+    // Brushy painted coat with the same soft rim light as the other creatures
+    const mat = softLit(new THREE.MeshLambertMaterial({ color: COATS[coat].hex, map: paintTex('cloth') }), { rim: 0.4, wrap: 0.3 });
+    const legMat = softLit(new THREE.MeshLambertMaterial({ color: COATS[coat].hex, vertexColors: true }), { rim: 0.4, wrap: 0.3 });
     const body = new THREE.Mesh(this.geo.body, mat);
     const details = new THREE.Mesh(this.geo.details, this.detailMat);
     const saddle = new THREE.Mesh(this.geo.saddle, this.detailMat);

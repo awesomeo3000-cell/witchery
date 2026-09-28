@@ -1,6 +1,7 @@
 // Enemy & boss meshes built from primitives. Each returns {group, parts, mats}.
 import * as THREE from 'three';
 import { softLit } from '../world/props.js';
+import { paintTex } from '../world/textures.js';
 
 // Smooth shading with a soft rim; rocky bosses opt back into facets with { flatShading: true }
 const lam = (c, o = {}) => softLit(new THREE.MeshLambertMaterial({ color: c, ...o }), { rim: 0.4, wrap: 0.3 });
@@ -511,8 +512,8 @@ export function buildRainmane() {
   const g = new THREE.Group();
   const body = new THREE.Group();
   g.add(body);
-  const hide = lam(0x3a3246);
-  const belly = lam(0x6a5a78);
+  const hide = lam(0x4e3e62, { map: paintTex('cloth') });
+  const belly = lam(0x6a5a78, { map: paintTex('cloth') });
   const gold = lam(0xd8b060, { emissive: 0x302000 });
   // Lion body
   const barrel = new THREE.Mesh(new THREE.CapsuleGeometry(1.0, 2.4, 8, 16).rotateX(Math.PI / 2), hide);
