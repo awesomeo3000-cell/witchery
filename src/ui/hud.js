@@ -111,6 +111,17 @@ export class HUD {
     this.markers.push({ el: cit, dist: cit.querySelector('.dist'), pos: () => ({ x: CITADEL.x, z: CITADEL.z }), show: () => !G.flags.final });
   }
 
+  // Extra compass marker (quest targets etc.)
+  addMarker(html, pos, show) {
+    const d = document.createElement('div');
+    d.className = 'cmp marker';
+    d.innerHTML = `${html}<div class="dist"></div>`;
+    this.compass.appendChild(d);
+    const m = { el: d, dist: d.querySelector('.dist'), pos, show };
+    this.markers.push(m);
+    return m;
+  }
+
   _peerMarker(peer) {
     const d = document.createElement('div');
     d.className = 'cmp marker';

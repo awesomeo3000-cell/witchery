@@ -219,7 +219,16 @@ button.secondary { background: rgba(255,255,255,0.15); color: #fff; box-shadow: 
 .inv-card .card .n { font: 700 14px var(--sans); }
 .inv-card .card .c { font: 800 12px var(--sans); color: var(--gold); }
 .inv-card .card .e { font: 600 11px var(--sans); opacity: 0.8; }
-.inv-card .none { font: 600 13px var(--sans); opacity: 0.6; }
+.inv-card .none { font: 600 13px var(--sans); opacity: 0.6; grid-column: 1 / -1; }
+.quest { background: rgba(255,255,255,0.05); border-left: 3px solid var(--gold); border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; }
+.quest.done { opacity: 0.55; border-left-color: rgba(255,255,255,0.3); }
+.quest .qt { font: 700 16px var(--serif); }
+.quest .qt span { font: 800 11px var(--sans); margin-left: 8px; padding: 2px 8px; border-radius: 8px; vertical-align: middle; }
+.quest .qd { background: rgba(255,255,255,0.15); }
+.quest .qr { background: var(--gold); color: #2a1a00; }
+.quest .qg { font: 600 12px var(--sans); opacity: 0.75; margin: 2px 0 4px; }
+.quest ul { margin: 0; padding-left: 18px; font: 600 13px var(--sans); }
+.quest li.ok { opacity: 0.55; text-decoration: line-through; }
 .pot-row { display: flex; align-items: center; gap: 10px; }
 .pot-row button { width: auto; margin: 0; padding: 8px 18px; }
 .pot-row button:disabled { opacity: 0.4; }

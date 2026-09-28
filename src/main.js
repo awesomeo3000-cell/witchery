@@ -18,6 +18,7 @@ import { Trials } from './trials/trials.js';
 import { Sprites } from './world/sprites.js';
 import { Weather } from './world/weather.js';
 import { Forage } from './world/forage.js';
+import { Quests } from './world/quests.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
 import { Player } from './player/player.js';
@@ -181,6 +182,7 @@ class Game {
     G.forage = new Forage(G.scene);
     G.greyMoon = new GreyMoon();
     G.hud = new HUD();
+    G.quests = new Quests(G.scene);
     G.cine = new Cinematic();
     G.guide = new Guide();
     G.photo = new PhotoMode();
@@ -584,6 +586,7 @@ class Game {
     G.trials.update(wdt);
     G.sprites.update(dt);
     G.forage.update(dt);
+    G.quests.update(dt);
     G.greyMoon.update(dt);
     G.enemies.update(wdt);
     G.paint.update(wdt);

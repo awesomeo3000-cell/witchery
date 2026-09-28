@@ -751,7 +751,7 @@ export class Player {
       if (arc < Math.PI && d.normalize().dot(f) < Math.cos(arc)) continue;
       a.hit.add(e.id);
       any = true;
-      const bonus = (G.flurry > 0 ? 1.5 : 1) * (this.buffs.power > 0 ? 1.5 : 1);
+      const bonus = (G.flurry > 0 ? 1.5 : 1) * (this.buffs.power > 0 ? 1.5 : 1) * (G.flags.charm_power ? 1.15 : 1);
       G.enemies.localHit(e, { dmg: Math.round(dmg * bonus), element: el, dir: d.clone().normalize(), source: 'melee', hy: this.pos.y + 1.3 });
       // Ink splatter flies off in the direction of the blow
       const hp = e.pos.clone().setY(e.pos.y + e.height * 0.5);
@@ -821,7 +821,7 @@ export class Player {
   }
 
   _updateInk(dt) {
-    const regen = this.buffs.ink > 0 ? 14 : 2.5;
+    const regen = this.buffs.ink > 0 ? 14 : G.flags.charm_ink ? 3.75 : 2.5;
     for (let i = 0; i < 4; i++) this.ink[i] = Math.min(100, this.ink[i] + dt * (i === this.color && this.painting && regen < 5 ? 0 : regen));
   }
 

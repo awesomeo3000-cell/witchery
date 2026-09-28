@@ -1,7 +1,7 @@
 // Procedural island heightfield: biomes, colours, exact height queries and a GPU height texture.
 import * as THREE from 'three';
 import { makeNoise2D, fbm, smoothstep, clamp, lerp, hash2 } from '../core/math.js';
-import { WORLD_SIZE, WORLD_SEG, FLAT_SPOTS, VOLCANO, LAKE } from './layout.js';
+import { WORLD_SIZE, WORLD_SEG, FLAT_SPOTS, VOLCANO, LAKE, VILLAGE } from './layout.js';
 
 export const WET = { value: 0 };
 
@@ -118,6 +118,7 @@ export class Terrain {
         let g = w.meadow + w.bloom * 0.9 + w.spring * 0.85 + w.frost * 0.05 + w.ember * 0.05;
         g *= smoothstep(1.2, 3.5, h) * (1 - smoothstep(0.55, 0.8, slope));
         if (h > 95) g *= 0;
+        g *= smoothstep(17, 22, Math.hypot(x - VILLAGE.x, z - VILLAGE.z)); // keep the stone plaza clear
         g *= 0.65 + 0.35 * smoothstep(-0.4, 0.3, this.noise3(x * 0.03, z * 0.03));
         this.grass[k] = clamp(g, 0, 1);
         this.hue[k] = clamp(w.spring * 1.4 - w.bloom * 0.8 + 0.3 + this.noise2(x * 0.01, z * 0.01) * 0.15, 0, 1);

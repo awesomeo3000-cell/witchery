@@ -191,6 +191,9 @@ export class Forage {
       return `<div class="slot">${k ? INGREDIENTS[k].glyph : ''}</div>`;
     }).join('');
     $('inv-cook').disabled = !this.pot.length;
+    $('inv-qh').classList.toggle('hidden', this.cooking);
+    $('inv-quests').classList.toggle('hidden', this.cooking);
+    if (G.quests) G.quests.renderLog($('inv-quests'));
   }
 
   _desc(d) {

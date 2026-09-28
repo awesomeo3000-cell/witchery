@@ -473,7 +473,10 @@ export class EnemyManager {
         c.members = c.members.filter((m) => m !== e);
         if (!c.members.length) c.respawn = c.field ? 900 : 180;
       }
-      if (e.def.field) this.spawnPickup('buff', e.pos.clone().add(new THREE.Vector3(0, 1.2, 0)));
+      if (e.def.field) {
+        this.spawnPickup('buff', e.pos.clone().add(new THREE.Vector3(0, 1.2, 0)));
+        G.trials._setFlag(`slain_${e.type}`);
+      }
       if (e.trial) G.trials.onBossDefeated(e.trial);
       if (e.type === 'hueless') G.trials.onFinalDefeated();
     }
