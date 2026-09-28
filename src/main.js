@@ -21,6 +21,8 @@ import { Ribbon } from './combat/trails.js';
 import { HUD } from './ui/hud.js';
 import { Net } from './net/net.js';
 import { PostFX } from './core/post.js';
+import { loadSave, writeSave } from './core/save.js';
+import { applyStats } from './core/progress.js';
 import { damp, dampAngle } from './core/math.js';
 
 const $ = (id) => document.getElementById(id);
@@ -221,8 +223,21 @@ class Game {
     const sx = 0, sz = 112;
     G.player.spawn(new THREE.Vector3(sx, G.terrain.heightAt(sx, sz) + 0.2, sz));
     G.player.camYaw = 0;
+    const save = loadSave();
+    if (save) {
+      if (save.flags && !G.net.connected) Object.assign(G.flags, save.flags);
+      if (save.pos) {
+        G.player.spawn(new THREE.Vector3(...save.pos).add(new THREE.Vector3(0, 0.5, 0)));
+        G.player.checkpoint.copy(G.player.pos);
+      }
+      if (typeof save.color === 'number') G.player.setColor(save.color);
+      if (save.ink) G.player.ink = save.ink.slice(0, 4);
+      if (!G.net.connected && typeof save.dayT === 'number') G.sky.setTime(save.dayT);
+    }
     G.flags.wp_village = true;
     this._applyWelcomeFlags();
+    this.saveTimer = 5;
+    window.addEventListener('beforeunload', () => writeSave());
     $('menu').classList.add('hidden');
     G.hud.show(true);
     G.hud.banner('Palette Hollow', 'Talk to Elder Umber (F) near the statue', '#ffe08a');
@@ -244,8 +259,7 @@ class Game {
     G.trials._announced = {};
     for (const k in G.flags) if (k.startsWith('trial_') && G.flags[k]) G.trials._announced[k] = true;
     if (G.flags.final) G.trials._finalShown = true;
-    G.player.maxHp = 12 + G.trials.shardCount() * 2;
-    G.player.hp = G.player.maxHp;
+    applyStats(true);
   }
 
   _setupPause() {
@@ -478,6 +492,8 @@ class Game {
     G.audio.update(dt);
     if (G.input.hit('KeyF') && G.hud.dialogTimer > 0 && !p.interactTarget) G.hud.dialogTimer = 0;
 
+    this.saveTimer -= dt;
+    if (this.saveTimer <= 0) { this.saveTimer = 5; writeSave(); }
     this.netTimer -= dt;
     if (this.netTimer <= 0 && G.net?.connected) {
       this.netTimer = 1 / 15;

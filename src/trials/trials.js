@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { G, COLORS } from '../core/ctx.js';
 import { TRIALS, CITADEL } from '../world/layout.js';
 import { MAT, jitter } from '../world/props.js';
+import { applyStats } from '../core/progress.js';
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 
@@ -83,13 +84,14 @@ export class Trials {
 
   // Called whenever a flag changes (locally or from the network)
   onFlag(k, v) {
+    if (k.startsWith('upg_')) applyStats(false);
     if (k.startsWith('trial_') && v) {
       const t = TRIALS.find((q) => `trial_${q.key}` === k);
       if (t && !this._announced?.[k]) {
         (this._announced ||= {})[k] = true;
         G.audio.play('shard');
         G.hud.banner(`${COLORS[t.color].name} Prism Shard`, `${this.shardCount()} / 4 Prism Shards restored`, COLORS[t.color].css);
-        if (G.player) { G.player.maxHp = 12 + this.shardCount() * 2; G.player.hp = G.player.maxHp; }
+        applyStats(true);
         if (this.shardCount() >= 4) setTimeout(() => G.hud.banner('The Barrier Falls', 'The Sky Citadel awaits above Palette Hollow', '#e0c8ff'), 4500);
       }
     }

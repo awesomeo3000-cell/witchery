@@ -34,9 +34,28 @@ const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 256 * 1024 })
 const rooms = new Map(); // code -> { clients: Map<id, ws>, hostId, flags }
 let nextId = 1;
 
+// World progress (puzzle flags, shards, easels, collectibles) survives server restarts.
+const DATA_DIR = process.env.WITCHERY_DATA || path.resolve(__dirname, '..', 'data');
+const SAVE_FILE = path.join(DATA_DIR, 'rooms.json');
+let saved = {};
+try { saved = JSON.parse(fs.readFileSync(SAVE_FILE, 'utf8')); } catch { saved = {}; }
+let saveTimer = null;
+function scheduleSave() {
+  if (saveTimer) return;
+  saveTimer = setTimeout(() => {
+    saveTimer = null;
+    for (const [code, r] of rooms) saved[code] = r.flags;
+    try {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+      fs.writeFileSync(SAVE_FILE + '.tmp', JSON.stringify(saved));
+      fs.renameSync(SAVE_FILE + '.tmp', SAVE_FILE);
+    } catch (e) { console.warn('save failed', e.message); }
+  }, 1500);
+}
+
 function roomOf(code) {
   let r = rooms.get(code);
-  if (!r) rooms.set(code, (r = { clients: new Map(), hostId: null, flags: {} }));
+  if (!r) rooms.set(code, (r = { clients: new Map(), hostId: null, flags: { ...(saved[code] || {}) } }));
   return r;
 }
 
@@ -81,6 +100,7 @@ wss.on('connection', (ws) => {
         if (typeof m.k === 'string' && m.k.length < 64) {
           room.flags[m.k] = m.v;
           broadcast(room, m, id);
+          scheduleSave();
         }
         break;
       case 'hit': case 'pickup':
@@ -114,7 +134,8 @@ wss.on('connection', (ws) => {
     if (!room.clients.size) {
       // Keep progress around for a while so friends can rejoin
       const empty = room;
-      setTimeout(() => { if (!empty.clients.size) for (const [k, v] of rooms) if (v === empty) rooms.delete(k); }, 30 * 60 * 1000);
+      // Flags are persisted to disk, so the in-memory room can go once everyone has left
+      setTimeout(() => { if (!empty.clients.size) for (const [k, v] of rooms) if (v === empty) { saved[k] = v.flags; rooms.delete(k); } }, 30 * 60 * 1000);
     }
   });
 });
