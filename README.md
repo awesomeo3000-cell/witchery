@@ -131,6 +131,7 @@ Bring every 4 sprites to Pip in Palette Hollow for a Heart Container or Stamina 
 - **Enemy camps** have tents, campfires and sometimes a lookout tower with an Inkshot archer. Some are led by a tougher *Great* enemy. Clearing a camp unlocks its chest, which grants a temporary buff: golden hearts, stronger strikes, bottomless ink, or faster movement.
 - **Stealth.** Crouch with C to sneak. Enemies show a **?** while you're inside their normal sight range but unseen, and a **!** when they spot you, and a spotted camp alerts all its members. Sneak strikes on unaware foes deal double damage.
 - **Inkbats** flock out at night away from the village. They circle and swoop, chase you hard while you fly or glide, and melt away at dawn. One glob or strike pops them.
+- **Ruin Sentries.** Old stone turrets guard the four outer ruins. When one sees you, a red beam locks on for a couple of seconds, then it fires a fast bolt. Break line of sight, or strike just as the bolt arrives (a normal swing, facing it) to **parry** it straight back for heavy damage.
 - **Field bosses.** Blot Giants sleep in the meadows: sneak up for bonus damage and hit the eye up top to topple them. Stone Sentinels pose as boulders until you get close, and only take damage on the crystal on their back, so bounce or glide onto them. **Rainmane**, a painted centaur-lion, prowls the open plain south of Palette Hollow: its mane cycles through the four colours, and only the colour that undoes the current one really hurts it (Frost against a red mane, and so on), sometimes staggering it. Watch for its glaive sweep, charges, paint volleys and leaping slam. All three drop a buff tonic and return after a while.
 - **The Grey Moon.** Some nights a violet moon rises at midnight. Every camp and chest refreshes, enemies hit harder, and ink creatures roam until dawn.
 - **Boss intros**, a colour-draining final fight, and a credits roll with your party's names.
@@ -180,7 +181,7 @@ All art is generated in code: painted canvas textures (bark, leaves, stone, shin
 
 ## Painter's Honours
 
-There are thirty-two achievements, such as First Flight, Soft Bristles (a sneak strike), Record Breaker, Cartographer, Good Samaritan (reviving a friend) and Echo Breaker. Each one pops a toast when earned, is listed with its progress in the satchel, and is saved per player.
+There are thirty-three achievements, such as First Flight, Soft Bristles (a sneak strike), Record Breaker, Cartographer, Good Samaritan (reviving a friend) and Echo Breaker. Each one pops a toast when earned, is listed with its progress in the satchel, and is saved per player.
 
 ### Wardrobe
 

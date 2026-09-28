@@ -606,3 +606,39 @@ export function buildRainmane() {
   body.traverse((m) => { if (m.isMesh) m.castShadow = true; });
   return { group: g, body, legs, torso, head, arms, glaive, tail, mane, maneMat, height: 5, radius: 1.8 };
 }
+
+// Ruin Sentry: an old stone turret left by the Painters, now soaked in ink. A single eye charges a
+// beam, then fires a bolt you can strike back at it.
+export function buildSentry() {
+  const g = new THREE.Group();
+  const body = new THREE.Group();
+  g.add(body);
+  const stone = lam(0x8a8272, { map: paintTex('cloth') });
+  const ink = lam(0x3a3246);
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.4, 1.2, 10), stone);
+  base.position.y = 0.6;
+  for (let i = 0; i < 3; i++) {
+    const a = (i / 3) * Math.PI * 2;
+    const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 0.9, 4, 8), ink);
+    leg.position.set(Math.cos(a) * 1.2, 0.35, Math.sin(a) * 1.2);
+    leg.rotation.set(Math.sin(a) * 0.6, 0, -Math.cos(a) * 0.6);
+    body.add(leg);
+  }
+  const head = new THREE.Group();
+  head.position.y = 1.6;
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(1.15, 18, 12, 0, Math.PI * 2, 0, Math.PI / 2), stone);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(1.15, 0.12, 6, 20).rotateX(Math.PI / 2), ink);
+  const eyeMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0x9ee0ff).multiplyScalar(1.6) });
+  const eye = new THREE.Mesh(new THREE.SphereGeometry(0.28, 12, 10), eyeMat);
+  eye.position.set(0, 0.55, 0.95);
+  const brow = new THREE.Mesh(new THREE.TorusGeometry(0.34, 0.07, 6, 16), ink);
+  brow.position.copy(eye.position);
+  head.add(dome, rim, eye, brow);
+  body.add(base, head);
+  // The charging beam: a thin glowing rod from the eye, stretched toward the target
+  const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 1, 6).translate(0, 0.5, 0).rotateX(Math.PI / 2), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xff5a4a).multiplyScalar(1.5), transparent: true, opacity: 0.8 }));
+  beam.visible = false;
+  g.add(beam);
+  body.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+  return { group: g, body, head, eye, eyeMat, beam, height: 2.6, radius: 1.4 };
+}

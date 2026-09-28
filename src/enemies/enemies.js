@@ -4,14 +4,14 @@ import { G, COLORS, COUNTER, inDungeonY } from '../core/ctx.js';
 import { damp, dampAngle, mulberry32 } from '../core/math.js';
 import {
   buildBounder, buildInkling, buildSpitter, buildWisp, buildInkbat, buildDummy, buildFrostmaw, buildMagmaw,
-  buildShellback, buildGalewing, buildHueless, buildArcher, buildBlotGiant, buildSentinel, buildRainmane, VARIANT_TINT,
+  buildShellback, buildGalewing, buildHueless, buildArcher, buildBlotGiant, buildSentinel, buildRainmane, buildSentry, VARIANT_TINT,
 } from './models.js';
 import { fmtTime } from '../world/races.js';
 import { STAR_PIGMENT } from '../world/stars.js';
 import { SCALE_PIGMENT } from '../world/wyrm.js';
 import { smoothRockGeometry } from '../world/props.js';
 import { CampDecor } from './camps.js';
-import { VILLAGE, TRIALS, CITADEL } from '../world/layout.js';
+import { VILLAGE, TRIALS, CITADEL, RUINS } from '../world/layout.js';
 
 export const TYPES = {
   bounder: { name: 'Bounder', hp: 32, speed: 4.2, aggro: 24, build: buildBounder },
@@ -29,6 +29,7 @@ export const TYPES = {
   dummy: { name: 'Practice Dummy', hp: 200, speed: 0, aggro: 0, build: buildDummy, static: true },
   inkbat: { name: 'Inkbat', hp: 7, speed: 13, aggro: 60, build: buildInkbat, fly: true },
   rainmane: { name: 'Rainmane', hp: 420, speed: 6, aggro: 50, build: buildRainmane, boss: true, field: true },
+  sentry: { name: 'Ruin Sentry', hp: 90, speed: 0, aggro: 48, build: buildSentry, static: true },
 };
 const TYPE_KEYS = Object.keys(TYPES);
 const VARIANTS = ['none', 'fire', 'ice'];
@@ -36,6 +37,8 @@ const STATES = ['idle', 'chase', 'windup', 'attack', 'recover', 'stun', 'dead', 
 const ELEMENTS = ['fire', 'ice', 'bounce', 'vine'];
 
 const tmpV = new THREE.Vector3();
+// Projectiles a well-timed strike can send back
+const REFLECTABLE = new Set(['bolt', 'arrow']);
 
 class Enemy {
   constructor(id, type, variant, pos) {
@@ -146,11 +149,13 @@ export class EnemyManager {
       rock: new THREE.MeshLambertMaterial({ color: 0xa07a40, flatShading: true }),
       rain: new THREE.MeshBasicMaterial({ color: 0x3a2a4a }),
       arrow: new THREE.MeshBasicMaterial({ color: 0x2a2433 }),
+      bolt: new THREE.MeshBasicMaterial({ color: new THREE.Color(0xff5a4a).multiplyScalar(1.8) }),
     };
     this.projGeo = {
       ink: new THREE.IcosahedronGeometry(0.35, 1), ice: new THREE.DodecahedronGeometry(1.1, 0), fire: new THREE.IcosahedronGeometry(0.6, 1),
       feather: new THREE.ConeGeometry(0.2, 1.2, 4).rotateX(Math.PI / 2), rock: new THREE.DodecahedronGeometry(0.9, 0), rain: new THREE.IcosahedronGeometry(0.5, 1),
       arrow: new THREE.CylinderGeometry(0.05, 0.12, 1.4, 5).rotateX(Math.PI / 2),
+      bolt: new THREE.CapsuleGeometry(0.18, 1.2, 4, 8).rotateX(Math.PI / 2),
     };
     this.heartGeo = (() => {
       const s = new THREE.Shape();
@@ -207,6 +212,8 @@ export class EnemyManager {
       for (let k = 0; k < 40 && G.terrain.heightAt(bx, bz) < 4; k++) { bx *= 0.95; bz *= 0.95; }
       camps.push({ id: camps.length, x: bx, z: bz, variant: 'none', types: [type], active: false, members: [], respawn: 0, field: true });
     }
+    // Ruin Sentries at the four outer ruins (the inner four hold Ochre's statues)
+    for (const r of RUINS.slice(4)) camps.push({ id: camps.length, x: r.x - 5, z: r.z, variant: 'none', types: ['sentry'], active: false, members: [], respawn: 0, ruin: true });
     // Wisps guarding the sky around the citadel
     camps.push({ id: camps.length, x: CITADEL.x + 120, z: CITADEL.z, y: 150, variant: 'none', types: ['wisp', 'wisp', 'wisp'], active: false, members: [], respawn: 0, sky: true });
     camps.push({ id: camps.length, x: CITADEL.x - 120, z: CITADEL.z + 60, y: 170, variant: 'none', types: ['wisp', 'wisp'], active: false, members: [], respawn: 0, sky: true });
@@ -591,6 +598,8 @@ export class EnemyManager {
         if (G.player && G.player.pos.distanceTo(pos) < 40) G.audio.play('shield', 0.5);
         break;
       }
+      case 'sentryLock': G.hud.caption('A Ruin Sentry locks on', pos); G.audio.play('glint', 0.8); G.audio.tone?.(880, 1.8, 'sine', 0.05, 1.6); break;
+      case 'parry': G.audio.play('crit'); G.audio.play('shield', 0.6); G.particles.burst(p, { count: 30, color: 0xffffff, speed: 8, life: 0.4, size: 0.4, pool: 'glow' }); if (G.player && G.player.pos.distanceTo(pos) < 12) { G.hud.toast('Parried!', '#ffffff', 1.2); G.hitStop = Math.max(G.hitStop || 0, 0.12); } break;
       case 'topple': G.audio.play('slam'); G.hud.toast('It staggers! Attack now!', '#fff09a', 2); G.particles.burst(p.setY(p.y + 1), { count: 40, color: 0xd8d0c0, speed: 8, life: 0.8, size: 0.9, gravity: 6 }); break;
       case 'summon': G.hud.caption('Ink bubbles up', pos); G.particles.burst(p.setY(p.y + 1), { count: 30, color: 0x2a2433, speed: 5, life: 1, size: 0.8 }); break;
       default: break;
@@ -706,7 +715,7 @@ export class EnemyManager {
       }
       p.mesh.position.copy(p.pos);
       p.mesh.rotation.x += dt * 5;
-      if (p.kind === 'feather' || p.kind === 'arrow') p.mesh.lookAt(p.pos.clone().add(p.vel));
+      if (p.kind === 'feather' || p.kind === 'arrow' || p.kind === 'bolt') p.mesh.lookAt(p.pos.clone().add(p.vel));
       if (p.kind === 'fire' && Math.random() < 0.6) G.particles.flames(p.pos, 0.3, 1, 0.8);
       if (p.kind === 'ink' || p.kind === 'rain') G.particles.burst(p.pos, { count: 1, color: 0x3a2a4a, speed: 0.3, life: 0.4, size: 0.4 });
       if (!host) {
@@ -714,13 +723,27 @@ export class EnemyManager {
         continue;
       }
       let done = p.life <= 0;
-      for (const pl of pls) {
-        if (!pl.alive) continue;
-        const c = tmpV.copy(pl.pos).setY(pl.pos.y + 0.9);
-        if (c.distanceTo(p.pos) < p.radius + 0.5) {
-          this.damagePlayer(pl, p.dmg, p.pos.clone(), p.element);
-          done = true;
-          break;
+      if (p.reflected) {
+        // A parried bolt flies back and hits ink creatures instead
+        for (const e of this.list) {
+          if (!e.alive || e.id === p.parrier) continue;
+          if (e.center.distanceTo(p.pos) < e.radius + 0.9) {
+            this.localHit(e, { dmg: 40, element: null, dir: p.vel.clone().setY(0).normalize(), source: 'parry', hy: p.pos.y });
+            done = true;
+            break;
+          }
+        }
+      } else {
+        for (const pl of pls) {
+          if (!pl.alive) continue;
+          const c = tmpV.copy(pl.pos).setY(pl.pos.y + 0.9);
+          if (c.distanceTo(p.pos) < p.radius + 0.5 + (REFLECTABLE.has(p.kind) ? 1.2 : 0)) {
+            if (REFLECTABLE.has(p.kind) && this._parrying(pl, p)) { this._reflect(p, pl); break; }
+            if (c.distanceTo(p.pos) >= p.radius + 0.5) continue;
+            this.damagePlayer(pl, p.dmg, p.pos.clone(), p.element);
+            done = true;
+            break;
+          }
         }
       }
       const g = G.collision.groundAt(p.pos.x, p.pos.z, 0.1, p.pos.y + 0.5);
@@ -737,8 +760,29 @@ export class EnemyManager {
     }
   }
 
+  // Is this player mid-swing (not a spin) and facing the incoming projectile?
+  _parrying(pl, p) {
+    let attack, yaw;
+    if (pl.local) { attack = G.player.attack; yaw = G.player.yaw; } else { const q = G.peers?.get(pl.id); attack = q?.attack; yaw = q?.yaw ?? 0; }
+    if (!attack || attack.kind === 'spin' || attack.kind === 'plunge' || attack.t > 0.6) return false;
+    const to = p.pos.clone().sub(pl.pos).setY(0).normalize();
+    return to.x * Math.sin(yaw) + to.z * Math.cos(yaw) > 0.2;
+  }
+
+  _reflect(p, pl) {
+    const src = this.byId.get(p.owner);
+    const speed = p.vel.length() * 1.2;
+    const aim = src && src.alive ? src.center.clone().sub(p.pos) : p.vel.clone().negate();
+    p.vel.copy(aim.normalize().multiplyScalar(speed));
+    p.reflected = true;
+    p.life = 3;
+    p.parrier = pl.id;
+    this.fx('parry', p.pos);
+    if (pl.local) G.honours?.event('parry');
+  }
+
   _impactFx(kind, pos) {
-    const col = { ink: 0x5a2a7a, ice: 0xcdefff, fire: 0xff7a2a, feather: 0x9ab8d8, rock: 0xa07a40, rain: 0x3a2a4a, arrow: 0x2a2433 }[kind];
+    const col = { ink: 0x5a2a7a, ice: 0xcdefff, fire: 0xff7a2a, feather: 0x9ab8d8, rock: 0xa07a40, rain: 0x3a2a4a, arrow: 0x2a2433, bolt: 0xff5a4a }[kind];
     G.particles.burst(pos, { count: 14, color: col, speed: 5, life: 0.5, size: 0.5 });
   }
 
@@ -1389,6 +1433,33 @@ const AI = {
       default: setState(e, 'chase');
     }
   },
+  sentry(e, dt, t, mgr) {
+    e.stateT += dt;
+    e.vel.x = e.vel.z = 0;
+    // Only fires with a clear line of sight from its eye
+    const eye = e.pos.clone().setY(e.pos.y + 2.2);
+    const seen = t && (() => { const to = t.pos.clone().setY(t.pos.y + 1).sub(eye); const d = to.length(); const hit = G.collision.raycast(eye, to.normalize(), d - 1); return !hit; })();
+    switch (e.state) {
+      case 'idle': case 'chase': case 'recover':
+        if (e.state === 'recover' && e.stateT < 2.4) break;
+        e.state = 'idle';
+        e.yaw += dt * 0.5;
+        if (seen) { setState(e, 'windup'); e.aimAt = t.pos.clone(); G.net?.send({ t: 'efx', k: 'sentryLock', p: [e.pos.x, e.pos.y, e.pos.z] }); mgr.fx('sentryLock', e.pos); }
+        break;
+      case 'windup':
+        if (!t || !seen) { setState(e, 'idle'); break; }
+        faceTo(e, t.pos, dt, 4);
+        e.aimAt.lerp(t.pos, Math.min(1, dt * (e.stateT < 1.6 ? 6 : 1.5))); // tracks you, then settles just before firing
+        if (e.stateT > 2.2) {
+          const to = e.aimAt.clone().setY(e.aimAt.y + 0.9).sub(eye).normalize();
+          mgr.shoot('bolt', eye.addScaledVector(to, 1.2), to.multiplyScalar(40), { dmg: 4, grav: 0, radius: 0.5, life: 3, owner: e.id });
+          G.audio.play('shoot', 0.8);
+          setState(e, 'recover');
+        }
+        break;
+      default: setState(e, 'idle');
+    }
+  },
   sentinel(e, dt, t, mgr) {
     e.stateT += dt;
     if (e.state === 'dormant') {
@@ -1880,6 +1951,24 @@ const RENDER = {
     m.arms[1].rotation.x = st === 'attack' ? (k < 0.5 ? -2.2 * (k / 0.5) : -2.2 + (k - 0.5) * 5) : st === 'roll' ? -1.4 : st === 'shoot' ? -1.8 : -0.3;
     m.arms[1].rotation.z = st === 'attack' && k > 0.5 ? -1.2 : 0;
     m.arms[0].rotation.x = st === 'shoot' ? -2.6 : st === 'wake' ? -2.8 : -0.2;
+  },
+  sentry(e) {
+    const m = e.model;
+    const charging = e.state === 'windup';
+    const k = charging ? Math.min(1, e.stateT / 2.2) : 0;
+    m.eyeMat.color.setHex(charging ? 0xff5a4a : 0x9ee0ff).multiplyScalar(1.4 + k * 1.5 + (charging ? Math.sin(e.anim * (10 + k * 30)) * 0.4 : 0));
+    m.head.rotation.x = charging ? -0.1 : Math.sin(e.anim * 0.7) * 0.05;
+    // Beam toward whoever it's locked on (the host knows exactly; others use the nearest player)
+    const aim = e.aimAt || (G.player && G.player.pos);
+    m.beam.visible = charging && !!aim;
+    if (m.beam.visible) {
+      const eye = new THREE.Vector3(0, 2.2, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), 0).add(e.pos);
+      const to = aim.clone().setY(aim.y + 0.9);
+      m.beam.position.set(0, 2.2, 0);
+      m.beam.scale.set(1, 1, eye.distanceTo(to));
+      m.beam.lookAt(to);
+      m.beam.material.opacity = 0.35 + k * 0.6;
+    }
   },
   sentinel(e) {
     const m = e.model;

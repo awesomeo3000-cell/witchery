@@ -140,4 +140,6 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 
 73. ✅ **The Prism Vault.** A post-game dungeon under a spire that rises from the lake after the final boss: four multi-colour chambers (floes and timed braziers; bounce, vines and a bell; brambles and a vine bridge; a crystal colour sequence from a mural) ending in a chest with 100 Pigment and the Prismatic glider.
 
+74. ✅ **Ruin Sentries and parrying.** Guardian-like turrets at the outer ruins lock a beam on you, then fire a bolt; a well-timed swing facing it reflects bolts (and camp arrows) back for 40 damage. Co-op aware: the host checks each player's swing.
+
 The work continues through this list until the budget is used up.

@@ -20,7 +20,7 @@ export class CampDecor {
     this.items = [];
     this.chestMat = new THREE.MeshLambertMaterial({ color: 0x8a5a2e, flatShading: true });
     this.trimMat = new THREE.MeshLambertMaterial({ color: 0xe8c46a, flatShading: true, emissive: 0x402a00 });
-    for (const c of camps) if (!c.sky && !c.field) this._build(c);
+    for (const c of camps) if (!c.sky && !c.field && !c.ruin) this._build(c);
   }
 
   _build(c) {

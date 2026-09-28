@@ -17,6 +17,7 @@ export const HONOURS = [
   { id: 'quests', name: 'Pillar of Palette Hollow', desc: 'Finish every villager quest', check: () => QUESTS.every((q) => G.flags[`q_${q.id}_done`]) },
   { id: 'puzzle', name: 'Riddle Painter', desc: 'Solve an island puzzle', check: () => (G.puzzles?.solvedCount() || 0) >= 1 },
   { id: 'puzzles', name: 'Island Riddler', desc: 'Solve every island puzzle', check: () => G.puzzles && G.puzzles.solvedCount() >= G.puzzles.total },
+  { id: 'parry', name: 'Return to Sender', desc: 'Strike a Ruin Sentry\'s bolt back at it', event: 'parry' },
   { id: 'rainmane', name: 'Storm Tamer', desc: 'Defeat Rainmane, Lord of the Painted Plains', check: () => !!G.flags.slain_rainmane },
   { id: 'giants', name: 'Giant Slayer', desc: 'Fell a Blot Giant and a Stone Sentinel', check: () => G.flags.slain_blotgiant && G.flags.slain_sentinel },
   { id: 'race', name: 'Record Breaker', desc: 'Set a Sky Race record', event: 'raceRecord' },
