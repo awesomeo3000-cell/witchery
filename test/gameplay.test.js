@@ -354,3 +354,9 @@ test('the Colour Festival runs at night once Mira has her dyes', async () => {
   assert.equal(festivalOn({ q_mira_done: true }, 0.2), false);
   assert.equal(festivalOn({ q_mira_done: true }, 0.9), true);
 });
+
+test('map clicks convert to world positions', async () => {
+  const { mapToWorld } = await import('../src/ui/pins.js');
+  assert.deepEqual(mapToWorld(0.5, 0.5), { x: 0, z: 0 });
+  assert.deepEqual(mapToWorld(0, 1), { x: -800, z: 800 });
+});

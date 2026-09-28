@@ -47,6 +47,7 @@ import { Compendium } from './ui/compendium.js';
 import { Party } from './ui/party.js';
 import { Vault } from './trials/vault.js';
 import { Festival } from './world/festival.js';
+import { Pins } from './ui/pins.js';
 import { Merchant } from './world/merchant.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
@@ -258,6 +259,7 @@ class Game {
     G.party = timed('party', () => new Party());
     G.vault = timed('vault', () => new Vault(G.trials.root));
     G.festival = timed('festival', () => new Festival(G.scene));
+    G.pins = timed('pins', () => new Pins());
     G.merchant = timed('merchant', () => new Merchant(G.scene));
     G.cine = timed('cine', () => new Cinematic());
     G.guide = timed('guide', () => new Guide());
@@ -358,6 +360,7 @@ class Game {
       if (save.steed) G.steeds.load(save.steed);
       if (save.memories) G.memories.load(save.memories);
       if (save.compendium) G.compendium.load(save.compendium);
+      if (save.pins) G.pins.load(save.pins);
       if (!G.net.connected && typeof save.dayT === 'number') G.sky.setTime(save.dayT);
     }
     this.wardrobe.render(true);

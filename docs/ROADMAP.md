@@ -147,4 +147,6 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 76. ✅ **Galloping music.** A bouncing lope with a hoofbeat rhythm while riding a Brushbuck.
 77. ✅ **Inkspouts.** Octorok-like water enemies at coastal fishing spots: they surface to spit ink and duck under (immune) between volleys; Frost pins them at the surface.
 
+78. ✅ **Map pins.** Click the map to drop up to eight pins that show on the compass (saved locally); secondary map markers label themselves on hover to declutter the map.
+
 The work continues through this list until the budget is used up.
