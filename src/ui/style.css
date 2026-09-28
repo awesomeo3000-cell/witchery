@@ -315,6 +315,14 @@ body.touch #minimap { display: none; }
 .honour small { font: 600 11px var(--sans); opacity: 0.8; }
 #inv-hc { font: 700 12px var(--sans); letter-spacing: 0; }
 #pause select { width: 100%; }
+#inv-rec { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; }
+#inv-rec .none { opacity: 0.6; font: 600 13px var(--sans); }
+#inv-rec .rec { padding: 6px 10px; border-radius: 8px; background: rgba(255,224,138,0.08); font: 600 12px var(--sans); }
+#inv-rec .rec b { display: block; font: 700 13px var(--serif); color: #ffe08a; }
+#inv-rec .rec .gl { float: right; font-size: 15px; }
+#inv-rec.cooking .rec { cursor: pointer; }
+#inv-rec.cooking .rec:hover { background: rgba(255,224,138,0.2); }
+#inv-rec .rec.miss { opacity: 0.5; }
 #inv-jour { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px; }
 #inv-jour .tab { padding: 6px 10px; border-radius: 8px; background: rgba(255,255,255,0.04); font: 700 13px var(--serif); opacity: 0.45; }
 #inv-jour .tab.read { opacity: 1; cursor: pointer; background: rgba(200,168,255,0.12); }

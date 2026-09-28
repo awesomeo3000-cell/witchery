@@ -26,12 +26,33 @@ const BUFF_NAMES = { swift: 'Swift', power: 'Bold', ink: 'Inky', hush: 'Hushed' 
 const MEAL_PREFIX = { swift: 'Zippy', power: 'Spicy', ink: 'Inky', hush: 'Hushed' };
 const MEAL_BASE = { apple: 'Apple', shroom: 'Mushroom', mint: 'Mint', pepper: 'Pepper', lily: 'Lily', goldpetal: 'Petal', fish: 'Fish', prismfin: 'Prismfin', sunwing: 'Wing', glowbug: 'Glowbug' };
 
+// Combine a pot: heal x1.5, strongest buff with duration per matching ingredient
+export function cookMeal(pot) {
+  const parts = pot.map((k) => INGREDIENTS[k]);
+  const meal = { heal: Math.round(parts.reduce((s, p) => s + p.heal, 0) * 1.5), stamina: 0, tonic: 0 };
+  const buffs = {};
+  for (const p of parts) {
+    if (p.stamina) meal.stamina += p.stamina;
+    if (p.tonic) meal.tonic += p.tonic;
+    if (p.buff) buffs[p.buff] = (buffs[p.buff] || 0) + 1;
+  }
+  const best = Object.entries(buffs).sort((a, b) => b[1] - a[1])[0];
+  if (best) { meal.buff = best[0]; meal.dur = 60 + best[1] * 60; }
+  const mainKey = [...pot].sort((a, b) => (INGREDIENTS[b].buff ? 1 : 0) - (INGREDIENTS[a].buff ? 1 : 0))[0];
+  meal.name = `${best ? MEAL_PREFIX[best[0]] : meal.tonic ? 'Golden' : 'Hearty'} ${MEAL_BASE[mainKey]} ${pot.length > 2 ? 'Feast' : pot.length > 1 ? 'Stew' : 'Skewer'}`;
+  return meal;
+}
+
+// The same ingredients in any order make the same recipe
+export const recipeKey = (pot) => [...pot].sort().join('+');
+
 export class Forage {
   constructor(scene) {
     this.scene = scene;
     this.nodes = [];
     this.inv = Object.fromEntries(KEYS.map((k) => [k, 0]));
     this.meals = [];
+    this.recipes = {};
     this.pot = [];
     this.open = false;
     this.cooking = false;
@@ -192,6 +213,7 @@ export class Forage {
       el.onclick = () => { this.meals.splice(i, 1); this._apply(m, m.name); this.render(); };
       meals.appendChild(el);
     });
+    this._renderRecipes();
     $('inv-slots').innerHTML = [0, 1, 2].map((i) => {
       const k = this.pot[i];
       return `<div class="slot">${k ? INGREDIENTS[k].glyph : ''}</div>`;
@@ -211,6 +233,33 @@ export class Forage {
     if (!this.cooking && G.honours) { G.honours.render($('inv-hon')); $('inv-hc').textContent = `(${G.honours.got.size})`; }
   }
 
+  _renderRecipes() {
+    const el = $('inv-rec');
+    const list = Object.values(this.recipes).sort((a, b) => a.name.localeCompare(b.name));
+    el.classList.toggle('cooking', this.cooking);
+    $('inv-rc').textContent = list.length ? `(${list.length}${this.cooking ? ' · click to fill the pot' : ''})` : '';
+    if (!list.length) { el.innerHTML = '<div class="none">Cook a meal to record its recipe here.</div>'; return; }
+    el.innerHTML = '';
+    for (const r of list) {
+      const need = {};
+      for (const k of r.parts) need[k] = (need[k] || 0) + 1;
+      const have = Object.entries(need).every(([k, n]) => (this.inv[k] || 0) + this.pot.filter((q) => q === k).length >= n);
+      const d = document.createElement('div');
+      d.className = `rec${have ? '' : ' miss'}`;
+      d.innerHTML = `<span class="gl">${r.parts.map((k) => INGREDIENTS[k].glyph).join('')}</span><b>${r.name}</b>${this._desc(r)}`;
+      d.onclick = () => {
+        if (!this.cooking) return;
+        if (!have) { G.hud.toast(`Missing ingredients for ${r.name}`, '#dddddd', 1.5); return; }
+        // Empty the pot back into the satchel, then fill it with this recipe
+        for (const k of this.pot) this.inv[k]++;
+        this.pot = [...r.parts];
+        for (const k of r.parts) this.inv[k]--;
+        this.render();
+      };
+      el.appendChild(d);
+    }
+  }
+
   _desc(d) {
     const out = [];
     if (d.heal) out.push(`♥ ${d.heal / 2}`);
@@ -220,21 +269,13 @@ export class Forage {
     return out.join(' · ');
   }
 
-  // Combine the pot: heal x1.5, strongest buff with duration per matching ingredient
   cook() {
     if (!this.pot.length) return;
-    const parts = this.pot.map((k) => INGREDIENTS[k]);
-    const meal = { heal: Math.round(parts.reduce((s, p) => s + p.heal, 0) * 1.5), stamina: 0, tonic: 0 };
-    const buffs = {};
-    for (const p of parts) {
-      if (p.stamina) meal.stamina += p.stamina;
-      if (p.tonic) meal.tonic += p.tonic;
-      if (p.buff) buffs[p.buff] = (buffs[p.buff] || 0) + 1;
-    }
-    const best = Object.entries(buffs).sort((a, b) => b[1] - a[1])[0];
-    if (best) { meal.buff = best[0]; meal.dur = 60 + best[1] * 60; }
-    const mainKey = [...this.pot].sort((a, b) => (INGREDIENTS[b].buff ? 1 : 0) - (INGREDIENTS[a].buff ? 1 : 0))[0];
-    meal.name = `${best ? MEAL_PREFIX[best[0]] : meal.tonic ? 'Golden' : 'Hearty'} ${MEAL_BASE[mainKey]} ${this.pot.length > 2 ? 'Feast' : this.pot.length > 1 ? 'Stew' : 'Skewer'}`;
+    const meal = cookMeal(this.pot);
+    const key = recipeKey(this.pot);
+    const fresh = !this.recipes[key];
+    this.recipes[key] = { ...meal, parts: [...this.pot].sort() };
+    if (fresh && Object.keys(this.recipes).length > 1) G.hud.toast('New recipe added to your Recipe Book', '#ffe08a', 2);
     this.pot = [];
     if (this.meals.length >= 12) this.meals.shift();
     this.meals.push(meal);
@@ -268,11 +309,12 @@ export class Forage {
     else { const d = INGREDIENTS[best.k]; this.inv[best.k]--; this._apply({ heal: d.heal, stamina: d.stamina, buff: d.buff, dur: 40, tonic: d.tonic }, d.name); }
   }
 
-  serialize() { return { inv: this.inv, meals: this.meals }; }
+  serialize() { return { inv: this.inv, meals: this.meals, recipes: this.recipes }; }
   load(d) {
     if (!d) return;
     if (d.inv) for (const k of KEYS) this.inv[k] = d.inv[k] || 0;
     if (Array.isArray(d.meals)) this.meals = d.meals.slice(0, 12);
+    if (d.recipes && typeof d.recipes === 'object') for (const [k, r] of Object.entries(d.recipes)) if (Array.isArray(r.parts) && r.parts.every((q) => INGREDIENTS[q])) this.recipes[k] = r;
   }
 
   update(dt) {

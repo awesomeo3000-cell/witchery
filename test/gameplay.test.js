@@ -252,3 +252,14 @@ test('caught ingredients cook into named meals', async () => {
   for (const k of ['fish', 'prismfin', 'sunwing', 'glowbug']) assert.ok(INGREDIENTS[k] && INGREDIENTS[k].biome.length === 0, k);
   assert.equal(INGREDIENTS.glowbug.buff, 'hush');
 });
+
+test('cooking names meals and records order-free recipes', async () => {
+  const { cookMeal, recipeKey } = await import('../src/world/forage.js');
+  const m = cookMeal(['glowbug', 'fish', 'glowbug']);
+  assert.equal(m.buff, 'hush');
+  assert.equal(m.dur, 180);
+  assert.equal(m.heal, Math.round((1 + 3 + 1) * 1.5));
+  assert.match(m.name, /^Hushed Glowbug Feast$/);
+  assert.equal(recipeKey(['fish', 'apple']), recipeKey(['apple', 'fish']));
+  assert.equal(cookMeal(['apple']).name, 'Hearty Apple Skewer');
+});
