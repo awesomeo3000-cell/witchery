@@ -348,6 +348,7 @@ export class Quests {
       n.mark.position.x = n.pos.x;
       n.mark.position.z = n.pos.z;
       const d = n.pos.distanceTo(p.pos);
+      n.c.setShadow(d < 30);
       this._bark(n, d, nightTime, dt);
       if (d < 60) {
         n.c.animate({ state: anim, speed: spd }, dt);

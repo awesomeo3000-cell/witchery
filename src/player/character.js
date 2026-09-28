@@ -517,9 +517,18 @@ export function makeCharacter(look = {}) {
   }
 
   compactCharacter(root, new Set([tail, cape, glider]), brush);
+  const casters = [];
+  root.traverse((m) => { if (m.isMesh && m.castShadow) casters.push(m); });
+  let shadowOn = true;
+  // Distant NPCs skip the shadow pass
+  function setShadow(on) {
+    if (on === shadowOn) return;
+    shadowOn = on;
+    for (const m of casters) m.castShadow = on;
+  }
 
   return {
     group: root, brush, brushTip: brushParts.tipPoint, brushBase: brushParts.basePoint, animate, setBrushColor, setHurt,
-    hand: armR.hand, head: headG, glider,
+    hand: armR.hand, head: headG, glider, setShadow,
   };
 }

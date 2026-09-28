@@ -73,6 +73,7 @@ export class Shop {
     const p = G.player;
     if (!p) return;
     this.npc.group.visible = !p.inDungeon;
+    this.npc.setShadow(this.pos.distanceTo(p.pos) < 30);
     if (!p.inDungeon && this.pos.distanceTo(p.pos) < 60) this.npc.animate({ state: 'idle', speed: 0 }, dt);
   }
 }

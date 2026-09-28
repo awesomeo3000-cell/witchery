@@ -35,6 +35,9 @@ try {
   if (!(state.hp > 0)) fail('player has no health');
   if (state.quests !== 4) fail('villagers missing');
   if (!(state.calls > 0)) fail('nothing was drawn');
+  // Performance guard: the village view at spawn must stay within a draw-call budget
+  const BUDGET = Number(process.env.DRAW_CALL_BUDGET) || 700;
+  if (state.calls > BUDGET) fail(`draw calls ${state.calls} exceed the budget of ${BUDGET}`);
   if (errors.length) fail(`console errors:\n${errors.join('\n')}`);
 } finally {
   await browser.close();
