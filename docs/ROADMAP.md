@@ -86,7 +86,7 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 ## Wave eleven
 
 47. ✅ **Fishing.** Schools of fish swim in the lake and coastal shallows. Freeze them in a Frost floe and pick them up: Glimmerfish heal well, rare Prismfin fill your ink faster.
-48. **Critters.** Butterflies flutter over meadows by day and fireflies drift at night. Catch them for cooking: Sunwings give stamina, Glowbugs make you stealthier.
+48. ✅ **Critters.** Butterflies flutter over meadows by day and fireflies drift at night. Sneak up to catch them for cooking: Sunwings give stamina, Glowbugs make Hushed meals that shrink how far away enemies notice you.
 49. **Recipe book.** Every meal you cook is recorded in the satchel with its ingredients and effects, so you can cook it again.
 
 The work continues through this list until the budget is used up.

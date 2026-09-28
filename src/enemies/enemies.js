@@ -214,7 +214,7 @@ export class EnemyManager {
   players() {
     const out = [];
     const p = G.player;
-    if (p) out.push({ id: G.net?.id ?? 'local', pos: p.pos, alive: p.alive, local: true, state: p.state, sneak: !!p.sneaking });
+    if (p) out.push({ id: G.net?.id ?? 'local', pos: p.pos, alive: p.alive, local: true, state: p.state, sneak: !!p.sneaking, hush: p.buffs?.hush > 0 });
     if (G.peers) for (const peer of G.peers.values()) out.push({ id: peer.id, pos: peer.pos, alive: peer.state !== 'dead', local: false, state: peer.state, sneak: peer.state === 'sneak' });
     return out;
   }
@@ -789,8 +789,9 @@ export class EnemyManager {
     for (const p of this.players()) {
       if (!p.alive) continue;
       if (inDungeonY(p.pos.y) !== inDungeonY(e.pos.y)) continue;
-      // Sneaking players are noticed much later, unless the enemy is already after them
-      const d = p.pos.distanceTo(e.pos) / (p.sneak && !alert && e.target?.id !== p.id ? 0.4 : 1);
+      // Sneaking (and a Hushed meal) let you get much closer, unless the enemy is already after you
+      const unseen = !alert && e.target?.id !== p.id;
+      const d = p.pos.distanceTo(e.pos) / ((p.sneak && unseen ? 0.4 : 1) * (p.hush && unseen ? 0.65 : 1));
       if (d < bd) { bd = d; best = p; }
     }
     return best;

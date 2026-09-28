@@ -237,3 +237,18 @@ test('the haste shrine opens only while every brazier burns at once', async () =
   assert.equal(allLit([], now), false);
   assert.equal(SHRINES.length, 3);
 });
+
+test('critters spook unless you sneak, and always when you ride', async () => {
+  const { spooked, SPOOK_R, CATCH_R } = await import('../src/world/critters.js');
+  assert.ok(CATCH_R < SPOOK_R);
+  assert.equal(spooked(SPOOK_R - 0.5, false, false), true);
+  assert.equal(spooked(SPOOK_R - 0.5, true, false), false);
+  assert.equal(spooked(SPOOK_R + 0.5, false, false), false);
+  assert.equal(spooked(SPOOK_R * 2, true, true), true);
+});
+
+test('caught ingredients cook into named meals', async () => {
+  const { INGREDIENTS } = await import('../src/world/forage.js');
+  for (const k of ['fish', 'prismfin', 'sunwing', 'glowbug']) assert.ok(INGREDIENTS[k] && INGREDIENTS[k].biome.length === 0, k);
+  assert.equal(INGREDIENTS.glowbug.buff, 'hush');
+});

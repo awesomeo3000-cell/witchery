@@ -29,6 +29,7 @@ export const HONOURS = [
   { id: 'bat', name: 'Night Watch', desc: 'Pop an Inkbat', event: 'inkbat' },
   { id: 'revive', name: 'Good Samaritan', desc: 'Pick up a fainted friend', event: 'revive' },
   { id: 'angler', name: 'Angler', desc: 'Catch 10 fish from the ice', event: 'fish', count: 10 },
+  { id: 'critter', name: 'Soft Steps', desc: 'Sneak up on and catch 5 critters', event: 'critter', count: 5 },
   { id: 'shrines', name: 'Shrine Seeker', desc: 'Clear all three Paint Shrines', check: () => G.shrines && G.shrines.clearedCount() >= G.shrines.list.length },
   { id: 'echoes', name: 'Echo Breaker', desc: 'Clear the Gallery of Echoes', check: () => !!G.flags.rush_best },
 ];

@@ -38,6 +38,7 @@ import { TargetGallery } from './world/targets.js';
 import { Tablets } from './world/tablets.js';
 import { Shrines } from './trials/shrines.js';
 import { Fishing } from './world/fishing.js';
+import { Critters } from './world/critters.js';
 import { Merchant } from './world/merchant.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
@@ -226,6 +227,7 @@ class Game {
     G.tablets = timed('tablets', () => new Tablets(G.scene));
     G.shrines = timed('shrines', () => new Shrines(G.trials.root));
     G.fishing = timed('fishing', () => new Fishing(G.scene));
+    G.critters = timed('critters', () => new Critters(G.scene));
     G.merchant = timed('merchant', () => new Merchant(G.scene));
     G.cine = timed('cine', () => new Cinematic());
     G.guide = timed('guide', () => new Guide());
@@ -691,6 +693,7 @@ class Game {
     G.tablets.update(dt);
     G.shrines.update(dt);
     G.fishing.update(dt);
+    G.critters.update(dt);
     G.merchant.update(dt);
     G.greyMoon.update(dt);
     G.enemies.update(wdt);

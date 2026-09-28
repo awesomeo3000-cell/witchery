@@ -441,6 +441,7 @@ export class HUD {
     if (p.buffs.power > 0) bl.push(`<span style="color:#ff9d6b">⚔ ${fmt(p.buffs.power)}</span>`);
     if (p.buffs.ink > 0) bl.push(`<span style="color:#9ee0ff">✒ ${fmt(p.buffs.ink)}</span>`);
     if (p.buffs.swift > 0) bl.push(`<span style="color:#a8f08c">➶ ${fmt(p.buffs.swift)}</span>`);
+    if (p.buffs.hush > 0) bl.push(`<span style="color:#e0ff9a">☾ ${fmt(p.buffs.hush)}</span>`);
     const bhtml = bl.join('');
     if (bhtml !== this._buffHtml) { this._buffHtml = bhtml; $('buffs').innerHTML = bhtml; }
     // Inks

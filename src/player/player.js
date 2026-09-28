@@ -70,7 +70,7 @@ export class Player {
     this.swingTrail = new SwingTrail(G.scene);
     this.attackBuffer = 0;
     this.bonusHp = 0; // golden half-hearts from Prism Tonic
-    this.buffs = { power: 0, ink: 0, swift: 0 };
+    this.buffs = { power: 0, ink: 0, swift: 0, hush: 0 };
     this.pigment = 0;
     this.upg = { bristle: 0, reservoir: 0, lacquer: 0 };
     this._tip = new THREE.Vector3();
