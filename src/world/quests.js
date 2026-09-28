@@ -8,7 +8,6 @@ import { makeCharacter } from '../player/character.js';
 import { INGREDIENTS } from './forage.js';
 import { MAT, jitter } from './props.js';
 
-const $ = (id) => document.getElementById(id);
 const flag = (k) => !!G.flags[k];
 const setFlag = (k, v = true) => G.trials._setFlag(k, v);
 
