@@ -17,6 +17,47 @@ function eyes(group, y, z, spread = 0.18, size = 0.09, color = 0x111111) {
 
 export const VARIANT_TINT = { none: null, fire: 0xff8a5a, ice: 0x9ad8ff };
 
+// Glossy black ink with gold seams, like cracked lacquer (art direction in docs/inspo)
+let inkTex = null;
+function inkTexture() {
+  if (inkTex) return inkTex;
+  const S = 256;
+  const c = document.createElement('canvas');
+  c.width = c.height = S;
+  const x = c.getContext('2d');
+  const grd = x.createLinearGradient(0, 0, 0, S);
+  grd.addColorStop(0, '#2c2638'); grd.addColorStop(1, '#16121e');
+  x.fillStyle = grd;
+  x.fillRect(0, 0, S, S);
+  let s = 91;
+  const r = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
+  x.lineCap = 'round';
+  x.lineJoin = 'round';
+  for (let i = 0; i < 12; i++) {
+    let px = r() * S, py = S * 0.15 + r() * S * 0.7, a = r() * Math.PI * 2;
+    x.strokeStyle = r() < 0.6 ? '#f0bc48' : '#ffe08a';
+    x.lineWidth = 3 + r() * 3;
+    x.beginPath();
+    x.moveTo(px, py);
+    for (let k = 0; k < 6; k++) {
+      a += (r() - 0.5) * 1.4;
+      px += Math.cos(a) * 16; py += Math.sin(a) * 16;
+      x.lineTo(px, py);
+      // Little side branches
+      if (r() < 0.35) { const b = a + (r() < 0.5 ? 1 : -1) * (0.8 + r()); x.moveTo(px, py); x.lineTo(px + Math.cos(b) * 12, py + Math.sin(b) * 12); x.moveTo(px, py); }
+    }
+    x.stroke();
+  }
+  inkTex = new THREE.CanvasTexture(c);
+  inkTex.colorSpace = THREE.SRGBColorSpace;
+  inkTex.wrapS = inkTex.wrapT = THREE.RepeatWrapping;
+  return inkTex;
+}
+const inkMat = (tint) => new THREE.MeshPhongMaterial({
+  color: tint ? new THREE.Color(tint).lerp(new THREE.Color(0xffffff), 0.35) : 0xffffff,
+  map: inkTexture(), specular: 0x9a90b8, shininess: 70, emissive: 0x0c0814,
+});
+
 export function buildBounder(tint) {
   const g = new THREE.Group();
   const body = new THREE.Group();
@@ -58,7 +99,7 @@ export function buildInkling(tint) {
   const g = new THREE.Group();
   const body = new THREE.Group();
   g.add(body);
-  const mat = lam(tint ?? 0x3a3448, { emissive: 0x100818 });
+  const mat = inkMat(tint);
   const blob = new THREE.Mesh(new THREE.SphereGeometry(0.7, 24, 18), mat);
   blob.scale.set(1, 0.8, 1);
   blob.position.y = 0.55;
@@ -111,7 +152,7 @@ export function buildArcher(tint) {
   const g = new THREE.Group();
   const body = new THREE.Group();
   g.add(body);
-  const cloak = lam(tint ?? 0x3a3448, { emissive: 0x100818 });
+  const cloak = inkMat(tint);
   const torso = new THREE.Mesh(new THREE.ConeGeometry(0.55, 1.5, 7), cloak);
   torso.position.y = 0.75;
   const head = new THREE.Mesh(new THREE.SphereGeometry(0.38, 10, 8), cloak);
@@ -132,7 +173,7 @@ export function buildWisp() {
   const g = new THREE.Group();
   const body = new THREE.Group();
   g.add(body);
-  const mat = lam(0x2a2438, { emissive: 0x1a0a2a });
+  const mat = inkMat();
   const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55, 3), mat);
   core.castShadow = true;
   body.add(core);
@@ -425,7 +466,7 @@ export function buildBlotGiant() {
   const g = new THREE.Group();
   const body = new THREE.Group();
   g.add(body);
-  const ink = lam(0x3a3246);
+  const ink = inkMat();
   const belly = lam(0x6a5a78);
   const torso = new THREE.Mesh(new THREE.SphereGeometry(2.6, 28, 20), ink);
   torso.scale.set(1, 1.15, 0.85);
@@ -677,7 +718,7 @@ export function buildKnight(tint) {
   const g = new THREE.Group();
   const body = new THREE.Group();
   g.add(body);
-  const ink = lam(tint || 0x3a3246);
+  const ink = inkMat(tint);
   const plate = lam(0x9a9aa8, { map: paintTex('cloth') });
   const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.55, 0.7, 6, 12), ink);
   torso.position.y = 1.2;
