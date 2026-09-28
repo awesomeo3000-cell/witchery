@@ -867,6 +867,8 @@ export class EnemyManager {
       if (inDungeonY(p.pos.y) !== inDungeonY(e.pos.y)) continue;
       // Sneaking (and a Hushed meal) let you get much closer, unless the enemy is already after you
       const unseen = !alert && e.target?.id !== p.id;
+      // Nobody can spot you through a cloud of steam
+      if (unseen && G.paint?.inSteam(p.pos)) continue;
       const d = p.pos.distanceTo(e.pos) / ((p.sneak && unseen ? (G.flags.charm_hush ? 0.3 : 0.4) : 1) * (p.hush && unseen ? 0.65 : 1));
       if (d < bd) { bd = d; best = p; }
     }

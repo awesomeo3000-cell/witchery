@@ -19,6 +19,7 @@ export class PaintSystem {
     this.scene = scene;
     this.globs = [];
     this.splats = [];
+    this.steams = [];
     this.textures = [makeSplatTexture(3), makeSplatTexture(17), makeSplatTexture(71)];
     this.globGeo = new THREE.IcosahedronGeometry(0.28, 1);
     this.globMats = COLORS.map((c) => new THREE.MeshBasicMaterial({ color: c.hex }));
@@ -195,12 +196,48 @@ export class PaintSystem {
         s.life = Math.min(s.life, 0.3);
         if (el === 'fire' && s.element === 'vine') G.particles.flames(s.pos, 1, 8);
         G.particles.burst(s.pos, { count: 10, color: 0xdddddd, speed: 2, up: 2, life: 1, size: 0.8, gravity: -1, alpha: 0.5 });
+        // Frost on burning paint boils into a cloud of steam that hides anyone inside it
+        if (el === 'ice' && s.element === 'fire' && !s.onWater) this._steam(s.pos);
+      }
+      // Ember on a Spring pad: the pad bursts in a blast that knocks back and burns ink creatures
+      if (el === 'fire' && s.pad && s.life > 0.3) {
+        s.life = 0.2;
+        this._blast(s.pos, !opts.net);
       }
     }
     const snd = { fire: 'fire', ice: 'ice', bounce: 'bounce', vine: 'vine' }[el];
     G.audio.play('splat', 0.7);
     if (opts.loud !== false) G.audio.play(snd, 0.5);
     return splat;
+  }
+
+  _steam(pos) {
+    const c = { pos: pos.clone(), r: 5, life: 7 };
+    this.steams.push(c);
+    G.audio.play('glide', 0.8);
+    G.particles.burst(pos.clone().setY(pos.y + 1), { count: 40, color: 0xf2f2f2, speed: 3, up: 3, life: 2.5, size: 2.2, gravity: -0.6, alpha: 0.55, grow: 1.8 });
+    if (!G.guide?.seen.has('steam')) { G.guide?.seen.add('steam'); G.hud.toast('Steam! Enemies can\'t see you while you stand in it.', '#e8e8e8', 3); }
+  }
+
+  // Inside a steam cloud?
+  inSteam(pos) { return this.steams.some((c) => c.life > 0 && Math.hypot(pos.x - c.pos.x, pos.z - c.pos.z) < c.r && Math.abs(pos.y - c.pos.y) < 6); }
+
+  _blast(pos, local) {
+    G.audio.play('slam');
+    G.audio.play('fire');
+    G.particles.burst(pos.clone().setY(pos.y + 0.6), { count: 60, color: 0xffa040, speed: 12, life: 0.7, size: 0.8, pool: 'glow', gravity: 6 });
+    G.particles.flames(pos, 2.5, 30, 1.5);
+    if (G.player && G.player.pos.distanceTo(pos) < 25) G.player.cameraShake = Math.max(G.player.cameraShake, 0.4);
+    if (!local || !G.enemies) return;
+    // Only the painter's own client deals the damage, so co-op doesn't double it
+    for (const e of G.enemies.list) {
+      if (!e.alive) continue;
+      const d = e.pos.clone().sub(pos);
+      if (d.length() > 4.5 + e.radius) continue;
+      d.y = 0;
+      G.enemies.localHit(e, { dmg: 14, element: 'fire', dir: d.lengthSq() > 0.01 ? d.normalize() : new THREE.Vector3(1, 0, 0), source: 'blast', hy: e.pos.y + e.height * 0.5 });
+    }
+    G.honours?.event('blast');
   }
 
   _growVines(splat, opts) {
@@ -290,6 +327,12 @@ export class PaintSystem {
   }
 
   update(dt) {
+    for (let i = this.steams.length - 1; i >= 0; i--) {
+      const c = this.steams[i];
+      c.life -= dt;
+      if (c.life <= 0) { this.steams.splice(i, 1); continue; }
+      if (Math.random() < dt * 8) G.particles.burst(c.pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * c.r * 1.5, 1 + Math.random() * 2, (Math.random() - 0.5) * c.r * 1.5)), { count: 1, color: 0xf2f2f2, speed: 0.5, up: 1, life: 2, size: 2, gravity: -0.3, alpha: 0.4, grow: 1.5 });
+    }
     this._updateMask(dt);
     // Globs
     for (let i = this.globs.length - 1; i >= 0; i--) {
@@ -401,6 +444,6 @@ export class PaintSystem {
   }
 
   onNetPaint(m) {
-    this.createSplat(new THREE.Vector3(...m.p), new THREE.Vector3(...m.n), m.c, m.k, m.o || {});
+    this.createSplat(new THREE.Vector3(...m.p), new THREE.Vector3(...m.n), m.c, m.k, { ...(m.o || {}), net: true });
   }
 }

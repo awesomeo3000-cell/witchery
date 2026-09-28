@@ -153,4 +153,6 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 
 80. ✅ **Fire updrafts.** Burning Ember paint on the ground lifts gliders, with rising heat motes to show it.
 
+81. ✅ **Colour chemistry.** Ember on a Spring pad blasts nearby enemies (dealt only by the painter's client in co-op); Frost on burning paint makes a steam cloud that hides you from enemies that haven't spotted you.
+
 The work continues through this list until the budget is used up.

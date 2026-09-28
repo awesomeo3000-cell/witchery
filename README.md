@@ -76,6 +76,11 @@ Each colour has its own ink bottle, which refills slowly over time. Ink flowers 
 
 Heat rises: glide over burning Ember paint on the ground and the updraft carries you up, like a campfire.
 
+Colours react with each other:
+- **Ember on a Spring pad** sets it off in a blast that burns and knocks back ink creatures nearby.
+- **Frost on burning Ember paint** boils into a cloud of steam. While you stand in it, enemies that haven't spotted you yet can't see you.
+- Ember burns vines and melts Frost; Frost puts out Ember.
+
 ## The Prism Trials
 
 Coloured light beams mark the four trial shrines. Each trial has a puzzle built around its colour, followed by a mini-boss:
@@ -188,7 +193,7 @@ All art is generated in code: painted canvas textures (bark, leaves, stone, shin
 
 ## Painter's Honours
 
-There are thirty-three achievements, such as First Flight, Soft Bristles (a sneak strike), Record Breaker, Cartographer, Good Samaritan (reviving a friend) and Echo Breaker. Each one pops a toast when earned, is listed with its progress in the satchel, and is saved per player.
+There are thirty-four achievements, such as First Flight, Soft Bristles (a sneak strike), Record Breaker, Cartographer, Good Samaritan (reviving a friend) and Echo Breaker. Each one pops a toast when earned, is listed with its progress in the satchel, and is saved per player.
 
 ### Wardrobe
 
