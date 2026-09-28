@@ -105,6 +105,27 @@ export function buildSpitter(tint) {
   return { group: g, body, head, height: 2.4, radius: 0.8 };
 }
 
+export function buildArcher(tint) {
+  const g = new THREE.Group();
+  const body = new THREE.Group();
+  g.add(body);
+  const cloak = lam(tint ?? 0x3a3448, { emissive: 0x100818 });
+  const torso = new THREE.Mesh(new THREE.ConeGeometry(0.55, 1.5, 7), cloak);
+  torso.position.y = 0.75;
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.38, 10, 8), cloak);
+  head.position.y = 1.65;
+  const hood = new THREE.Mesh(new THREE.ConeGeometry(0.4, 0.7, 7), cloak);
+  hood.position.set(0, 2.05, -0.1);
+  hood.rotation.x = -0.3;
+  body.add(torso, head, hood);
+  eyes(body, 1.7, 0.33, 0.14, 0.08, 0xff6a3a);
+  const bow = new THREE.Mesh(new THREE.TorusGeometry(0.7, 0.05, 4, 16, Math.PI), lam(0x6a4428));
+  bow.position.set(0.45, 1.2, 0.35);
+  bow.rotation.set(0, Math.PI / 2, Math.PI / 2);
+  body.add(bow);
+  return { group: g, body, bow, height: 2.2, radius: 0.6 };
+}
+
 export function buildWisp() {
   const g = new THREE.Group();
   const body = new THREE.Group();

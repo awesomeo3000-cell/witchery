@@ -175,3 +175,6 @@ button.secondary { background: rgba(255,255,255,0.15); color: #fff; box-shadow: 
 
 #dialog .choices { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
 #dialog .choices div { font: 700 16px var(--sans); color: #fff09a; }
+
+#buffs { position: absolute; top: 58px; left: 20px; display: flex; gap: 10px; font: 800 14px var(--sans); }
+#buffs span { background: rgba(10,12,24,0.45); padding: 2px 9px; border-radius: 10px; }

@@ -67,6 +67,8 @@ export class Player {
     this.rideTrail = new Ribbon(G.scene, { width: 0.7, life: 0.85 });
     this.swingTrail = new SwingTrail(G.scene);
     this.attackBuffer = 0;
+    this.bonusHp = 0; // golden half-hearts from Prism Tonic
+    this.buffs = { power: 0, ink: 0, swift: 0 };
     this._tip = new THREE.Vector3();
     this._base = new THREE.Vector3();
   }
@@ -96,13 +98,18 @@ export class Player {
 
   useStamina(a) {
     if (this.exhausted) return false;
-    this.stamina -= a;
+    this.stamina -= this.buffs.swift > 0 ? a * 0.5 : a;
     this.staminaDelay = 0.8;
     if (this.stamina <= 0) {
       this.stamina = 0;
       this.exhausted = true;
     }
     return true;
+  }
+
+  applyBuff(key) {
+    if (key === 'tonic') this.bonusHp = 6;
+    else this.buffs[key] = 120;
   }
 
   heal(n) {
@@ -112,7 +119,9 @@ export class Player {
   takeDamage(n, from, opts = {}) {
     if (this.alive && this.dodgeT > 0 && from && !(G.flurry > 0)) { this.triggerFlurry(); return false; }
     if (!this.alive || this.invuln > 0 || G.godMode) return false;
-    this.hp -= n;
+    const absorbed = Math.min(this.bonusHp, n);
+    this.bonusHp -= absorbed;
+    this.hp -= n - absorbed;
     this.invuln = 0.9;
     this.hurtFlash = 0.35;
     this.cameraShake = 0.35;
@@ -177,6 +186,7 @@ export class Player {
     const inp = G.input;
     this.invuln = Math.max(0, this.invuln - dt);
     this.hurtFlash = Math.max(0, this.hurtFlash - dt);
+    for (const k in this.buffs) this.buffs[k] = Math.max(0, this.buffs[k] - dt);
     this.cameraShake = Math.max(0, this.cameraShake - dt);
     this.char.setHurt(this.hurtFlash > 0 ? this.hurtFlash * 2 : 0);
 
@@ -291,6 +301,7 @@ export class Player {
       this.useStamina(14 * dt);
     }
     if (this.exhausted) speed *= 0.6;
+    if (this.buffs.swift > 0) speed *= 1.25;
     if (this.attack && this.attack.kind !== 'spin') speed *= 0.3;
 
     // Dodge (locked-on)
@@ -740,7 +751,7 @@ export class Player {
       if (arc < Math.PI && d.normalize().dot(f) < Math.cos(arc)) continue;
       a.hit.add(e.id);
       any = true;
-      const bonus = G.flurry > 0 ? 1.5 : 1;
+      const bonus = (G.flurry > 0 ? 1.5 : 1) * (this.buffs.power > 0 ? 1.5 : 1);
       G.enemies.localHit(e, { dmg: Math.round(dmg * bonus), element: el, dir: d.clone().normalize(), source: 'melee' });
       // Ink splatter flies off in the direction of the blow
       const hp = e.pos.clone().setY(e.pos.y + e.height * 0.5);
@@ -810,7 +821,8 @@ export class Player {
   }
 
   _updateInk(dt) {
-    for (let i = 0; i < 4; i++) this.ink[i] = Math.min(100, this.ink[i] + dt * (i === this.color && this.painting ? 0 : 2.5));
+    const regen = this.buffs.ink > 0 ? 14 : 2.5;
+    for (let i = 0; i < 4; i++) this.ink[i] = Math.min(100, this.ink[i] + dt * (i === this.color && this.painting && regen < 5 ? 0 : regen));
   }
 
   _environment(dt) {

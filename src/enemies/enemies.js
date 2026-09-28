@@ -4,8 +4,9 @@ import { G, COLORS, COUNTER, inDungeonY } from '../core/ctx.js';
 import { damp, dampAngle, mulberry32 } from '../core/math.js';
 import {
   buildBounder, buildInkling, buildSpitter, buildWisp, buildFrostmaw, buildMagmaw,
-  buildShellback, buildGalewing, buildHueless, VARIANT_TINT,
+  buildShellback, buildGalewing, buildHueless, buildArcher, VARIANT_TINT,
 } from './models.js';
+import { CampDecor } from './camps.js';
 import { VILLAGE, TRIALS, CITADEL } from '../world/layout.js';
 
 export const TYPES = {
@@ -13,6 +14,7 @@ export const TYPES = {
   inkling: { name: 'Inkling', hp: 20, speed: 4.5, aggro: 20, build: buildInkling },
   spitter: { name: 'Spitter', hp: 26, speed: 0, aggro: 28, build: buildSpitter, static: true },
   wisp: { name: 'Ink Wisp', hp: 16, speed: 8, aggro: 34, build: buildWisp, fly: true },
+  archer: { name: 'Inkshot', hp: 24, speed: 0, aggro: 44, build: buildArcher, static: true },
   frostmaw: { name: 'Frostmaw', hp: 240, speed: 3.2, aggro: 60, build: buildFrostmaw, boss: true },
   magmaw: { name: 'Magmaw', hp: 240, speed: 3.6, aggro: 60, build: buildMagmaw, boss: true },
   shellback: { name: 'Shellback', hp: 220, speed: 3.4, aggro: 60, build: buildShellback, boss: true },
@@ -89,6 +91,19 @@ class Enemy {
     this.group.add(this.vineWrap);
   }
 
+  // Bigger, tougher camp leaders
+  makeElite() {
+    if (this.elite) return;
+    this.elite = true;
+    this.maxHp = this.hp = Math.round(this.def.hp * 2.6);
+    this.group.scale.setScalar(1.5);
+    this.baseScale = 1.5;
+    this.radius *= 1.5;
+    this.height *= 1.5;
+    this.dmgMul = 1.5;
+    this.name = `Great ${this.name}`;
+  }
+
   get center() { return tmpV.copy(this.pos).setY(this.pos.y + this.height * 0.5); }
 
   dispose() {
@@ -107,6 +122,7 @@ export class EnemyManager {
     this.waves = [];
     this.pickups = [];
     this.camps = this._makeCamps();
+    this.decor = new CampDecor(scene, this.camps);
     this.syncTimer = 0;
     this._hintTime = 0;
     this.bossActive = null;
@@ -119,10 +135,12 @@ export class EnemyManager {
       feather: new THREE.MeshLambertMaterial({ color: 0x9ab8d8, flatShading: true }),
       rock: new THREE.MeshLambertMaterial({ color: 0xa07a40, flatShading: true }),
       rain: new THREE.MeshBasicMaterial({ color: 0x3a2a4a }),
+      arrow: new THREE.MeshBasicMaterial({ color: 0x2a2433 }),
     };
     this.projGeo = {
       ink: new THREE.IcosahedronGeometry(0.35, 1), ice: new THREE.DodecahedronGeometry(1.1, 0), fire: new THREE.IcosahedronGeometry(0.6, 1),
       feather: new THREE.ConeGeometry(0.2, 1.2, 4).rotateX(Math.PI / 2), rock: new THREE.DodecahedronGeometry(0.9, 0), rain: new THREE.IcosahedronGeometry(0.5, 1),
+      arrow: new THREE.CylinderGeometry(0.05, 0.12, 1.4, 5).rotateX(Math.PI / 2),
     };
     this.heartGeo = (() => {
       const s = new THREE.Shape();
@@ -142,7 +160,7 @@ export class EnemyManager {
   _makeCamps() {
     const rand = mulberry32(1234);
     const camps = [];
-    for (let i = 0; i < 400 && camps.length < 30; i++) {
+    for (let i = 0; i < 3000 && camps.length < 28; i++) {
       const a = rand() * Math.PI * 2, d = 110 + rand() * 520;
       const x = Math.cos(a) * d, z = Math.sin(a) * d;
       const h = G.terrain.heightAt(x, z);
@@ -150,6 +168,13 @@ export class EnemyManager {
       if (Math.hypot(x - VILLAGE.x, z - VILLAGE.z) < 120) continue;
       if (TRIALS.some((t) => Math.hypot(x - t.x, z - t.z) < 45)) continue;
       if (camps.some((c) => Math.hypot(c.x - x, c.z - z) < 70)) continue;
+      // Camps need fairly level ground for tents and the lookout
+      let bumpy = false;
+      for (let k = 0; k < 8 && !bumpy; k++) {
+        const a2 = (k / 8) * Math.PI * 2;
+        if (Math.abs(G.terrain.heightAt(x + Math.cos(a2) * 12, z + Math.sin(a2) * 12) - h) > 2.5) bumpy = true;
+      }
+      if (bumpy) continue;
       const w = G.terrain.biome(x, z);
       const variant = w.ember > 0.45 ? 'fire' : w.frost > 0.45 ? 'ice' : 'none';
       const roll = rand();
@@ -158,7 +183,12 @@ export class EnemyManager {
       else if (roll < 0.6) types = ['inkling', 'inkling', 'inkling', 'spitter'];
       else if (roll < 0.8) types = ['bounder', 'spitter', 'inkling'];
       else types = ['bounder', 'bounder', 'bounder'];
-      camps.push({ id: camps.length, x, z, variant, types, active: false, members: [], respawn: 0 });
+      const tower = rand() < 0.45;
+      const ta = rand() * Math.PI * 2;
+      const towerPos = new THREE.Vector3(x + Math.cos(ta) * 11, 0, z + Math.sin(ta) * 11);
+      towerPos.y = G.terrain.heightAt(towerPos.x, towerPos.z) + 6.5;
+      if (tower) types = [...types, 'archer'];
+      camps.push({ id: camps.length, x, z, variant, types, active: false, members: [], respawn: 0, tower, towerPos, elite: rand() < 0.35 });
     }
     // Wisps guarding the sky around the citadel
     camps.push({ id: camps.length, x: CITADEL.x + 120, z: CITADEL.z, y: 150, variant: 'none', types: ['wisp', 'wisp', 'wisp'], active: false, members: [], respawn: 0, sky: true });
@@ -179,6 +209,7 @@ export class EnemyManager {
     if (opts.arena) e.arena = opts.arena;
     if (opts.trial) e.trial = opts.trial;
     if (opts.camp !== undefined) e.camp = opts.camp;
+    if (opts.elite) e.makeElite();
     this.list.push(e);
     this.byId.set(e.id, e);
     return e;
@@ -505,7 +536,7 @@ export class EnemyManager {
       }
       p.mesh.position.copy(p.pos);
       p.mesh.rotation.x += dt * 5;
-      if (p.kind === 'feather') p.mesh.lookAt(p.pos.clone().add(p.vel));
+      if (p.kind === 'feather' || p.kind === 'arrow') p.mesh.lookAt(p.pos.clone().add(p.vel));
       if (p.kind === 'fire' && Math.random() < 0.6) G.particles.flames(p.pos, 0.3, 1, 0.8);
       if (p.kind === 'ink' || p.kind === 'rain') G.particles.burst(p.pos, { count: 1, color: 0x3a2a4a, speed: 0.3, life: 0.4, size: 0.4 });
       if (!host) {
@@ -537,7 +568,7 @@ export class EnemyManager {
   }
 
   _impactFx(kind, pos) {
-    const col = { ink: 0x5a2a7a, ice: 0xcdefff, fire: 0xff7a2a, feather: 0x9ab8d8, rock: 0xa07a40, rain: 0x3a2a4a }[kind];
+    const col = { ink: 0x5a2a7a, ice: 0xcdefff, fire: 0xff7a2a, feather: 0x9ab8d8, rock: 0xa07a40, rain: 0x3a2a4a, arrow: 0x2a2433 }[kind];
     G.particles.burst(pos, { count: 14, color: col, speed: 5, life: 0.5, size: 0.5 });
   }
 
@@ -591,8 +622,9 @@ export class EnemyManager {
         c.members = c.types.map((t, i) => {
           const a = (i / c.types.length) * Math.PI * 2;
           const x = c.x + Math.cos(a) * 5, z = c.z + Math.sin(a) * 5;
+          if (t === 'archer') return this.spawn(t, c.towerPos.clone().setY(c.towerPos.y + 0.2), { variant: c.variant, camp: c.id });
           const y = c.sky ? c.y + i * 3 : G.terrain.heightAt(x, z);
-          return this.spawn(t, new THREE.Vector3(x, y, z), { variant: c.variant, camp: c.id });
+          return this.spawn(t, new THREE.Vector3(x, y, z), { variant: c.variant, camp: c.id, elite: c.elite && i === 0 });
         });
       } else if (c.active && near > 180) {
         c.active = false;
@@ -722,7 +754,8 @@ export class EnemyManager {
     }
     // Squash on impact
     const sq = e.hitFlash / 0.15;
-    g.scale.set(1 + sq * 0.14, 1 - sq * 0.16, 1 + sq * 0.14);
+    const bs = e.baseScale || 1;
+    g.scale.set(bs * (1 + sq * 0.14), bs * (1 - sq * 0.16), bs * (1 + sq * 0.14));
     e.iceBlock.visible = e.status.frozen > 0 && e.type !== 'magmaw';
     e.vineWrap.visible = e.status.rooted > 0 && e.type !== 'galewing';
     if (e.status.burn > 0 && Math.random() < dt * 25) G.particles.flames(e.pos.clone().setY(e.pos.y + e.height * 0.3), e.radius * 0.6, 1);
@@ -738,7 +771,7 @@ export class EnemyManager {
       e: this.list.filter((e) => e.alive).map((e) => [
         e.id, TYPE_KEYS.indexOf(e.type), VARIANTS.indexOf(e.variant), r(e.pos.x), r(e.pos.y), r(e.pos.z), r(e.yaw),
         Math.ceil(e.hp), e.maxHp, STATES.indexOf(e.state),
-        (e.status.burn > 0 ? 1 : 0) | (e.status.frozen > 0 ? 2 : 0) | (e.status.rooted > 0 ? 4 : 0) | (e.status.stun > 0 ? 8 : 0),
+        (e.status.burn > 0 ? 1 : 0) | (e.status.frozen > 0 ? 2 : 0) | (e.status.rooted > 0 ? 4 : 0) | (e.status.stun > 0 ? 8 : 0) | (e.elite ? 16 : 0),
         Math.round(e.armor), Math.round(e.meter), e.shield, e.shieldHp, e.phase, r(e.stateT), e.trial || 0,
       ]),
       p: this.projectiles.map((p) => [p.id, p.kind, r(p.pos.x), r(p.pos.y), r(p.pos.z), r(p.vel.x), r(p.vel.y), r(p.vel.z)]),
@@ -756,7 +789,7 @@ export class EnemyManager {
       seen.add(id);
       let e = this.byId.get(id);
       if (!e) {
-        e = this.spawn(TYPE_KEYS[ti], new THREE.Vector3(x, y, z), { id, variant: VARIANTS[vi] });
+        e = this.spawn(TYPE_KEYS[ti], new THREE.Vector3(x, y, z), { id, variant: VARIANTS[vi], elite: !!(bits & 16) });
         if (trial) e.trial = trial;
         this.nextId = Math.max(this.nextId, id + 1);
       }
@@ -855,6 +888,7 @@ export class EnemyManager {
       if (e.boss && e.pos.distanceTo(G.player.pos) < 90) this.bossActive = e;
       this._render(e, dt);
     }
+    this.decor.update(dt);
     this._updateProjectiles(dt, host);
     this._updateWaves(dt, host);
     for (let i = this.pickups.length - 1; i >= 0; i--) {
@@ -907,7 +941,7 @@ function contactDamage(e, mgr, dmg, range, element) {
     const d = Math.hypot(p.pos.x - e.pos.x, p.pos.z - e.pos.z);
     if (d < e.radius + range && Math.abs(p.pos.y - e.pos.y) < e.height + 0.5) {
       (e.hitSet || (e.hitSet = new Set())).add(p.id);
-      mgr.damagePlayer(p, dmg, e.pos.clone(), element);
+      mgr.damagePlayer(p, Math.round(dmg * (e.dmgMul || 1)), e.pos.clone(), element);
     }
   }
 }
@@ -1007,6 +1041,24 @@ const AI = {
       e.cool = 2.6 + Math.random();
       setState(e, 'windup');
     }
+  },
+  archer(e, dt, t, mgr) {
+    e.stateT += dt;
+    if (!t) { e.state = 'idle'; return; }
+    faceTo(e, t.pos, dt, 5);
+    e.cool -= dt;
+    if (e.state === 'windup' && e.stateT > 0.9) {
+      setState(e, 'shoot');
+      const from = e.pos.clone().setY(e.pos.y + e.height * 0.6).addScaledVector(fwdOf(e), 0.6);
+      const to = t.pos.clone().setY(t.pos.y + 1);
+      const tt = Math.max(0.4, from.distanceTo(to) / 34);
+      const v = to.sub(from).divideScalar(tt);
+      v.y += 0.5 * 10 * tt;
+      mgr.shoot('arrow', from, v, { dmg: Math.round(2 * (e.dmgMul || 1)), grav: 10, radius: 0.5 });
+      G.net?.send({ t: 'efx', k: 'spit', p: [from.x, from.y, from.z] });
+      G.audio.play('shoot', 0.5);
+    } else if (e.state === 'shoot' && e.stateT > 0.5) setState(e, 'idle');
+    else if (e.cool <= 0 && e.state === 'idle') { e.cool = 2.8 + Math.random() * 1.5; setState(e, 'windup'); }
   },
   wisp(e, dt, t, mgr) {
     e.stateT += dt;
@@ -1367,6 +1419,11 @@ const RENDER = {
     m.head.scale.setScalar(e.state === 'windup' ? 1.2 + Math.sin(e.anim * 30) * 0.05 : 1);
     m.head.rotation.x = e.state === 'shoot' ? -0.4 : Math.sin(e.anim) * 0.1;
     m.body.rotation.z = Math.sin(e.anim * 1.3) * 0.05;
+  },
+  archer(e) {
+    const m = e.model;
+    m.bow.scale.set(1, 1, e.state === 'windup' ? 1.3 : 1);
+    m.body.rotation.x = e.state === 'windup' ? -0.15 : 0;
   },
   wisp(e) {
     const m = e.model;

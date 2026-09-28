@@ -300,8 +300,8 @@ export class HUD {
     const p = G.player;
     if (!p) return;
     // Hearts
-    if (p.hp !== this.lastHp || p.maxHp !== this.lastMax) {
-      this.lastHp = p.hp; this.lastMax = p.maxHp;
+    if (p.hp !== this.lastHp || p.maxHp !== this.lastMax || p.bonusHp !== this.lastBonus) {
+      this.lastHp = p.hp; this.lastMax = p.maxHp; this.lastBonus = p.bonusHp;
       let html = '';
       for (let i = 0; i < p.maxHp / 2; i++) {
         const v = Math.max(0, Math.min(2, p.hp - i * 2));
@@ -309,8 +309,21 @@ export class HUD {
         const fill = v === 2 ? '#ff3a4a' : v === 1 ? `url(#${id})` : 'rgba(40,20,30,0.7)';
         html += `<svg viewBox="0 0 40 36"><defs><linearGradient id="${id}"><stop offset="50%" stop-color="#ff3a4a"/><stop offset="50%" stop-color="rgba(40,20,30,0.7)"/></linearGradient></defs><path d="${HEART}" fill="${fill}" stroke="#fff" stroke-width="2.5"/><path d="M9 8 Q 12 5 15 7" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`;
       }
+      for (let i = 0; i < Math.ceil(p.bonusHp / 2); i++) {
+        const half = p.bonusHp - i * 2 === 1;
+        html += `<svg viewBox="0 0 40 36"><defs><linearGradient id="gb${i}"><stop offset="50%" stop-color="#ffd84a"/><stop offset="50%" stop-color="rgba(40,30,10,0.5)"/></linearGradient></defs><path d="${HEART}" fill="${half ? `url(#gb${i})` : '#ffd84a'}" stroke="#fff6c0" stroke-width="2.5"/></svg>`;
+      }
       this.hearts.innerHTML = html;
+      $('buffs').style.top = `${22 + this.hearts.offsetHeight}px`;
     }
+    // Active buffs
+    const bl = [];
+    const fmt = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+    if (p.buffs.power > 0) bl.push(`<span style="color:#ff9d6b">⚔ ${fmt(p.buffs.power)}</span>`);
+    if (p.buffs.ink > 0) bl.push(`<span style="color:#9ee0ff">✒ ${fmt(p.buffs.ink)}</span>`);
+    if (p.buffs.swift > 0) bl.push(`<span style="color:#a8f08c">➶ ${fmt(p.buffs.swift)}</span>`);
+    const bhtml = bl.join('');
+    if (bhtml !== this._buffHtml) { this._buffHtml = bhtml; $('buffs').innerHTML = bhtml; }
     // Inks
     this.potions.forEach((pt, i) => { pt.fill.style.height = `${p.ink[i]}%`; });
     // Prisms
