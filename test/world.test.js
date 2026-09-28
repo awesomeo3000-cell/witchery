@@ -83,3 +83,23 @@ test('twelve lore tablets fit around the island puzzles', async () => {
   assert.equal(c.length, TABLETS.length);
   for (const t of TABLETS) assert.ok(t.title && t.text.length > 40);
 });
+
+test('fish schools sit in shallow water, some in the lake, spread apart', async () => {
+  const { fishSites, fishSpot, SCHOOLS } = await import('../src/world/fishing.js');
+  const sites = fishSites(terrain);
+  assert.equal(sites.length, SCHOOLS);
+  assert.ok(sites.filter((s) => s.lake).length >= 2, 'some schools live in the lake');
+  for (const s of sites) assert.ok(fishSpot(terrain.heightAt(s.x, s.z)));
+  for (const a of sites) for (const b of sites) if (a !== b) assert.ok(Math.hypot(a.x - b.x, a.z - b.z) > 50);
+  assert.deepEqual(fishSites(terrain), sites, 'deterministic');
+});
+
+test('shrine sites keep clear of puzzles and tablets', async () => {
+  const { puzzleSites } = await import('../src/world/puzzles.js');
+  const totems = puzzleSites(terrain, 6, 4242);
+  const rings = puzzleSites(terrain, 4, 777, totems);
+  const tablets = puzzleSites(terrain, 12, 1313, [...totems, ...rings]);
+  const shrines = puzzleSites(terrain, 3, 9191, [...totems, ...rings, ...tablets]);
+  assert.equal(shrines.length, 3);
+  for (const s of shrines) for (const q of [...totems, ...rings, ...tablets]) assert.ok(Math.hypot(s.x - q.x, s.z - q.z) > 100);
+});

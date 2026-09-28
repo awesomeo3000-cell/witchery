@@ -81,6 +81,12 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 
 44. ✅ **Paint Shrines.** Three single-room puzzle shrines behind stone arches on the surface, each mixing colours (Frost floes and an Ember-melted wall; a Spring bounce and a Bloom climb; three braziers burning at once). Each ends in a chest with a Paint Sprite and Pigment.
 45. ✅ **Shrine polish.** A camera sweep across each shrine on your first visit, light beams over uncleared shrine arches (gold once cleared, for everyone in the room), and a shrine counter in the adventure log. Cinematics no longer clamp to the surface terrain underground.
-46. **Regression and docs.** Browser regression of shrines and co-op revive, README, roadmap.
+46. ✅ **Regression and docs.** Browser regression of shrines and co-op revive, README, roadmap.
+
+## Wave eleven
+
+47. ✅ **Fishing.** Schools of fish swim in the lake and coastal shallows. Freeze them in a Frost floe and pick them up: Glimmerfish heal well, rare Prismfin fill your ink faster.
+48. **Critters.** Butterflies flutter over meadows by day and fireflies drift at night. Catch them for cooking: Sunwings give stamina, Glowbugs make you stealthier.
+49. **Recipe book.** Every meal you cook is recorded in the satchel with its ingredients and effects, so you can cook it again.
 
 The work continues through this list until the budget is used up.

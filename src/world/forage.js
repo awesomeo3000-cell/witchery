@@ -15,11 +15,14 @@ export const INGREDIENTS = {
   pepper: { name: 'Emberpepper', glyph: '🌶', color: 0xff5a1f, heal: 1, buff: 'power', biome: ['ember', 'spring'] },
   lily: { name: 'Frostlily', glyph: '❄', color: 0x9ee0ff, heal: 1, buff: 'ink', biome: ['frost'] },
   goldpetal: { name: 'Goldpetal', glyph: '✿', color: 0xffd84a, heal: 2, tonic: 2, biome: ['sky'] },
+  // Caught rather than picked (fishing and critters), so they have no biome to grow in
+  fish: { name: 'Glimmerfish', glyph: '🐟', color: 0x7ac8e8, heal: 3, biome: [] },
+  prismfin: { name: 'Prismfin', glyph: '🐠', color: 0xe86ad8, heal: 2, buff: 'ink', biome: [] },
 };
 const KEYS = Object.keys(INGREDIENTS);
 const BUFF_NAMES = { swift: 'Swift', power: 'Bold', ink: 'Inky' };
 const MEAL_PREFIX = { swift: 'Zippy', power: 'Spicy', ink: 'Inky' };
-const MEAL_BASE = { apple: 'Apple', shroom: 'Mushroom', mint: 'Mint', pepper: 'Pepper', lily: 'Lily', goldpetal: 'Petal' };
+const MEAL_BASE = { apple: 'Apple', shroom: 'Mushroom', mint: 'Mint', pepper: 'Pepper', lily: 'Lily', goldpetal: 'Petal', fish: 'Fish', prismfin: 'Prismfin' };
 
 export class Forage {
   constructor(scene) {

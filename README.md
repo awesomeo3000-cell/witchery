@@ -109,6 +109,7 @@ Bring every 4 sprites to Pip in Palette Hollow for a Heart Container or Stamina 
   - **Brazier Rings:** light one brazier with Ember, then the rest before the flames die.
   
   Each one pays Pigment to everyone nearby. Found and solved puzzles show on the map.
+- **Fishing.** Schools of fish circle in the lake and the coastal shallows; watch for one leaping out. Paint a Frost floe over a school and the fish under it freeze into the ice, then walk over to pick them up. Glimmerfish heal well, and rare pink Prismfin make meals that fill your ink faster. Fish come back after a few minutes.
 - **Paint Shrines.** Three stone arches with swirling paint lead down to small one-room puzzles, each mixing colours:
   - **Shrine of Crossing:** freeze floes across a cold pool, then melt the ice wall with Ember.
   - **Shrine of Heights:** bounce onto a smooth ledge with Spring, then grow vines up the mossy cliff.
@@ -160,7 +161,7 @@ All art is generated in code: painted canvas textures (bark, leaves, stone, shin
 
 ## Painter's Honours
 
-There are twenty-four achievements, such as First Flight, Soft Bristles (a sneak strike), Record Breaker, Cartographer, Good Samaritan (reviving a friend) and Echo Breaker. Each one pops a toast when earned, is listed with its progress in the satchel, and is saved per player.
+There are twenty-five achievements, such as First Flight, Soft Bristles (a sneak strike), Record Breaker, Cartographer, Good Samaritan (reviving a friend) and Echo Breaker. Each one pops a toast when earned, is listed with its progress in the satchel, and is saved per player.
 
 ### Wardrobe
 
