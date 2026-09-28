@@ -26,16 +26,11 @@ export class World {
     this.root = new THREE.Group();
     scene.add(this.root);
 
-    this._foliage();
-    this._village();
-    this._ruins();
-    this._shrines();
-    this._waypoints();
-    this._citadel();
-    this._inkFlowers();
-    this._volcano();
-    this._updrafts();
-    this._mergeStatic();
+    for (const step of ['_foliage', '_village', '_ruins', '_shrines', '_waypoints', '_citadel', '_inkFlowers', '_volcano', '_updrafts', '_mergeStatic']) {
+      const t0 = performance.now();
+      this[step]();
+      if (G.bootTimes) G.bootTimes[`world${step}`] = Math.round(performance.now() - t0);
+    }
   }
 
   // Collapse every non-moving prop into one mesh per material to keep draw calls low.

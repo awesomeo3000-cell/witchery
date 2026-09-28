@@ -139,14 +139,18 @@ export function jitter(geo, amt, seed = 1) {
   const p = geo.attributes.position;
   let s = seed;
   const r = () => { s = (s * 16807) % 2147483647; return s / 2147483647 - 0.5; };
-  // Jitter shared vertex positions consistently by hashing position
+  // Jitter shared vertex positions consistently by hashing the position (quantised to 1 mm; a
+  // numeric key is far cheaper than building strings for every vertex)
   const map = new Map();
+  const a = p.array;
   for (let i = 0; i < p.count; i++) {
-    const k = `${p.getX(i).toFixed(3)},${p.getY(i).toFixed(3)},${p.getZ(i).toFixed(3)}`;
+    const o = i * 3;
+    const k = (Math.round(a[o] * 1000) * 1000003 + Math.round(a[o + 1] * 1000)) * 1000033 + Math.round(a[o + 2] * 1000);
     let d = map.get(k);
     if (!d) { d = [r() * amt, r() * amt, r() * amt]; map.set(k, d); }
-    p.setXYZ(i, p.getX(i) + d[0], p.getY(i) + d[1], p.getZ(i) + d[2]);
+    a[o] += d[0]; a[o + 1] += d[1]; a[o + 2] += d[2];
   }
+  p.needsUpdate = true;
   geo.computeVertexNormals();
   return geo;
 }
@@ -190,7 +194,13 @@ function shadeCanopy(geo) {
 }
 
 // lod=true builds cheap far-distance versions (low-poly canopies)
+// Built once per detail level and shared (callers clone before transforming)
+const TREE_CACHE = {};
 export function treeGeometries(lod = false) {
+  return (TREE_CACHE[lod ? 1 : 0] ||= buildTreeGeometries(lod));
+}
+
+function buildTreeGeometries(lod) {
   BLOB_DETAIL = lod ? 0 : 1;
   const trunk = 0x6b4a2e;
   const round = shadeCanopy(mergeColored([

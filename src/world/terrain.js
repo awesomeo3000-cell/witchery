@@ -3,6 +3,11 @@ import * as THREE from 'three';
 import { makeNoise2D, fbm, smoothstep, clamp, lerp, hash2 } from '../core/math.js';
 import { WORLD_SIZE, WORLD_SEG, FLAT_SPOTS, VOLCANO, LAKE, VILLAGE } from './layout.js';
 
+// Palette colours are converted from sRGB once and reused (converting per vertex dominated load time)
+const PALETTE = new Map();
+const PAL = (hex) => { let c = PALETTE.get(hex); if (!c) PALETTE.set(hex, (c = new THREE.Color(hex))); return c; };
+const TMP = new THREE.Color(), ROCK = new THREE.Color();
+
 export const WET = { value: 0 };
 
 const BIOME_DIRS = { frost: 0, ember: Math.PI / 2, spring: Math.PI, bloom: -Math.PI / 2 };
@@ -20,9 +25,11 @@ export class Terrain {
     this.heights = new Float32Array(this.n * this.n);
     this.grass = new Float32Array(this.n * this.n);
     this.hue = new Float32Array(this.n * this.n);
+    this._bio = new Array(this.n * this.n);
     this._generate();
     this._buildMesh();
     this._buildTexture();
+    this._bio = null; // only needed while building
   }
 
   biome(x, z) {
@@ -41,12 +48,11 @@ export class Terrain {
     return w;
   }
 
-  _rawHeight(x, z) {
+  _rawHeight(x, z, w = this.biome(x, z)) {
     const n = this.noise;
     const d = Math.hypot(x, z);
     const warp = fbm(this.noise2, x * 0.003, z * 0.003, 3) * 110;
     const island = 1 - smoothstep(520, 740, d + warp);
-    const w = this.biome(x, z);
 
     let h = 7 + fbm(n, x * 0.0035, z * 0.0035, 4) * 12;
     h += fbm(n, x * 0.015, z * 0.015, 2) * 2.5;
@@ -86,7 +92,10 @@ export class Terrain {
       for (let i = 0; i < n; i++) {
         const x = -half + i * cell;
         const z = -half + j * cell;
-        this.heights[j * n + i] = this._rawHeight(x, z);
+        // Biome weights per grid vertex are kept for the grass and colour passes below
+        const w = this.biome(x, z);
+        this._bio[j * n + i] = w;
+        this.heights[j * n + i] = this._rawHeight(x, z, w);
       }
     }
     // Flatten building spots
@@ -113,7 +122,7 @@ export class Terrain {
         const x = -half + i * cell, z = -half + j * cell;
         const k = j * n + i;
         const h = this.heights[k];
-        const w = this.biome(x, z);
+        const w = this._bio[k];
         const slope = this._slopeAt(i, j);
         let g = w.meadow + w.bloom * 0.9 + w.spring * 0.85 + w.frost * 0.05 + w.ember * 0.05;
         g *= smoothstep(1.2, 3.5, h) * (1 - smoothstep(0.55, 0.8, slope));
@@ -161,38 +170,34 @@ export class Terrain {
     return this.grass[j * n + i];
   }
 
-  _colorAt(x, z, h, slope, out) {
-    const w = this.biome(x, z);
+  _colorAt(x, z, h, slope, out, w = this.biome(x, z)) {
     const v = this.noise3(x * 0.05, z * 0.05) * 0.5 + hash2(Math.floor(x), Math.floor(z)) * 0.12;
-    const c = new THREE.Color(0, 0, 0);
-    const add = (hex, k) => {
+    const c = out.setRGB(0, 0, 0);
+    const add = (col, k) => {
       if (k <= 0) return;
-      const t = new THREE.Color(hex);
-      c.r += t.r * k; c.g += t.g * k; c.b += t.b * k;
+      c.r += col.r * k; c.g += col.g * k; c.b += col.b * k;
     };
-    add(v > 0.1 ? 0x7cb342 : 0x5f9e34, w.meadow);
-    add(v > 0 ? 0x3d7f33 : 0x2f6b2c, w.bloom);
-    add(v > 0.05 ? 0xd4a843 : 0xc08f35, w.spring);
+    add(PAL(v > 0.1 ? 0x7cb342 : 0x5f9e34), w.meadow);
+    add(PAL(v > 0 ? 0x3d7f33 : 0x2f6b2c), w.bloom);
+    add(PAL(v > 0.05 ? 0xd4a843 : 0xc08f35), w.spring);
     const snowy = smoothstep(18, 40, h);
-    add(new THREE.Color(0x6f9b52).lerp(new THREE.Color(v > 0 ? 0xf2f6fb : 0xdfe8f2), snowy).getHex(), w.frost);
-    add(v > 0.15 ? 0x7a3a28 : v > -0.1 ? 0x4a3c3a : 0x2f2a2c, w.ember);
+    add(TMP.copy(PAL(0x6f9b52)).lerp(PAL(v > 0 ? 0xf2f6fb : 0xdfe8f2), snowy), w.frost);
+    add(PAL(v > 0.15 ? 0x7a3a28 : v > -0.1 ? 0x4a3c3a : 0x2f2a2c), w.ember);
 
     // Cliffs
-    const rock = new THREE.Color(w.ember > 0.4 ? 0x332c2d : w.spring > 0.4 ? 0xb8683a : w.frost > 0.4 ? 0x7d8aa0 : 0x857a70);
-    if (w.frost > 0.4) rock.lerp(new THREE.Color(0xe4ecf6), smoothstep(30, 70, h) * (v > -0.1 ? 0.8 : 0.4));
+    const rock = ROCK.copy(PAL(w.ember > 0.4 ? 0x332c2d : w.spring > 0.4 ? 0xb8683a : w.frost > 0.4 ? 0x7d8aa0 : 0x857a70));
+    if (w.frost > 0.4) rock.lerp(PAL(0xe4ecf6), smoothstep(30, 70, h) * (v > -0.1 ? 0.8 : 0.4));
     if (w.spring > 0.4) {
       const band = Math.sin(h * 0.9) * 0.5 + 0.5;
-      rock.lerp(new THREE.Color(0xe09a5a), band * 0.5);
+      rock.lerp(PAL(0xe09a5a), band * 0.5);
     }
     c.lerp(rock, smoothstep(0.55, 0.85, slope));
     // Beaches & underwater
-    const sand = new THREE.Color(0xe8d7a0);
-    c.lerp(sand, 1 - smoothstep(1.5, 3.2, h));
-    if (h < 0) c.lerp(new THREE.Color(0x9a8a62), smoothstep(0, -12, h));
+    c.lerp(PAL(0xe8d7a0), 1 - smoothstep(1.5, 3.2, h));
+    if (h < 0) c.lerp(PAL(0x9a8a62), smoothstep(0, -12, h));
     // Volcano crater glow
     const vd = Math.hypot(x - VOLCANO.x, z - VOLCANO.z);
-    if (vd < 45) c.lerp(new THREE.Color(0x5a2418), 1 - smoothstep(20, 45, vd));
-    out.copy(c);
+    if (vd < 45) c.lerp(PAL(0x5a2418), 1 - smoothstep(20, 45, vd));
     return out;
   }
 
@@ -206,7 +211,7 @@ export class Terrain {
         const k = j * n + i;
         const x = -half + i * cell, z = -half + j * cell, h = this.heights[k];
         pos[k * 3] = x; pos[k * 3 + 1] = h; pos[k * 3 + 2] = z;
-        this._colorAt(x, z, h, this._slopeAt(i, j), tmp);
+        this._colorAt(x, z, h, this._slopeAt(i, j), tmp, this._bio[k]);
         col[k * 3] = tmp.r; col[k * 3 + 1] = tmp.g; col[k * 3 + 2] = tmp.b;
       }
     }
