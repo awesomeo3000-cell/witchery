@@ -32,6 +32,7 @@ import { Minimap } from './ui/minimap.js';
 import { Revive } from './ui/revive.js';
 import { Honours } from './ui/honours.js';
 import { Wyrm } from './world/wyrm.js';
+import { Rainbow } from './world/rainbow.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
 import { Player } from './player/player.js';
@@ -213,6 +214,7 @@ class Game {
     G.revive = timed('revive', () => new Revive());
     G.honours = timed('honours', () => new Honours());
     G.wyrm = timed('wyrm', () => new Wyrm(G.scene));
+    G.rainbow = timed('rainbow', () => new Rainbow(G.scene));
     G.cine = timed('cine', () => new Cinematic());
     G.guide = timed('guide', () => new Guide());
     G.photo = timed('photo', () => new PhotoMode());
@@ -667,6 +669,7 @@ class Game {
     G.revive.update(dt);
     G.honours.update(dt);
     G.wyrm.update(dt);
+    G.rainbow.update(dt);
     G.greyMoon.update(dt);
     G.enemies.update(wdt);
     G.paint.update(wdt);

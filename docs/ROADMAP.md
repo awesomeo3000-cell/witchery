@@ -62,7 +62,7 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 ## Wave seven
 
 35. ✅ **The Chroma Wyrm.** A huge, peaceful rainbow serpent loops the island's skies. Hit it with paint to knock loose Chroma Scales worth a lot of Pigment.
-36. **Rainbows.** After rain clears in daylight, a rainbow arcs across the sky opposite the sun.
+36. ✅ **Rainbows.** After rain clears in daylight, a rainbow arcs across the sky opposite the sun.
 37. **Regression and docs.** Full browser regression, README pass, roadmap update.
 
 The work continues through this list until the budget is used up.
