@@ -143,6 +143,15 @@ export class HUD {
     return m;
   }
 
+  // Gallery of Echoes status line (shares the race HUD slot)
+  setRush(text) {
+    const el = $('race');
+    if (!text) { if (this._rushShown) { el.classList.add('hidden'); this._rushShown = false; } return; }
+    this._rushShown = true;
+    el.classList.remove('hidden');
+    el.innerHTML = `<b>Gallery of Echoes</b><span>${text}</span>`;
+  }
+
   removeMarker(m) {
     const i = this.markers.indexOf(m);
     if (i >= 0) this.markers.splice(i, 1);

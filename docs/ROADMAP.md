@@ -33,6 +33,6 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 19. ✅ **Server hardening.** Per-connection message rate limits, payload validation, a flag-count cap per room, tests for all of it.
 20. ✅ **Camera options.** Field of view and camera distance sliders, and optional camera auto-centering while riding.
 21. ✅ **Paint Fox companion.** A small fox that follows you, sniffs toward the nearest unsolved puzzle or Paint Sprite, and fetches nearby Pigment.
-22. **Gallery of Echoes.** A post-game boss rush arena under the citadel with a timed run and a room record.
+22. ✅ **Gallery of Echoes.** A post-game boss rush arena under the citadel with a timed run and a room record.
 
 The work continues through this list until the budget is used up.

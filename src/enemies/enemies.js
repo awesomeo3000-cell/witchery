@@ -6,6 +6,7 @@ import {
   buildBounder, buildInkling, buildSpitter, buildWisp, buildInkbat, buildFrostmaw, buildMagmaw,
   buildShellback, buildGalewing, buildHueless, buildArcher, buildBlotGiant, buildSentinel, VARIANT_TINT,
 } from './models.js';
+import { fmtTime } from '../world/races.js';
 import { smoothRockGeometry } from '../world/props.js';
 import { CampDecor } from './camps.js';
 import { VILLAGE, TRIALS, CITADEL } from '../world/layout.js';
@@ -545,6 +546,12 @@ export class EnemyManager {
         if (e && G.cine && G.player && e.pos.distanceTo(G.player.pos) < 70) G.cine.bossIntro(e);
         break;
       }
+      case 'rushClear': {
+        G.audio.play('shard');
+        const b = G.flags.rush_best;
+        G.hud.banner('The Echoes Are Stilled', b ? `Gallery record ${fmtTime(b.t)} · ${b.n}` : 'The gallery falls silent', '#c8a8ff');
+        break;
+      }
       case 'topple': G.audio.play('slam'); G.hud.toast('It staggers! Attack now!', '#fff09a', 2); G.particles.burst(p.setY(p.y + 1), { count: 40, color: 0xd8d0c0, speed: 8, life: 0.8, size: 0.9, gravity: 6 }); break;
       case 'summon': G.particles.burst(p.setY(p.y + 1), { count: 30, color: 0x2a2433, speed: 5, life: 1, size: 0.8 }); break;
       default: break;
@@ -981,6 +988,7 @@ export class EnemyManager {
         const t = TRIALS.find((q) => q.key === e.trial);
         if (t) e.arena = G.trials.arenaFor(t.key);
         else if (e.type === 'hueless') e.arena = G.trials.citadelArena();
+        else if (G.gallery && G.gallery.inside(e.pos)) { e.arena = G.gallery.arena; e.rush = true; }
       }
     }
   }

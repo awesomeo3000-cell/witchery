@@ -119,6 +119,10 @@ Bring every 4 sprites to Pip in Palette Hollow for a Heart Container or Stamina 
 
 The score is generated live and changes with what you're doing: gentle piano for exploring, slower at night, sparse plucks over a heartbeat while sneaking, airy pads when soaring on the brush, drums for skirmishes, driving beats for Sky Races, and full battle themes for bosses. Changes land on the bar line, so they stay musical.
 
+## After the credits
+
+Once the Hueless King falls, the village statue opens a way down to the **Gallery of Echoes**: a boss rush against echoes of all four trial bosses, back to back. The fastest clear is saved as the room record, with the names of everyone who ran it.
+
 ## Saving
 
 Online rooms save their world progress on the server in `data/rooms.json`, so it survives restarts. Each browser also remembers where you were. Solo games keep everything in the browser's local storage.
