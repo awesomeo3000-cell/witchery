@@ -298,3 +298,4 @@ body.reduce-motion .potion.shake { animation: none; }
 #inv-log .stat b { font-weight: 800; text-align: right; }
 #inv-log .stat.done b { color: var(--gold); }
 #inv-log .stat.done b::after { content: ' ✓'; }
+#fl-wind { display: inline-block; font-size: 20px; color: #bfe6ff; transition: transform 0.3s; }

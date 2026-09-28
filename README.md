@@ -97,7 +97,7 @@ Bring every 4 sprites to Pip in Palette Hollow for a Heart Container or Stamina 
 
 - **Enemy camps** have tents, campfires and sometimes a lookout tower with an Inkshot archer. Some are led by a tougher *Great* enemy. Clearing a camp unlocks its chest, which grants a temporary buff: golden hearts, stronger strikes, bottomless ink, or faster movement.
 - **Foraging & cooking.** Apples, sunshrooms, swiftmint, emberpeppers, frostlilies and goldpetals grow by biome and regrow over time. Eat them from the satchel, or cook up to three at a pot (in the village and at every camp) for a stronger meal. Matching buff ingredients make the effect last longer.
-- **Weather** cycles between clear, cloudy, rain and storms. It snows in the mountains, rain puts out fire paint, and storms bring lightning.
+- **Weather** cycles between clear, cloudy, rain and storms. It snows in the mountains, rain puts out fire paint, and storms bring lightning. Wind veers slowly and blows harder in bad weather, pushing gliders and riders (the flight readout shows it). Rain makes vines slick, so climbing is slower and you'll slip now and then.
 - **Inkbats** flock out at night away from the village. They circle and swoop, chase you hard while you fly or glide, and melt away at dawn. One glob or strike pops them.
 - **The Grey Moon.** Some nights a violet moon rises at midnight. Every camp and chest refreshes, enemies hit harder, and ink creatures roam until dawn.
 - **Field bosses.** Blot Giants sleep in the meadows: sneak up for bonus damage and hit the eye up top to topple them. Stone Sentinels pose as boulders until you get close, and only take damage on the crystal on their back, so bounce or glide onto them. Both drop a buff tonic and return after a while.

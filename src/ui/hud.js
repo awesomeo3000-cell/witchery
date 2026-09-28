@@ -526,6 +526,14 @@ export class HUD {
       const ground = Math.max(g.y, p.inDungeon ? g.y : 0);
       $('fl-alt').textContent = Math.max(0, Math.round(p.pos.y - ground));
       $('fl-spd').textContent = Math.round(Math.hypot(p.vel.x, p.vel.y, p.vel.z));
+      // Wind arrow relative to the camera
+      const w = G.weather && G.weather.wind;
+      const wa = $('fl-wind');
+      if (w && !p.inDungeon) {
+        wa.style.display = '';
+        wa.style.transform = `rotate(${Math.atan2(w.x, -w.z) + p.camYaw - Math.PI / 2}rad)`; // ➤ points right at 0
+        wa.style.opacity = Math.min(1, w.length() / 6);
+      } else wa.style.display = 'none';
     }
 
     // Swap the controls legend when a gamepad is in use

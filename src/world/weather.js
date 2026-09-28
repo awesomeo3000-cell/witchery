@@ -95,6 +95,10 @@ export class Weather {
       if (this.timer <= 0) this._roll();
     }
     this.w = damp(this.w, TARGET[this.state], 0.25, dt);
+    // Wind: a slowly veering direction that blows harder in bad weather (pushes gliders and riders)
+    this.windA = (this.windA ?? 0.6) + dt * (0.015 + Math.sin(G.time * 0.05) * 0.02);
+    const ws = 1.5 + this.w * 7 + Math.max(0, Math.sin(G.time * 0.21)) * 1.5;
+    (this.wind ||= new THREE.Vector3()).set(Math.cos(this.windA) * ws, 0, Math.sin(this.windA) * ws);
     const cam = G.camera.position;
     const p = G.player;
     const frost = p && G.terrain ? G.terrain.biome(p.pos.x, p.pos.z).frost : 0;

@@ -381,6 +381,7 @@ export class Player {
       const gs = sprint ? 13 : 9;
       const f = new THREE.Vector3(Math.sin(this.yaw), 0, Math.cos(this.yaw));
       const want = moving ? target.clone().setLength(gs) : f.multiplyScalar(gs * 0.7);
+      if (G.weather?.wind && !this.inDungeon) want.addScaledVector(G.weather.wind, 0.55); // gliders drift with the wind
       this.vel.x = damp(this.vel.x, want.x, 2.2, dt);
       this.vel.z = damp(this.vel.z, want.z, 2.2, dt);
       if (moving) this.yaw = dampAngle(this.yaw, Math.atan2(want.x, want.z), 4, dt);
@@ -422,7 +423,19 @@ export class Player {
     // Screen-relative sideways: flip tangent if facing reversed relative to camera
     const camRight = this.right();
     const side = tangent.dot(camRight) >= 0 ? 1 : -1;
-    this.pos.y += a.z * 4.2 * dt;
+    // Rain makes the vines slick: slower going and the odd slip
+    const wet = G.weather && G.weather.rain.visible && G.weather.w > 0.5 && !this.inDungeon;
+    this.pos.y += a.z * 4.2 * (wet ? 0.55 : 1) * dt;
+    if (wet && a.z > 0) {
+      this.slipT = (this.slipT ?? 2.5) - dt;
+      if (this.slipT <= 0) {
+        this.slipT = 1.8 + Math.random() * 2;
+        this.pos.y -= 1.3;
+        G.audio.play('land', 0.6);
+        G.hud.toast(G.guide.seen.has('slip') ? 'Slipped!' : 'Rain makes the vines slick! Climb in short bursts or wait for it to pass.', '#9ec8ff', G.guide.seen.has('slip') ? 1 : 4);
+        G.guide.seen.add('slip');
+      }
+    }
     this.pos.addScaledVector(tangent, a.x * side * 3 * dt);
     this.speed = Math.hypot(a.x, a.z) * 2;
     this.pos.x = clamp(this.pos.x, c.min.x - R, c.max.x + R);
@@ -491,6 +504,7 @@ export class Player {
     if (inp.down('KeyC')) target.y -= 11;
     const lift = this._updraftLift();
     if (lift) target.y += 10;
+    if (G.weather?.wind && target.lengthSq() > 0.01) target.addScaledVector(G.weather.wind, 0.35); // tailwinds help, headwinds hurt
     // Gentle hover when idle
     if (target.lengthSq() < 0.01) target.y = Math.sin(G.time * 2) * 0.4;
     this.vel.lerp(target, 1 - Math.exp(-2.8 * dt));

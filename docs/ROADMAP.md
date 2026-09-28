@@ -38,7 +38,7 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 ## Wave three
 
 23. ✅ **Adventure Log.** A satchel tab with completion stats: shards, sprites, quests, puzzles, races, map explored, records, upgrades.
-24. **Weather that matters.** Rain makes rock slippery (climbing costs more and you slip now and then), wind helps or fights your glide and flight.
+24. ✅ **Weather that matters.** Rain makes rock slippery (climbing costs more and you slip now and then), wind helps or fights your glide and flight.
 25. **Save management.** Continue / New Game on the title menu for solo play, with a confirmation before wiping local progress.
 
 The work continues through this list until the budget is used up.
