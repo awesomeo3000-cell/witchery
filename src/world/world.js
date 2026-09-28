@@ -195,32 +195,68 @@ export class World {
   _cottage(x, z, rot, roofMat) {
     const y = this.h(x, z);
     const g = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.BoxGeometry(7, 4.5, 6), MAT.plaster);
-    body.position.y = 2.25;
-    const beams = new THREE.Mesh(new THREE.BoxGeometry(7.2, 0.4, 6.2), MAT.woodDark);
-    beams.position.y = 4.4;
-    // Triangular prism along X with the apex pointing up
-    const roofGeo = new THREE.CylinderGeometry(4.6, 4.6, 7.6, 3, 1, false, Math.PI / 2);
-    roofGeo.rotateZ(Math.PI / 2);
-    roofGeo.scale(1, 0.75, 1);
-    const roof = new THREE.Mesh(roofGeo, roofMat);
-    roof.position.y = 4.5 + 4.6 * 0.5 * 0.75;
-    const door = new THREE.Mesh(new THREE.BoxGeometry(1.4, 2.4, 0.2), MAT.woodDark);
-    door.position.set(0, 1.2, 3.02);
+    const W = 7, D = 6, H = 4.2;
+    const add = (geo, mat, px, py, pz, ry = 0) => {
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(px, py, pz);
+      m.rotation.y = ry;
+      g.add(m);
+      return m;
+    };
+    // Stone plinth, plaster walls, timber frame
+    add(new THREE.BoxGeometry(W + 0.5, 0.8, D + 0.5), MAT.stone, 0, 0.2, 0);
+    add(new THREE.BoxGeometry(W, H, D), MAT.plaster, 0, 0.6 + H / 2, 0);
+    const beam = (w, h, d, px, py, pz, ry = 0) => add(new THREE.BoxGeometry(w, h, d), MAT.woodDark, px, py, pz, ry);
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) beam(0.35, H, 0.35, sx * W / 2, 0.6 + H / 2, sz * D / 2);
+    beam(W + 0.3, 0.3, 0.3, 0, 0.75 + H, D / 2);
+    beam(W + 0.3, 0.3, 0.3, 0, 0.75 + H, -D / 2);
+    beam(W + 0.3, 0.25, 0.25, 0, 0.8, D / 2 + 0.05);
+    // Cross braces on the front wall
+    for (const sx of [-1, 1]) {
+      const br = beam(0.22, 2.9, 0.12, sx * 2.2, 0.6 + H * 0.55, D / 2 + 0.06);
+      br.rotation.z = sx * 0.6;
+    }
+    // Gable roof: two shingled slopes with overhang, ridge beam and plaster gables
+    const pitch = 0.62, span = D / 2 + 0.7, slope = span / Math.cos(pitch), rise = Math.tan(pitch) * span;
+    const top = 0.6 + H;
+    for (const sz of [-1, 1]) {
+      const r = add(new THREE.BoxGeometry(W + 1.2, 0.22, slope), roofMat, 0, top + rise / 2, sz * span / 2);
+      r.rotation.x = sz * pitch;
+    }
+    beam(W + 1.4, 0.35, 0.35, 0, top + rise + 0.05, 0);
+    const gable = new THREE.Shape();
+    gable.moveTo(-D / 2, 0); gable.lineTo(D / 2, 0); gable.lineTo(0, rise * (D / 2) / span); gable.closePath();
+    const gGeo = new THREE.ExtrudeGeometry(gable, { depth: W - 0.1, bevelEnabled: false });
+    gGeo.translate(0, 0, -(W - 0.1) / 2);
+    gGeo.rotateY(Math.PI / 2);
+    add(gGeo, MAT.plaster, 0, top, 0);
+    // Door with frame, windows with shutters and flower boxes
+    add(new THREE.BoxGeometry(1.5, 2.5, 0.2), MAT.wood, 0, 1.85, D / 2 + 0.05);
+    beam(1.9, 0.25, 0.25, 0, 3.2, D / 2 + 0.12);
     const winMat = new THREE.MeshLambertMaterial({ color: 0x3a4a6a, emissive: 0xffc070, emissiveIntensity: 0 });
     this.animated.push(() => { winMat.emissiveIntensity = (G.sky ? G.sky.night : 0) * 1.1; });
-    for (const wx of [-2.2, 2.2]) {
-      const w = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.1, 0.15), winMat);
-      w.position.set(wx, 2.6, 3.02);
-      g.add(w);
+    const shutterMat = roofMat === MAT.roofRed ? MAT.roofBlue : MAT.roofRed;
+    for (const wx of [-2.3, 2.3]) {
+      add(new THREE.BoxGeometry(1.1, 1.1, 0.12), winMat, wx, 3, D / 2 + 0.04);
+      beam(1.3, 0.14, 0.2, wx, 3.6, D / 2 + 0.1);
+      beam(1.3, 0.14, 0.2, wx, 2.4, D / 2 + 0.1);
+      for (const s of [-1, 1]) add(new THREE.BoxGeometry(0.5, 1.2, 0.08), shutterMat, wx + s * 0.85, 3, D / 2 + 0.1);
+      add(new THREE.BoxGeometry(1.2, 0.3, 0.35), MAT.wood, wx, 2.25, D / 2 + 0.25);
+      for (let k = 0; k < 4; k++) {
+        const fl = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 6), new THREE.MeshLambertMaterial({ color: [0xe84a6a, 0xf2c229, 0xffffff, 0xb05ad8][k] }));
+        fl.position.set(wx - 0.45 + k * 0.3, 2.48, D / 2 + 0.28);
+        g.add(fl);
+      }
     }
-    const chim = new THREE.Mesh(new THREE.BoxGeometry(0.9, 2.5, 0.9), MAT.stoneDark);
-    chim.position.set(2, 7, -1);
-    g.add(body, beams, roof, door, chim);
+    // Chimney
+    add(new THREE.BoxGeometry(0.9, 3, 0.9), MAT.stoneDark, 2, top + rise * 0.6 + 0.6, -1.2);
+    add(new THREE.BoxGeometry(1.15, 0.25, 1.15), MAT.stone, 2, top + rise * 0.6 + 2.15, -1.2);
     g.traverse((m) => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } });
     g.position.set(x, y, z);
     g.rotation.y = rot;
     this.root.add(g);
+    this.chimneys = this.chimneys || [];
+    this.chimneys.push(new THREE.Vector3(2, top + rise * 0.6 + 2.4, -1.2).applyAxisAngle(new THREE.Vector3(0, 1, 0), rot).add(new THREE.Vector3(x, y, z)));
     const swap = Math.abs(Math.sin(rot)) > 0.5;
     this.col.addBox(x, y + 3.2, z, swap ? 6 : 7, 6.4, swap ? 7 : 6);
   }
@@ -539,7 +575,7 @@ export class World {
     const g = new THREE.Group();
     this.waterfallMat = makeWaterfallMaterial();
     this.animated.push((t) => { this.waterfallMat.uniforms.uTime.value = t; });
-    const body = new THREE.Mesh(islandGeometry(r + 4, 120, 77, { layers: 9, trees: 0, grass: 0x8aa86a, grass2: 0x7a9a5e }), MAT.vertex);
+    const body = new THREE.Mesh(islandGeometry(r + 4, 120, 77, { layers: 9, trees: 0, grass: 0x8aa86a, grass2: 0x7a9a5e }), MAT.islandRock);
     body.receiveShadow = true;
     body.castShadow = true;
     g.add(body);
@@ -621,7 +657,7 @@ export class World {
     spots.forEach(([ix, iy, iz, ir], i) => {
       const depth = ir * (1.4 + rand() * 1.2);
       const isl = new THREE.Group();
-      const m = new THREE.Mesh(islandGeometry(ir, depth, 200 + i), MAT.vertex);
+      const m = new THREE.Mesh(islandGeometry(ir, depth, 200 + i), MAT.islandRock);
       m.castShadow = true;
       m.receiveShadow = true;
       isl.add(m);
@@ -754,5 +790,9 @@ export class World {
 
   update(dt, t) {
     for (const f of this.animated) f(t, dt);
+    if (this.chimneys && G.player && Math.random() < dt * 6) {
+      const c = this.chimneys[Math.floor(Math.random() * this.chimneys.length)];
+      if (c.distanceTo(G.camera.position) < 200) G.particles.burst(c, { count: 1, color: 0xdddddd, speed: 0.4, up: 1.6, life: 3, size: 1.2, gravity: -0.3, alpha: 0.3, grow: 2.5 });
+    }
   }
 }

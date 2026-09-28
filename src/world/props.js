@@ -41,18 +41,48 @@ export function softLit(mat, { wind = 0, rim = 0.3, wrap = 0 } = {}) {
   return mat;
 }
 
+// Samples the material's painted map in world space (tri-planar by dominant normal axis), so any
+// mesh gets evenly scaled texture without hand-made UVs.
+export function worldMapped(mat, scale = 0.25) {
+  const prev = mat.onBeforeCompile;
+  mat.onBeforeCompile = (shader, r) => {
+    if (prev) prev(shader, r);
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vTpW; varying vec3 vTpN;')
+      .replace('#include <worldpos_vertex>', `#include <worldpos_vertex>
+        vec4 tpw = vec4(transformed, 1.0);
+        #ifdef USE_INSTANCING
+          tpw = instanceMatrix * tpw;
+        #endif
+        vTpW = (modelMatrix * tpw).xyz;
+        vTpN = normalize(mat3(modelMatrix) * objectNormal);`);
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vTpW; varying vec3 vTpN;')
+      .replace('#include <map_fragment>', `
+        vec3 an = abs(vTpN);
+        vec2 tuv = an.y > max(an.x, an.z) ? vTpW.xz : (an.x > an.z ? vTpW.zy : vTpW.xy);
+        vec4 sampledDiffuseColor = texture2D(map, tuv * ${scale.toFixed(3)});
+        diffuseColor *= sampledDiffuseColor;`);
+  };
+  const prevKey = mat.customProgramCacheKey;
+  mat.customProgramCacheKey = () => `wm${scale}${prevKey ? prevKey.call(mat) : ''}`;
+  return mat;
+}
+
 export function initMaterials() {
   const lam = (c, o = {}) => new THREE.MeshLambertMaterial({ color: c, ...o });
-  MAT.stone = lam(0x9c968c, { flatShading: true });
-  MAT.stoneDark = lam(0x6b6660, { flatShading: true });
-  MAT.stoneMoss = lam(0x7f8f6a, { flatShading: true });
+  const tx = (name, color, scale, o = {}) => worldMapped(lam(color, { map: paintTex(name), ...o }), scale);
+  MAT.stone = tx('stone', 0xd8d2c8, 0.3);
+  MAT.stoneDark = tx('stone', 0x8a8480, 0.3);
+  MAT.stoneMoss = tx('stone', 0xa8c08a, 0.3);
   MAT.dungeon = bricks(lam(0x8a8494), 1.2, 0.6);
   MAT.dungeonFloor = bricks(lam(0x6a6572), 1.3, 1.3);
-  MAT.wood = lam(0x8a5a36, { flatShading: true });
-  MAT.woodDark = lam(0x5a3a24, { flatShading: true });
-  MAT.roofRed = lam(0xb4483a, { flatShading: true });
-  MAT.roofBlue = lam(0x3f6fa8, { flatShading: true });
-  MAT.plaster = lam(0xefe4cc, { flatShading: true });
+  MAT.wood = tx('wood', 0xe0c0a0, 0.45);
+  MAT.woodDark = tx('wood', 0x9a7a60, 0.45);
+  MAT.roofRed = tx('shingles', 0xc85a48, 0.35);
+  MAT.roofBlue = tx('shingles', 0x5a88c0, 0.35);
+  MAT.plaster = tx('plaster', 0xffffff, 0.2);
+  MAT.islandRock = worldMapped(new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, map: paintTex('strata') }), 0.06);
   MAT.vertex = lam(0xffffff, { vertexColors: true, flatShading: true });
   MAT.foliage = softLit(lam(0xffffff, { vertexColors: true }), { wind: 1, rim: 0.35 });
   MAT.glow = new THREE.MeshBasicMaterial({ color: 0xffe9a0 });
