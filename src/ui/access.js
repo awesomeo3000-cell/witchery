@@ -23,6 +23,7 @@ export const ACTIONS = [
   { id: 'satchel', label: 'Satchel', code: 'KeyI' },
   { id: 'eat', label: 'Quick eat', code: 'KeyG' },
   { id: 'photo', label: 'Photo mode', code: 'KeyP' },
+  { id: 'ping', label: 'Ping a spot', code: 'KeyV' },
   { id: 'hide', label: 'Hide controls', code: 'KeyH' },
 ];
 

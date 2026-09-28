@@ -56,6 +56,7 @@ export class HUD {
       `${k('KeyR')} Ride the brush`, `${k('KeyC')} Descend (riding)`,
       `${k('KeyF')} Interact`, `${k('KeyM')} Map · <kbd>Enter</kbd> Chat`,
       `${k('KeyI')} Satchel`, `${k('KeyG')} Quick eat · ${k('KeyP')} Photo`,
+      `${k('KeyV')} Ping a spot for friends`,
     ].map((h) => `<div>${h}</div>`).join('');
   }
 
@@ -140,6 +141,12 @@ export class HUD {
     const m = { el: d, dist: d.querySelector('.dist'), pos, show };
     this.markers.push(m);
     return m;
+  }
+
+  removeMarker(m) {
+    const i = this.markers.indexOf(m);
+    if (i >= 0) this.markers.splice(i, 1);
+    m.el.remove();
   }
 
   _peerMarker(peer) {

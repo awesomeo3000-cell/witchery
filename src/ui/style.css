@@ -277,3 +277,4 @@ body.reduce-motion .potion.shake { animation: none; }
 #binds-reset { margin-top: 6px; }
 .mm.mq .dot { border-radius: 3px; transform: rotate(45deg); width: 11px; height: 11px; }
 .mm.mboss .dot { border-radius: 2px; border-color: #ffb0b0; }
+.cmp .ic.ping { border-radius: 50%; font: 900 11px var(--sans); color: #fff; box-shadow: 0 0 8px #fff; }

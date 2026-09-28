@@ -20,6 +20,7 @@ import { Weather } from './world/weather.js';
 import { Forage } from './world/forage.js';
 import { Quests } from './world/quests.js';
 import { AccessUI } from './ui/access.js';
+import { Pings } from './ui/ping.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
 import { Player } from './player/player.js';
@@ -184,6 +185,7 @@ class Game {
     G.greyMoon = new GreyMoon();
     G.hud = new HUD();
     G.quests = new Quests(G.scene);
+    G.pings = new Pings(G.scene);
     G.cine = new Cinematic();
     G.guide = new Guide();
     G.photo = new PhotoMode();
@@ -517,6 +519,7 @@ class Game {
       G.hud.chat(p ? p.name : m.name || '?', m.text, p ? `#${p.look.hood.toString(16).padStart(6, '0')}` : '#fff');
       G.audio.play('chat');
     });
+    net.on('ping', (m) => G.pings.onNet(m));
     net.on('full', () => G.hud.toast('That room is full.', '#ffb0b0', 4));
     net.on('disconnect', () => {
       G.hud.toast('Disconnected from server - continuing solo.', '#ffb0b0', 4);
@@ -589,6 +592,7 @@ class Game {
     G.sprites.update(dt);
     G.forage.update(dt);
     G.quests.update(dt);
+    G.pings.update(dt);
     G.greyMoon.update(dt);
     G.enemies.update(wdt);
     G.paint.update(wdt);

@@ -36,6 +36,7 @@ If the page can't reach a server (for example, when the built `dist/` is opened 
 | I / G | Open the satchel / quick-eat the best healing item |
 | P | Photo mode (free camera, filters, Enter saves a PNG) |
 | Enter | Chat (the host can type `/weather rain`, `/time dusk`, `/greymoon`) |
+| V | Ping the spot under the crosshair for your friends |
 | H | Hide the controls panel |
 | Esc | Pause and settings |
 
