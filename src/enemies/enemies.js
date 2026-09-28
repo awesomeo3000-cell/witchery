@@ -201,7 +201,7 @@ export class EnemyManager {
       camps.push({ id: camps.length, x, z, variant, types, active: false, members: [], respawn: 0, tower, towerPos, elite: rand() < 0.35 });
     }
     // Field bosses in fixed, open spots
-    const fieldSpots = [['blotgiant', -120, 250], ['blotgiant', 230, -150], ['sentinel', 250, 330], ['sentinel', 60, -330], ['rainmane', -330, -60]];
+    const fieldSpots = [['blotgiant', -120, 250], ['blotgiant', 230, -150], ['sentinel', 250, 330], ['sentinel', 60, -330], ['rainmane', -100, -120]];
     for (const [type, fx, fz] of fieldSpots) {
       let bx = fx, bz = fz;
       for (let k = 0; k < 40 && G.terrain.heightAt(bx, bz) < 4; k++) { bx *= 0.95; bz *= 0.95; }
