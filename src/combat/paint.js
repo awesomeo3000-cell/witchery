@@ -391,7 +391,7 @@ export class PaintSystem {
       s.life -= dt;
       const age = s.max - s.life;
       if (s.element === 'fire' && s.life > 0 && !s.vertical) {
-        if (Math.random() < dt * 30) G.particles.flames(s.pos, s.radius * 0.7, 1, 1);
+        if (Math.random() < dt * 8) G.particles.flames(s.pos, s.radius * 0.7, 1, 0.6); // sparks; the tongues are cel flames
         // Shimmering motes rising in the heat show where the updraft is
         if (!s.onWater && Math.random() < dt * 6) G.particles.burst(s.pos.clone().setY(s.pos.y + 1 + Math.random() * 3), { count: 1, color: 0xffd0a0, speed: 0.3, up: 6, life: 1.6, size: 0.25, pool: 'glow', gravity: -2, alpha: 0.6 });
       }

@@ -12,6 +12,7 @@ import { World } from './world/world.js';
 import { initMaterials, WIND } from './world/props.js';
 import { WAYPOINTS } from './world/layout.js';
 import { PaintSystem } from './combat/paint.js';
+import { CelFire } from './combat/celfire.js';
 import { Particles } from './combat/particles.js';
 import { EnemyManager } from './enemies/enemies.js';
 import { Trials } from './trials/trials.js';
@@ -230,6 +231,7 @@ class Game {
     G.grass = timed('grass', () => new Grass(G.scene, G.terrain, G.settings.grass));
     G.particles = timed('particles', () => new Particles(G.scene));
     G.paint = timed('paint', () => new PaintSystem(G.scene));
+    G.celFire = timed('celFire', () => new CelFire(G.scene));
     G.world = timed('world', () => new World(G.scene, G.terrain, G.collision));
     G.enemies = timed('enemies', () => new EnemyManager(G.scene));
     G.trials = timed('trials', () => new Trials(G.scene));
@@ -788,6 +790,7 @@ class Game {
     G.greyMoon.update(dt);
     G.enemies.update(wdt);
     G.paint.update(wdt);
+    G.celFire.update(wdt);
     G.particles.update(wdt);
     G.world.update(dt, G.time);
     for (const peer of G.peers.values()) peer.update(dt);
