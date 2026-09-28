@@ -4,7 +4,7 @@ import { G, COLORS } from '../core/ctx.js';
 import { mulberry32, smoothstep } from '../core/math.js';
 import { VILLAGE, TRIALS, CITADEL, WAYPOINTS, RUINS, FLAT_SPOTS, VOLCANO, WORLD_SIZE } from './layout.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { MAT, treeGeometries, rockGeometry, mergeColored, T, jitter } from './props.js';
+import { MAT, treeGeometries, rockGeometry, mergeColored, T, jitter, paintedTreeGeometries, foliageMaterial, smoothRockGeometry, rockMaterial } from './props.js';
 import { islandGeometry, makeWaterfall, makeWaterfallMaterial } from './islands.js';
 import { makeCharacter } from '../player/character.js';
 
@@ -99,8 +99,9 @@ export class World {
 
   _foliage() {
     const rand = mulberry32(42);
-    const geos = treeGeometries();
-    const geosLow = treeGeometries(true);
+    const geos = paintedTreeGeometries();
+    const geosLow = paintedTreeGeometries(true);
+    const foliageMat = foliageMaterial();
     const buckets = new Map();
     const push = (type, x, y, z, s, rot, tint) => {
       const k = `${type}|${Math.floor(x / CHUNK)}|${Math.floor(z / CHUNK)}`;
@@ -144,16 +145,16 @@ export class World {
         }
       }
     }
-    const rockGeo = rockGeometry(3);
-    const rockMat = new THREE.MeshLambertMaterial({ color: 0x8f8a82, flatShading: true });
+    const rockGeo = smoothRockGeometry(3);
+    const rockMat = rockMaterial();
     const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), ps = new THREE.Vector3();
     const up = new THREE.Vector3(0, 1, 0);
     const col = new THREE.Color();
     for (const b of buckets.values()) {
       const isRock = b.type === 'rock';
       const geo = isRock ? rockGeo : geos[b.type];
-      const mesh = new THREE.InstancedMesh(geo, isRock ? rockMat : MAT.foliage, b.items.length);
-      const low = isRock ? null : new THREE.InstancedMesh(geosLow[b.type], MAT.foliage, b.items.length);
+      const mesh = new THREE.InstancedMesh(geo, isRock ? rockMat : foliageMat, b.items.length);
+      const low = isRock ? null : new THREE.InstancedMesh(geosLow[b.type], foliageMat, b.items.length);
       b.items.forEach(([x, y, z, s, rot, tint], i) => {
         q.setFromAxisAngle(up, rot);
         if (isRock) {

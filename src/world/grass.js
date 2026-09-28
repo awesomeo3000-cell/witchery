@@ -121,7 +121,7 @@ export class Grass {
           }
           vec3 world = vec3(wp.x + p.x + bend.x, t.r + p.y - length(bend) * 0.35 * aH, wp.y + p.z + bend.y);
           vH = aH; vHue = t.b; vShade = 0.85 + fract(r * 3.7) * 0.3;
-          vFlower = (fract(r * 97.3) < 0.035 && t.b < 0.75) ? floor(fract(r * 53.1) * 3.0) + 1.0 : 0.0;
+          vFlower = (fract(r * 97.3) < 0.009 && t.b < 0.75) ? floor(fract(r * 53.1) * 3.0) + 1.0 : 0.0;
           vDist = dist;
           vec4 mvPosition = viewMatrix * vec4(world, 1.0);
           gl_Position = projectionMatrix * mvPosition;
@@ -138,13 +138,13 @@ export class Grass {
           vec3 meadow = vec3(0.45, 0.7, 0.24);
           vec3 golden = vec3(0.86, 0.66, 0.26);
           vec3 c = vHue < 0.3 ? mix(forest, meadow, vHue / 0.3) : mix(meadow, golden, (vHue - 0.3) / 0.7);
-          c *= (0.5 + 0.7 * vH) * vShade;
+          c *= (0.45 + 0.5 * vH) * vShade;
           c += vec3(0.08, 0.1, 0.02) * smoothstep(0.7, 1.0, vH);
           // Sunlit tips + brighter streaks where gusts flatten the blades
           c += uTip * smoothstep(0.6, 1.0, vH) * 0.06;
           c += vec3(0.05, 0.07, 0.02) * vGust * vH;
           // Tiny wildflowers
-          if (vFlower > 0.5 && vH > 0.75) c = vFlower < 1.5 ? vec3(0.95, 0.95, 0.9) : vFlower < 2.5 ? vec3(1.0, 0.85, 0.3) : vec3(0.9, 0.55, 0.75);
+          if (vFlower > 0.5 && vH > 0.88) c = vFlower < 1.5 ? vec3(0.95, 0.95, 0.9) : vFlower < 2.5 ? vec3(1.0, 0.85, 0.3) : vec3(0.9, 0.55, 0.75);
           c = mix(c, vPaint.rgb * (0.55 + 0.6 * vH), clamp(vPaint.a * 1.2, 0.0, 0.9));
           gl_FragColor = vec4(c * uLight, 1.0);
           #include <fog_fragment>

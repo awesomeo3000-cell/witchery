@@ -1,6 +1,8 @@
 // Shared stylised geometry builders and materials.
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
+import { paintTex } from './textures.js';
+import { mulberry32 as _rng, makeNoise2D as _noise } from '../core/math.js';
 
 export const MAT = {};
 export const WIND = { value: 0 };
@@ -277,4 +279,194 @@ export function makeFlameTexture() {
   x.bezierCurveTo(6, 34, 22, 22, 32, 2);
   x.fill();
   return new THREE.CanvasTexture(c);
+}
+
+// ---------------------------------------------------------------- painted foliage (leaf cards)
+
+let atlasTex = null;
+// 512x256 atlas: bark on the left half, leaf clump on the right half
+export function foliageAtlas() {
+  if (atlasTex) return atlasTex;
+  const c = document.createElement('canvas');
+  c.width = 512; c.height = 256;
+  const x = c.getContext('2d');
+  x.drawImage(paintTex('bark').image, 0, 0, 256, 256);
+  x.drawImage(paintTex('leaves').image, 256, 0, 256, 256);
+  atlasTex = new THREE.CanvasTexture(c);
+  atlasTex.colorSpace = THREE.SRGBColorSpace;
+  atlasTex.anisotropy = 4;
+  return atlasTex;
+}
+
+export function foliageMaterial() {
+  const m = new THREE.MeshLambertMaterial({ map: foliageAtlas(), vertexColors: true, alphaTest: 0.45, side: THREE.DoubleSide });
+  return softLit(m, { wind: 1, rim: 0.45, wrap: 0.75 });
+}
+
+// Collects triangles with position/normal/uv/color
+class GeoBuilder {
+  constructor() { this.p = []; this.n = []; this.u = []; this.c = []; }
+  add(geo, color, uvRect = [0, 0, 0.5, 1], normalFn = null) {
+    const g = geo.index ? geo.toNonIndexed() : geo;
+    const P = g.attributes.position, N = g.attributes.normal, U = g.attributes.uv;
+    const col = new THREE.Color();
+    for (let i = 0; i < P.count; i++) {
+      this.p.push(P.getX(i), P.getY(i), P.getZ(i));
+      const nn = normalFn ? normalFn(P.getX(i), P.getY(i), P.getZ(i), N.getX(i), N.getY(i), N.getZ(i)) : [N.getX(i), N.getY(i), N.getZ(i)];
+      this.n.push(nn[0], nn[1], nn[2]);
+      const u = U ? U.getX(i) : 0, v = U ? U.getY(i) : 0;
+      this.u.push(uvRect[0] + u * uvRect[2], uvRect[1] + v * uvRect[3]);
+      col.set(typeof color === 'function' ? color(P.getX(i), P.getY(i), P.getZ(i)) : color);
+      this.c.push(col.r, col.g, col.b);
+    }
+  }
+  build() {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(this.p, 3));
+    g.setAttribute('normal', new THREE.Float32BufferAttribute(this.n, 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(this.u, 2));
+    g.setAttribute('color', new THREE.Float32BufferAttribute(this.c, 3));
+    g.computeBoundingSphere();
+    return g;
+  }
+}
+
+const BARK = [0, 0, 0.5, 1];
+const LEAF = [0.5, 0, 0.5, 1];
+
+function trunk(B, h, r0, r1, bend = 0.25, seed = 1, tint = 0xffffff) {
+  const g = new THREE.CylinderGeometry(r1, r0, h, 8, 5, true);
+  const p = g.attributes.position;
+  const rand = _rng(seed);
+  const bx = (rand() - 0.5) * bend, bz = (rand() - 0.5) * bend;
+  for (let i = 0; i < p.count; i++) {
+    const t = (p.getY(i) + h / 2) / h;
+    p.setX(i, p.getX(i) + bx * t * t * h * 0.3);
+    p.setZ(i, p.getZ(i) + bz * t * t * h * 0.3);
+    // Root flare
+    const flare = 1 + Math.max(0, 0.25 - t) * 1.6;
+    p.setX(i, p.getX(i) * flare);
+    p.setZ(i, p.getZ(i) * flare);
+  }
+  g.computeVertexNormals();
+  g.translate(0, h / 2, 0);
+  B.add(g, tint, BARK);
+  return [bx * h * 0.3, h, bz * h * 0.3];
+}
+
+function branch(B, from, dir, len, r, tint = 0xffffff) {
+  const g = new THREE.CylinderGeometry(r * 0.5, r, len, 5, 1, true);
+  g.translate(0, len / 2, 0);
+  const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
+  g.applyQuaternion(q);
+  g.translate(...from);
+  B.add(g, tint, [0, 0, 0.5, 0.3]);
+}
+
+// Leaf cards scattered over an ellipsoid; normals point away from the canopy centre so the
+// cluster shades like one soft volume
+function canopy(B, cx, cy, cz, rx, ry, rz, count, cardSize, base, seed, opts = {}) {
+  const rand = _rng(seed);
+  const c0 = new THREE.Color(base);
+  const top = c0.clone().offsetHSL(0.03, 0.06, 0.2);
+  const bottom = c0.clone().offsetHSL(-0.03, -0.04, -0.06);
+  for (let i = 0; i < count; i++) {
+    // Points biased to the surface of the ellipsoid
+    const u = rand() * 2 - 1, th = rand() * Math.PI * 2;
+    const s = Math.sqrt(1 - u * u);
+    const k = 0.55 + 0.45 * Math.cbrt(rand());
+    let px = Math.cos(th) * s * rx * k, py = u * ry * k, pz = Math.sin(th) * s * rz * k;
+    if (opts.flat) py *= 0.35;
+    const size = cardSize * (0.75 + rand() * 0.5);
+    const q = new THREE.PlaneGeometry(size, size);
+    q.rotateZ(rand() * Math.PI * 2);
+    q.rotateX((rand() - 0.5) * Math.PI);
+    q.rotateY(rand() * Math.PI * 2);
+    q.translate(cx + px, cy + py, cz + pz);
+    const tNorm = (py / (ry * (opts.flat ? 0.35 : 1)) + 1) / 2;
+    const col = bottom.clone().lerp(top, Math.min(1, Math.max(0, tNorm + (rand() - 0.5) * 0.2)));
+    if (opts.snow && tNorm > 0.55) col.lerp(new THREE.Color(0xeef4fb), 0.7);
+    B.add(q, col.getHex(), LEAF, (x, y, z) => {
+      const d = new THREE.Vector3(x - cx, (y - cy) * 0.8 + ry * 0.6, z - cz).normalize();
+      return [d.x, d.y, d.z];
+    });
+  }
+}
+
+export function paintedTreeGeometries(lod = false) {
+  const n = (v) => Math.max(4, Math.round(lod ? v * 0.35 : v));
+  const sz = (v) => (lod ? v * 1.5 : v);
+  const out = {};
+  let B = new GeoBuilder();
+  let t = trunk(B, 4.2, 0.42, 0.22, 0.4, 1);
+  branch(B, [t[0] * 0.6, 3.2, t[2] * 0.6], new THREE.Vector3(0.8, 1, 0.2), 1.8, 0.14);
+  branch(B, [t[0] * 0.7, 3.6, t[2] * 0.7], new THREE.Vector3(-0.7, 1, -0.4), 1.6, 0.12);
+  canopy(B, t[0], 5.0, t[2], 2.5, 1.9, 2.5, n(80), sz(1.45), 0x6aad45, 11);
+  canopy(B, t[0] + 1.3, 4.3, t[2] + 0.6, 1.5, 1.2, 1.5, n(26), sz(1.2), 0x66a840, 12);
+  out.round = B.build();
+
+  B = new GeoBuilder();
+  t = trunk(B, 3.4, 0.34, 0.18, 0.2, 2);
+  canopy(B, t[0], 5.2, t[2], 1.5, 3.0, 1.5, n(64), sz(1.2), 0x559445, 13);
+  out.tall = B.build();
+
+  const pine = (snow, seed) => {
+    const b = new GeoBuilder();
+    const tt = trunk(b, 7.2, 0.3, 0.1, 0.05, seed);
+    const tiers = 5;
+    for (let i = 0; i < tiers; i++) {
+      const y = 2 + i * 1.15;
+      const r = 2.5 * (1 - i / (tiers + 0.6));
+      canopy(b, tt[0] * (y / 7), y, tt[2] * (y / 7), r, 0.5, r, n(22 - i * 2), sz(1.1), snow ? 0x3a6656 : 0x3f7448, seed * 10 + i, { snow });
+    }
+    return b.build();
+  };
+  out.pine = pine(false, 3);
+  out.snowPine = pine(true, 4);
+
+  B = new GeoBuilder();
+  t = trunk(B, 4.4, 0.4, 0.2, 0.7, 5);
+  branch(B, [t[0], 4.2, t[2]], new THREE.Vector3(1, 0.5, 0.2), 2.2, 0.14);
+  branch(B, [t[0], 4.2, t[2]], new THREE.Vector3(-1, 0.45, -0.3), 2, 0.14);
+  canopy(B, t[0], 4.9, t[2], 3.3, 0.9, 3.0, n(60), sz(1.4), 0x9aaa44, 15, { flat: true });
+  out.acacia = B.build();
+
+  B = new GeoBuilder();
+  t = trunk(B, 5, 0.45, 0.14, 0.9, 6, 0x6a6064);
+  branch(B, [t[0] * 0.6, 3.4, t[2] * 0.6], new THREE.Vector3(1, 0.8, 0), 2.2, 0.13, 0x6a6064);
+  branch(B, [t[0] * 0.7, 4.0, t[2] * 0.7], new THREE.Vector3(-0.8, 1, 0.3), 1.9, 0.12, 0x6a6064);
+  branch(B, [t[0] * 0.8, 4.5, t[2] * 0.8], new THREE.Vector3(0.2, 1, -1), 1.5, 0.1, 0x6a6064);
+  // A few glowing ember leaves
+  canopy(B, t[0], 5.2, t[2], 1.3, 0.8, 1.3, n(6), sz(0.7), 0xff6a2a, 16);
+  out.dead = B.build();
+
+  B = new GeoBuilder();
+  canopy(B, 0, 0.7, 0, 1.2, 0.8, 1.2, n(28), sz(0.9), 0x5f9f40, 17);
+  canopy(B, 0.7, 0.55, 0.3, 0.8, 0.6, 0.8, n(12), sz(0.8), 0x6aaa48, 18);
+  out.bush = B.build();
+  return out;
+}
+
+// Smooth, noise-sculpted boulder with painted rock texture
+let rockNoise = null;
+export function smoothRockGeometry(seed = 1) {
+  if (!rockNoise) rockNoise = _noise(91);
+  const g = new THREE.IcosahedronGeometry(1, 3);
+  const p = g.attributes.position;
+  const v = new THREE.Vector3();
+  for (let i = 0; i < p.count; i++) {
+    v.fromBufferAttribute(p, i).normalize();
+    const d = 1 + rockNoise(v.x * 1.6 + seed, v.z * 1.6 + v.y) * 0.22 + rockNoise(v.x * 4 + v.y * 3, v.z * 4 + seed) * 0.07;
+    // Flattened base, slightly faceted top like a weathered boulder
+    p.setXYZ(i, v.x * d, Math.max(-0.35, v.y * d * 0.9), v.z * d);
+  }
+  g.deleteAttribute('normal');
+  let m = mergeVertices(g);
+  m.computeVertexNormals();
+  return m;
+}
+
+export function rockMaterial() {
+  const t = paintTex('rock');
+  return new THREE.MeshLambertMaterial({ map: t, color: 0xffffff });
 }
