@@ -30,6 +30,7 @@
         <div><kbd>1-4</kbd>/<kbd>E</kbd> Colour</div><div><kbd>Tab</kbd> Colour wheel</div>
         <div><kbd>R</kbd> Ride the brush</div><div><kbd>C</kbd> Descend (riding)</div>
         <div><kbd>F</kbd> Interact</div><div><kbd>M</kbd> Map · <kbd>Enter</kbd> Chat</div>
+        <div><kbd>I</kbd> Satchel</div><div><kbd>G</kbd> Quick eat</div>
       </div>
     </div>
     <div id="inks"><div id="ink-name">EMBER</div><div id="ink-row"></div></div>
@@ -98,6 +99,20 @@
       <p>The Hueless King is undone, and colour pours back into the sky.</p>
       <button id="btn-victory">Keep exploring</button>
       <button id="btn-credits" class="secondary">Credits</button>
+    </div>
+  </div>
+
+  <div id="inventory" class="hidden">
+    <div class="inv-card">
+      <div class="inv-head"><h2 id="inv-title">Satchel</h2><button id="inv-close" class="secondary">Close (Esc)</button></div>
+      <div id="inv-pot" class="hidden">
+        <div class="inv-sub">Add up to three ingredients, then cook. Matching buff ingredients make the effect last longer.</div>
+        <div class="pot-row"><div id="inv-slots"></div><button id="inv-cook">Cook</button><button id="inv-clear" class="secondary">Empty pot</button></div>
+      </div>
+      <h3>Ingredients <span>(click to eat or add to the pot)</span></h3>
+      <div id="inv-ing" class="grid"></div>
+      <h3>Meals</h3>
+      <div id="inv-meals" class="grid"></div>
     </div>
   </div>
 

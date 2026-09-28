@@ -17,6 +17,7 @@ import { EnemyManager } from './enemies/enemies.js';
 import { Trials } from './trials/trials.js';
 import { Sprites } from './world/sprites.js';
 import { Weather } from './world/weather.js';
+import { Forage } from './world/forage.js';
 import { WET } from './world/terrain.js';
 import { Player } from './player/player.js';
 import { makeCharacter } from './player/character.js';
@@ -174,6 +175,7 @@ class Game {
     G.trials = new Trials(G.scene);
     G.sprites = new Sprites(G.scene);
     G.weather = new Weather(G.scene);
+    G.forage = new Forage(G.scene);
     G.hud = new HUD();
     G.cine = new Cinematic();
     G.guide = new Guide();
@@ -241,6 +243,7 @@ class Game {
       }
       if (typeof save.color === 'number') G.player.setColor(save.color);
       if (save.ink) G.player.ink = save.ink.slice(0, 4);
+      if (save.forage) G.forage.load(save.forage);
       if (!G.net.connected && typeof save.dayT === 'number') G.sky.setTime(save.dayT);
     }
     G.flags.wp_village = true;
@@ -274,7 +277,7 @@ class Game {
   _setupPause() {
     G.input.onLockChange = (locked) => {
       if (!this.running) return;
-      if (!locked && !this.mapOpen && !this.chatOpen && $('victory').classList.contains('hidden')) this._showPause(true);
+      if (!locked && !this.mapOpen && !this.chatOpen && !G.forage.open && $('victory').classList.contains('hidden') && $('credits').classList.contains('hidden')) this._showPause(true);
       if (locked) this._showPause(false);
     };
     G.input.onPadStart = () => {
@@ -572,6 +575,7 @@ class Game {
     else if (G.cine.frozen) { p.vel.x = p.vel.z = 0; p._animate(dt); }
     G.trials.update(wdt);
     G.sprites.update(dt);
+    G.forage.update(dt);
     G.enemies.update(wdt);
     G.paint.update(wdt);
     G.particles.update(wdt);

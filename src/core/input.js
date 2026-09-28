@@ -108,7 +108,7 @@ export class Input {
     this.mouse.dx += curve(rx) * 1500 * dt;
     this.mouse.dy += curve(ry) * 1000 * dt;
     const map = {
-      1: 'ShiftLeft', 3: 'KeyR', 4: 'KeyQ', 5: 'KeyE', 10: 'KeyC',
+      1: 'ShiftLeft', 3: 'KeyR', 4: 'KeyQ', 5: 'KeyE', 10: 'KeyC', 11: 'KeyG',
       12: 'Digit1', 15: 'Digit2', 13: 'Digit3', 14: 'Digit4', 8: 'KeyM',
     };
     const set = (code, on) => {

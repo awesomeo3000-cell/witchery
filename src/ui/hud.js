@@ -11,7 +11,7 @@ const PRISM_PATH = 'M15 1 L29 14 L15 41 L1 14 Z';
 const PAD_LEGEND = [
   ['L stick', 'Move'], ['R stick', 'Look'], ['A', 'Jump · Glide · Interact'], ['B', 'Sprint · Boost'],
   ['X / RT', 'Strike · hold to spin'], ['LT', 'Aim (RT to flick)'], ['LB', 'Lock on (A to dodge)'], ['RB', 'Next colour'],
-  ['D-pad', 'Pick colour'], ['Y', 'Ride the brush'], ['L3', 'Descend (riding)'], ['View', 'Map · Start: Pause'],
+  ['D-pad', 'Pick colour'], ['Y', 'Ride the brush'], ['L3', 'Descend (riding)'], ['R3', 'Quick eat'], ['View', 'Map · Start: Pause'],
 ].map(([k, v]) => `<div><kbd>${k}</kbd> ${v}</div>`).join('');
 
 export class HUD {
