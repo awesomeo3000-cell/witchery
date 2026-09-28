@@ -118,6 +118,14 @@ export class Steeds {
     this.mine = null;
     this.whistleT = 0;
     this._stable(scene);
+    // Co-op: climb on behind a friend who's riding
+    this.tandem = { pos: new THREE.Vector3(0, -9999, 0), peer: null };
+    G.world.interactables.push({
+      pos: this.tandem.pos, radius: 3.2,
+      enabled: () => !!this.tandem.peer && !G.player.mounted && !G.player.passenger && G.player.state !== 'ride',
+      prompt: () => `Ride with ${this.tandem.peer?.name || 'your friend'}`,
+      action: () => this.hopOn(this.tandem.peer),
+    });
   }
 
   // Stable post at the edge of Palette Hollow: Rosa renames your buck or fetches it for you
@@ -293,6 +301,39 @@ export class Steeds {
     G.honours?.event('tame');
   }
 
+  hopOn(peer) {
+    const p = G.player;
+    if (!peer || !peer.mount) return;
+    p.passenger = peer.id;
+    p.state = 'ground';
+    p.vel.set(0, 0, 0);
+    G.audio.play('jump');
+    G.hud.toast(`Riding with ${peer.name}. Interact to hop off.`, '#ffd890', 2.5);
+  }
+
+  hopOff() {
+    const p = G.player;
+    if (!p.passenger) return;
+    p.passenger = null;
+    const side = new THREE.Vector3(Math.cos(p.yaw), 0, -Math.sin(p.yaw));
+    p.pos.addScaledVector(side, 1.3);
+    p.pos.y += 0.8;
+    p.state = 'air';
+  }
+
+  // Keep a passenger seated behind their friend (called from the player update)
+  carry(p, dt) {
+    const peer = G.peers?.get(p.passenger);
+    if (!peer || !peer.mount || p.inDungeon || !p.alive) { this.hopOff(); return false; }
+    const back = new THREE.Vector3(-Math.sin(peer.yaw), 0, -Math.cos(peer.yaw));
+    p.pos.copy(peer.pos).addScaledVector(back, 0.75);
+    p.yaw = peer.yaw;
+    p.vel.set(0, 0, 0);
+    p.speed = peer.speed;
+    p.state = 'ground';
+    return true;
+  }
+
   whistle() {
     const p = G.player;
     if (!p || p.inDungeon) return;
@@ -361,6 +402,12 @@ export class Steeds {
       this.npc.setLod(ds > 28);
       if (ds <= 28) this.npc.animate({ state: 'idle', speed: 0 }, dt);
     }
+    // Nearest friend on a Brushbuck, for the tandem prompt
+    let best = null, bd = 6;
+    if (G.peers) for (const q of G.peers.values()) { if (!q.mount) continue; const d = q.pos.distanceTo(p.pos); if (d < bd) { bd = d; best = q; } }
+    this.tandem.peer = best;
+    if (best) this.tandem.pos.set(best.pos.x, best.pos.y + 1, best.pos.z); else this.tandem.pos.set(0, -9999, 0);
+    if (p.passenger && !p.interactTarget && G.input.hit('KeyF')) this.hopOff();
     const m = p.mounted;
     if (m && (p.inDungeon || p.state === 'swim' || p.state === 'ride' || !p.alive)) this.dismount();
     // Interact climbs down, unless there's something else to interact with

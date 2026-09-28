@@ -162,4 +162,6 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 
 85. ✅ **Hats.** Five hats in the Wardrobe, each earned by a specific honour or deed (or a honour count), shown on your hood and synced to friends.
 
+86. ✅ **Tandem riding.** In co-op, climb on behind a friend's Brushbuck and ride along while you paint.
+
 The work continues through this list until the budget is used up.

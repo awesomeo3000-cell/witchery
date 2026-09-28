@@ -80,6 +80,7 @@ export class Player {
     this.tips = ['round'];
     this.tip = 'round';
     this.mounted = null; // the Brushbuck you're riding
+    this.passenger = null; // a friend's id when riding behind them
     this._tip = new THREE.Vector3();
     this._base = new THREE.Vector3();
   }
@@ -232,8 +233,17 @@ export class Player {
     this._handleLock(inp);
     this._handleInteract(inp);
 
-    if (inp.hit('KeyR')) this._toggleRide();
+    if (inp.hit('KeyR') && !this.passenger) this._toggleRide();
     if (inp.hit('KeyB')) this.openEmotes();
+
+    // Riding behind a friend: carried along, but free to aim and flick paint
+    if (this.passenger && G.steeds?.carry(this, dt)) {
+      this._updateCombat(dt, inp);
+      this._updateStamina(dt);
+      this._updateInk(dt);
+      this._animate(dt);
+      return;
+    }
 
     switch (this.state) {
       case 'ride': this._updateRide(dt, inp); break;
@@ -983,7 +993,7 @@ export class Player {
     const g = this.char.group;
     g.position.copy(this.pos);
     if (this.state === 'ride') g.position.y += 0.1 + Math.sin(G.time * 3) * 0.06;
-    if (this.mounted) g.position.y += RIDE_Y + (this.state === 'ground' ? Math.abs(Math.sin(G.time * (4 + Math.hypot(this.vel.x, this.vel.z) * 0.5))) * 0.06 : 0);
+    if (this.mounted || this.passenger) g.position.y += RIDE_Y + (this.state === 'ground' ? Math.abs(Math.sin(G.time * (4 + Math.hypot(this.vel.x, this.vel.z) * 0.5))) * 0.06 : 0);
     g.rotation.y = this.yaw;
     const hv = Math.hypot(this.vel.x, this.vel.z);
     this.speed = hv;
@@ -991,7 +1001,7 @@ export class Player {
     if (st === 'ground') st = hv > 0.5 ? 'walk' : 'idle';
     if (st === 'air') st = this.vel.y > 0 ? 'jump' : 'fall';
     if (this.dodgeT > 0) st = 'dodge';
-    if (this.mounted) st = 'mount';
+    if (this.mounted || this.passenger) st = 'mount';
     if (this.sneaking && (st === 'idle' || st === 'walk')) st = 'sneak';
     // Emotes play while standing still; moving, jumping or attacking cancels them
     if (this.emote) {
@@ -1033,7 +1043,7 @@ export class Player {
   // ---------------------------------------------------------------- camera
   updateCamera(dt) {
     const cam = G.camera;
-    const pivot = this.pos.clone().setY(this.pos.y + (this.state === 'ride' ? 1.8 : this.mounted ? 1.55 + RIDE_Y : 1.55));
+    const pivot = this.pos.clone().setY(this.pos.y + (this.state === 'ride' ? 1.8 : this.mounted || this.passenger ? 1.55 + RIDE_Y : 1.55));
     let dist = this.camDist * (G.settings.camDist || 1);
     let shoulder = 0;
     if (this.aiming) { dist = 2.6; shoulder = 0.9; }
