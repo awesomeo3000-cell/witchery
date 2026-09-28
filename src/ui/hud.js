@@ -30,6 +30,7 @@ export class HUD {
     this.wheelVec = { x: 0, y: 0 };
     this.dialogTimer = 0;
     this.bannerTimer = 0;
+    this.itemTimer = 0;
     this._buildInks();
     this._buildPrisms();
     this._buildCompass();
@@ -309,8 +310,29 @@ export class HUD {
     this.bannerTimer = 4;
   }
 
+  // "You got ..." panel for items and upgrades; the hero lifts it overhead if standing still
+  itemGet(icon, title, desc, color = '#ffe08a') {
+    const el = $('itemget');
+    el.classList.remove('hidden');
+    el.style.animation = 'none';
+    void el.offsetWidth;
+    el.style.animation = '';
+    el.style.setProperty('--glow', color);
+    el.querySelector('.ic').textContent = icon;
+    el.querySelector('.t').textContent = title;
+    el.querySelector('.d').textContent = desc || '';
+    this.itemTimer = 4.5;
+    const p = G.player;
+    if (p && p.state === 'idle' && !p.attack) { p.emote = 'cheer'; p.emoteT = 1.5; }
+    if (p && G.particles) {
+      const at = p.pos.clone().setY(p.pos.y + 2.4);
+      G.particles.burst(at, { count: 24, color: new THREE.Color(color).getHex(), speed: 3, up: 1.5, life: 1.1, size: 0.45, pool: 'glow', gravity: -0.6 });
+    }
+  }
+
   // Dialogue types out with a little voice blip pitched per speaker
   dialog(name, text) {
+    this.itemTimer = 0;
     const d = $('dialog');
     d.classList.remove('hidden');
     d.querySelector('.name').textContent = name;
@@ -337,6 +359,7 @@ export class HUD {
 
   // Multiple-choice dialog; answered with number keys / D-pad (see Game loop)
   choice(name, text, options, cb) {
+    this.itemTimer = 0;
     const d = $('dialog');
     d.classList.remove('hidden');
     d.querySelector('.name').textContent = name;
@@ -571,6 +594,8 @@ export class HUD {
     if (this.dialogTimer <= 0) { $('dialog').classList.add('hidden'); this.typing = null; }
     this.bannerTimer -= dt;
     if (this.bannerTimer <= 0) $('banner').classList.add('hidden');
+    this.itemTimer = (this.itemTimer || 0) - dt;
+    if (this.itemTimer <= 0) $('itemget').classList.add('hidden');
 
     // Altitude & speed while flying or gliding
     const fl = $('flight');

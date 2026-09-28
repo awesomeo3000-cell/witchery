@@ -111,7 +111,7 @@ export class CampDecor {
     player.applyBuff(b.key);
     G.audio.play('pickup');
     G.audio.play('solve');
-    G.hud.banner(b.name, b.desc, b.color);
+    G.hud.itemGet('✦', `You got ${b.name}!`, b.desc, b.color);
     for (let c = 0; c < 4; c++) player.ink[c] = 100;
     G.particles.burst(item.pos.clone().setY(item.pos.y + 1), { count: 50, color: 0xffe08a, speed: 6, life: 1, size: 0.4, pool: 'glow', gravity: 2 });
   }

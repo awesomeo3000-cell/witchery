@@ -84,7 +84,7 @@ export class Shop {
       const u = UPGRADES[i];
       if (purchase(p, u.key)) {
         G.audio.play('solve');
-        G.hud.banner(`${u.name} ${'I'.repeat(p.upg[u.key])}`, u.desc, '#ffd84a');
+        G.hud.itemGet('🖌', `${u.name} ${'I'.repeat(p.upg[u.key])}`, u.desc, '#ffd84a');
         G.particles.burst(p.pos.clone().setY(p.pos.y + 1.2), { count: 40, color: 0xffd84a, speed: 5, life: 1, size: 0.4, pool: 'glow', gravity: 2 });
         this.open();
       } else {

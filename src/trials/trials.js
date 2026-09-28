@@ -95,7 +95,7 @@ export class Trials {
       if (t && !this._announced?.[k]) {
         (this._announced ||= {})[k] = true;
         G.audio.play('shard');
-        G.hud.banner(`${COLORS[t.color].name} Prism Shard`, `${this.shardCount()} / 4 Prism Shards restored`, COLORS[t.color].css);
+        G.hud.itemGet('◆', `You restored the ${COLORS[t.color].name} Prism Shard!`, `${this.shardCount()} / 4 Prism Shards restored. Its colour flows back into the world.`, COLORS[t.color].css);
         applyStats(true);
         if (this.shardCount() >= 4) setTimeout(() => G.hud.banner('The Barrier Falls', 'The Sky Citadel awaits above Palette Hollow', '#e0c8ff'), 4500);
       }

@@ -687,12 +687,12 @@ export class EnemyManager {
         player.pigment += SCALE_PIGMENT;
         G.honours?.event('wyrm');
         G.audio.play('shard');
-        G.hud.banner('Chroma Scale', `A gift from the Wyrm · +${SCALE_PIGMENT} Pigment`, '#c8e8ff');
+        G.hud.itemGet('❖', 'You caught a Chroma Scale!', `A gift from the Wyrm · +${SCALE_PIGMENT} Pigment`, '#9ad8ff');
       } else if (k.kind === 'star') {
         player.pigment += STAR_PIGMENT;
         G.honours?.event('star');
         G.audio.play('sprite');
-        G.hud.banner('Star Fragment', `+${STAR_PIGMENT} Pigment`, '#fff0a0');
+        G.hud.itemGet('★', 'You got a Star Fragment!', `It fell from the night sky · +${STAR_PIGMENT} Pigment`, '#ffe070');
       } else if (k.kind === 'pigment') {
         player.pigment += 5;
         G.hud.toast(`+5 Pigment (${player.pigment})`, '#ffc84a', 1.2);

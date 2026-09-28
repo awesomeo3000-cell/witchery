@@ -150,7 +150,7 @@ export class Treasure {
     G.particles.burst(this.pos, { count: 30, color: 0xffe08a, speed: 4, up: 5, life: 1.2, size: 0.5, pool: 'glow', gravity: 3 });
     G.particles.burst(this.pos, { count: 20, color: 0x7a5a3a, speed: 3, up: 4, life: 0.8, size: 0.5, gravity: 8 });
     G.audio.play('shard');
-    G.hud.banner('Treasure Found!', `+${pig} Pigment and a bundle of ingredients`, '#ffe08a');
+    G.hud.itemGet('✗', 'You dug up the treasure!', `+${pig} Pigment and a bundle of ingredients.`, '#d8a040');
     this.map = null;
     this.sketch = null;
     this.mound.visible = false;

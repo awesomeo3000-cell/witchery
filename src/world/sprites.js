@@ -220,7 +220,7 @@ export class Sprites {
       const kind = i === 0 ? 'heart' : 'stamina';
       G.trials._setFlag(`upg_${kind}_${upgradeCount(kind) + 1}`);
       G.audio.play('shard');
-      G.hud.banner(i === 0 ? 'Heart Container' : 'Stamina Vessel', i === 0 ? 'Your hearts grow for everyone in the party' : 'Your stamina grows for everyone in the party', '#fff09a');
+      G.hud.itemGet(i === 0 ? '♥' : '⟳', i === 0 ? 'You got a Heart Container!' : 'You got a Stamina Vessel!', i === 0 ? 'Your hearts grow for everyone in the party.' : 'Your stamina grows for everyone in the party.', i === 0 ? '#ff6a7a' : '#6ad88a');
     });
   }
 

@@ -200,5 +200,6 @@ Reference stills live in `docs/inspo/`: golden-hour light with violet shadows, w
 
 97. ✅ **Golden-hour grade.** Split-tone grade (gold highlights, violet shadows), gentle S-curve, loud greens pulled toward olive; grass goes teal in forests, olive in meadows and wheat-gold on dry slopes, with cool lavender roots and warm tips; warmer sun and a lavender bounce light.
 98. ✅ **Flight feel.** The brush leaves a long, solid stroke of flat paint (1.5 s, full width until it frays out at the end) instead of a short glowing wisp; manga speed lines start from 16 m/s, are denser, streak in from the edges and mix in a few dark ink strokes. (FOV kick and the height/speed readout were already in.)
+99. ✅ **UI restyle.** Dialogs, prompts and toasts sit on ragged dark brush-stroke smears instead of rounded boxes; the colour pots are proper corked flasks again (a CSS override had squashed them into orbs) on a smear, under a swallowtail ribbon; small-caps serif titles. A new "You got ...!" panel with a round glowing icon and a short description replaces the big banner for items and upgrades (Prism Shards, Heart Containers and Stamina Vessels, camp chests, Chroma Scales, Star Fragments, treasure, Brushwright upgrades), and the hero lifts it overhead if standing still.
 
 The work continues through this list until the budget is used up.
