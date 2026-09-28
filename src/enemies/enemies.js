@@ -8,6 +8,7 @@ import {
 } from './models.js';
 import { fmtTime } from '../world/races.js';
 import { STAR_PIGMENT } from '../world/stars.js';
+import { SCALE_PIGMENT } from '../world/wyrm.js';
 import { smoothRockGeometry } from '../world/props.js';
 import { CampDecor } from './camps.js';
 import { VILLAGE, TRIALS, CITADEL } from '../world/layout.js';
@@ -562,6 +563,7 @@ export class EnemyManager {
         break;
       }
       case 'star': G.stars?.streak(p); break;
+      case 'scaleDrop': if (G.player && G.player.pos.distanceTo(pos) < 200) G.hud.toast('A Chroma Scale drifts down from the Wyrm!', '#c8e8ff', 3); break;
       case 'dummyReset': G.particles.burst(p.setY(p.y + 1.4), { count: 30, color: 0xd8b060, speed: 5, life: 0.9, size: 0.45, gravity: 8 }); G.audio.play('pickup', 0.5); break;
       case 'rushClear': {
         G.audio.play('shard');
@@ -585,6 +587,16 @@ export class EnemyManager {
       mesh = new THREE.Group();
       mesh.add(new THREE.Mesh(new THREE.OctahedronGeometry(0.45), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xfff0a0).multiplyScalar(2.2) })));
       mesh.add(new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 70, 8, 1, true).translate(0, 35, 0), new THREE.MeshBasicMaterial({ color: 0xfff0a0, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false, fog: false })));
+    } else if (kind === 'scale') {
+      mesh = new THREE.Group();
+      const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.08, 6).rotateX(Math.PI / 2), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffffff).multiplyScalar(1.8) }));
+      COLORS.forEach((c, i) => {
+        const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.16), new THREE.MeshBasicMaterial({ color: new THREE.Color(c.hex).multiplyScalar(1.6) }));
+        gem.position.set(Math.cos(i * Math.PI / 2) * 0.35, Math.sin(i * Math.PI / 2) * 0.35, 0.08);
+        disc.add(gem);
+      });
+      mesh.add(disc);
+      mesh.add(new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 40, 8, 1, true).translate(0, 20, 0), new THREE.MeshBasicMaterial({ color: 0xc8e8ff, transparent: true, opacity: 0.18, blending: THREE.AdditiveBlending, depthWrite: false, fog: false })));
     } else if (kind === 'pigment') mesh = new THREE.Mesh(this.pigmentGeo ||= new THREE.CylinderGeometry(0.28, 0.28, 0.08, 16).rotateX(Math.PI / 2), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffc84a).multiplyScalar(1.6) }));
     else {
       const c = Math.floor(Math.random() * 4);
@@ -606,6 +618,11 @@ export class EnemyManager {
         if (player.hp >= player.maxHp) continue;
         player.heal(4);
         G.hud.toast('+2 Hearts', '#ff9aa8', 1);
+      } else if (k.kind === 'scale') {
+        player.pigment += SCALE_PIGMENT;
+        G.honours?.event('wyrm');
+        G.audio.play('shard');
+        G.hud.banner('Chroma Scale', `A gift from the Wyrm · +${SCALE_PIGMENT} Pigment`, '#c8e8ff');
       } else if (k.kind === 'star') {
         player.pigment += STAR_PIGMENT;
         G.honours?.event('star');

@@ -59,4 +59,10 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 33. ✅ **Gamepad rumble.** Rumble on hits, Flurry Rush, heavy landings, boss slams and taking damage, with a toggle.
 34. ✅ **Dynamic resolution.** When the frame rate drops, the render scale lowers to hold about 50 fps and recovers when there's headroom, with a toggle.
 
+## Wave seven
+
+35. ✅ **The Chroma Wyrm.** A huge, peaceful rainbow serpent loops the island's skies. Hit it with paint to knock loose Chroma Scales worth a lot of Pigment.
+36. **Rainbows.** After rain clears in daylight, a rainbow arcs across the sky opposite the sun.
+37. **Regression and docs.** Full browser regression, README pass, roadmap update.
+
 The work continues through this list until the budget is used up.
