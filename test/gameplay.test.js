@@ -334,3 +334,16 @@ test('party arrows point relative to the camera', async () => {
   assert.ok(Math.abs(bearing(0, 10, 0) - -Math.PI / 2) < 1e-9 || Math.abs(bearing(0, 10, 0) - Math.PI / 2) < 1e-9);
   assert.ok(Math.abs(Math.abs(bearing(0, 0, 10)) - Math.PI) < 1e-9);
 });
+
+test('Prism Vault crystals follow the mural order, and its glider is a world reward', async () => {
+  const { nextStep, ORDER } = await import('../src/trials/vault.js');
+  let n = 0;
+  for (const c of ORDER) n = nextStep(n, c);
+  assert.equal(n, ORDER.length);
+  assert.equal(nextStep(2, ORDER[0] === 0 ? 1 : 0), ORDER[0] === (ORDER[0] === 0 ? 1 : 0) ? 1 : 0, 'a wrong colour resets');
+  assert.equal(nextStep(3, ORDER[0]), ORDER[3] === ORDER[0] ? 4 : 1, 'the first colour restarts the sequence');
+  const { GLIDERS, unlocked } = await import('../src/ui/wardrobe.js');
+  const prism = GLIDERS.find((g) => g.id === 'prism');
+  assert.equal(unlocked(prism, 99, {}), false);
+  assert.equal(unlocked(prism, 0, { vault_done: true }), true);
+});

@@ -36,6 +36,7 @@ export const HONOURS = [
   { id: 'critter', name: 'Soft Steps', desc: 'Sneak up on and catch 5 critters', event: 'critter', count: 5 },
   { id: 'tame', name: 'Buck Whisperer', desc: 'Tame a wild Brushbuck', event: 'tame' },
   { id: 'shrines', name: 'Shrine Seeker', desc: 'Clear all three Paint Shrines', check: () => G.shrines && G.shrines.clearedCount() >= G.shrines.list.length },
+  { id: 'vault', name: 'Vault Breaker', desc: 'Open the chest at the end of the Prism Vault', check: () => !!G.flags.vault_done },
   { id: 'echoes', name: 'Echo Breaker', desc: 'Clear the Gallery of Echoes', check: () => !!G.flags.rush_best },
 ];
 

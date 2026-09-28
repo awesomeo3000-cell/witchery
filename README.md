@@ -160,6 +160,8 @@ The score is generated live and changes with what you're doing: gentle piano for
 
 Once the Hueless King falls, the village statue opens a way down to the **Gallery of Echoes**: a boss rush against echoes of all four trial bosses, back to back. The fastest clear is saved as the room record, with the names of everyone who ran it.
 
+**The Prism Vault.** Once the Hueless King falls, a stone spire rises from the middle of the lake. Below it are four chambers that each need several colours: freeze the pool and keep both braziers burning at once; bounce up a smooth ledge, vine up the moss and ring the bell; burn the brambles and grow a vine bridge; then paint the four crystals in the order the mural shows. The chest at the end holds 100 Pigment and the Prismatic glider (Wardrobe).
+
 ## Saving
 
 Online rooms save their world progress on the server in `data/rooms.json`, so it survives restarts. Each browser also remembers where you were. Solo games keep everything in the browser's local storage. When a save exists, the title menu shows **Continue** plus a **Start over** button that erases this browser's save after asking to confirm. Shared room progress stays on the server.
@@ -178,7 +180,7 @@ All art is generated in code: painted canvas textures (bark, leaves, stone, shin
 
 ## Painter's Honours
 
-There are thirty-one achievements, such as First Flight, Soft Bristles (a sneak strike), Record Breaker, Cartographer, Good Samaritan (reviving a friend) and Echo Breaker. Each one pops a toast when earned, is listed with its progress in the satchel, and is saved per player.
+There are thirty-two achievements, such as First Flight, Soft Bristles (a sneak strike), Record Breaker, Cartographer, Good Samaritan (reviving a friend) and Echo Breaker. Each one pops a toast when earned, is listed with its progress in the satchel, and is saved per player.
 
 ### Wardrobe
 

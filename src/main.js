@@ -45,6 +45,7 @@ import { Memories } from './world/memories.js';
 import { Towers } from './world/towers.js';
 import { Compendium } from './ui/compendium.js';
 import { Party } from './ui/party.js';
+import { Vault } from './trials/vault.js';
 import { Merchant } from './world/merchant.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
@@ -254,6 +255,7 @@ class Game {
     G.towers = timed('towers', () => new Towers(G.scene));
     G.compendium = timed('compendium', () => new Compendium());
     G.party = timed('party', () => new Party());
+    G.vault = timed('vault', () => new Vault(G.trials.root));
     G.merchant = timed('merchant', () => new Merchant(G.scene));
     G.cine = timed('cine', () => new Cinematic());
     G.guide = timed('guide', () => new Guide());
@@ -752,6 +754,7 @@ class Game {
     G.memories.update(dt);
     G.towers.update(dt);
     G.party.update(dt);
+    G.vault.update(dt);
     G.merchant.update(dt);
     G.greyMoon.update(dt);
     G.enemies.update(wdt);

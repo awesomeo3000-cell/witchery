@@ -136,4 +136,8 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 71. ✅ **Party panel.** In co-op, friends are listed under your hearts with health, distance, a direction arrow and whether they're down, flying or mounted.
 72. ✅ **Quick chat.** T (or the gamepad quick menu) sends a quick phrase to the room.
 
+## Wave twenty
+
+73. ✅ **The Prism Vault.** A post-game dungeon under a spire that rises from the lake after the final boss: four multi-colour chambers (floes and timed braziers; bounce, vines and a bell; brambles and a vine bridge; a crystal colour sequence from a mural) ending in a chest with 100 Pigment and the Prismatic glider.
+
 The work continues through this list until the budget is used up.

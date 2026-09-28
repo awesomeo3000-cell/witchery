@@ -14,10 +14,12 @@ export const GLIDERS = [
   { id: 'gold', name: 'Sunflower gold', need: 4, tint: 0xffe08a },
   { id: 'rose', name: 'Rose', need: 8, tint: 0xffb4cc },
   { id: 'midnight', name: 'Midnight', need: 12, tint: 0x8a98ff },
+  { id: 'prism', name: 'Prismatic', need: 0, flag: 'vault_done', tint: 0xd8c8ff },
 ];
 const TRAIL_STYLE = { paint: 0, rainbow: 1, star: 2, ember: 3 };
 
-export const unlocked = (item, honours) => honours >= item.need;
+// Most items unlock with honours; a few are rewards found in the world (a shared flag)
+export const unlocked = (item, honours, flags = G.flags || {}) => (item.flag ? !!flags[item.flag] : honours >= item.need);
 
 // Apply a cosmetic code ("trail|glider") to a character and its ride trail
 export function applyCosmetics(char, ribbon, code) {
@@ -46,7 +48,7 @@ export class Wardrobe {
   render(enforce = false) {
     const n = G.honours ? G.honours.got.size : 0;
     const fill = (sel, list, cur) => {
-      sel.innerHTML = list.map((x) => `<option value="${x.id}" ${unlocked(x, n) ? '' : 'disabled'} ${x.id === cur ? 'selected' : ''}>${x.name}${unlocked(x, n) ? '' : ` (${x.need} honours)`}</option>`).join('');
+      sel.innerHTML = list.map((x) => `<option value="${x.id}" ${unlocked(x, n) ? '' : 'disabled'} ${x.id === cur ? 'selected' : ''}>${x.name}${unlocked(x, n) ? '' : x.flag ? ' (found in the world)' : ` (${x.need} honours)`}</option>`).join('');
     };
     const s = G.settings;
     // Once honours are loaded, fall back to the defaults if a saved pick isn't earned here
