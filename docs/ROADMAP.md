@@ -157,4 +157,7 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 
 82. ✅ **Lily pads.** Bloom on water grows a walkable lily pad (40 s), a gentler alternative to Frost floes.
 
+83. ✅ **Soak test.** `npm run soak` drives the built game with seeded random input around the island and fails on page errors or NaN state.
+84. ✅ **Gamepad map cursor.** With a pad, the left stick moves a cursor on the map; A fast-travels, removes a pin or drops one; B closes the map.
+
 The work continues through this list until the budget is used up.

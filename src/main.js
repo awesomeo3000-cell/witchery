@@ -49,6 +49,7 @@ import { Vault } from './trials/vault.js';
 import { Festival } from './world/festival.js';
 import { Pins } from './ui/pins.js';
 import { Tally } from './ui/tally.js';
+import { MapCursor } from './ui/mapcursor.js';
 import { Merchant } from './world/merchant.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
@@ -262,6 +263,7 @@ class Game {
     G.festival = timed('festival', () => new Festival(G.scene));
     G.pins = timed('pins', () => new Pins());
     G.tally = timed('tally', () => new Tally());
+    G.mapCursor = timed('mapCursor', () => new MapCursor());
     G.merchant = timed('merchant', () => new Merchant(G.scene));
     G.cine = timed('cine', () => new Cinematic());
     G.guide = timed('guide', () => new Guide());
@@ -698,6 +700,7 @@ class Game {
     const rawDt = this.clock.getDelta();
     let dt = Math.min(rawDt, 0.05);
     G.input.pollGamepad(dt);
+    G.mapCursor?.update(dt, this.mapOpen);
     G.time += dt;
     WIND.value = G.time;
     if (!this.running) {
