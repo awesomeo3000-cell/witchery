@@ -53,7 +53,7 @@ export class HUD {
       '<kbd>LMB</kbd> Strike · hold to spin', '<kbd>RMB</kbd>+<kbd>LMB</kbd> Aim · tap flick · hold paint',
       `${k('KeyQ')}/<kbd>MMB</kbd> Lock on`, `${k('Space')} Dodge (locked on)`,
       `<kbd>1-4</kbd>/${k('KeyE')} Colour`, `${k('Tab')} Colour wheel`,
-      `${k('KeyR')} Ride the brush`, `${k('KeyC')} Descend (riding)`,
+      `${k('KeyR')} Ride the brush`, `${k('KeyC')} Sneak · descend (riding)`,
       `${k('KeyF')} Interact`, `${k('KeyM')} Map · <kbd>Enter</kbd> Chat`,
       `${k('KeyI')} Satchel`, `${k('KeyG')} Quick eat · ${k('KeyP')} Photo`,
       `${k('KeyV')} Ping · ${k('KeyB')} Emote`,

@@ -38,6 +38,7 @@ If the page can't reach a server (for example, when the built `dist/` is opened 
 | Enter | Chat (the host can type `/weather rain`, `/time dusk`, `/greymoon`) |
 | V | Ping the spot under the crosshair for your friends |
 | B | Emote: wave, cheer or sit (friends see it too) |
+| C (on foot) | Sneak: crouch so enemies notice you later and sleeping giants stay asleep. Strikes on unaware enemies deal double damage |
 | H | Hide the controls panel |
 | Esc | Pause and settings |
 

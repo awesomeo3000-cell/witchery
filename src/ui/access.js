@@ -18,7 +18,7 @@ export const ACTIONS = [
   { id: 'cycle', label: 'Next colour', code: 'KeyE' },
   { id: 'wheel', label: 'Colour wheel', code: 'Tab' },
   { id: 'ride', label: 'Ride the brush', code: 'KeyR' },
-  { id: 'descend', label: 'Descend (riding)', code: 'KeyC' },
+  { id: 'descend', label: 'Sneak / descend (riding)', code: 'KeyC' },
   { id: 'map', label: 'Map', code: 'KeyM' },
   { id: 'satchel', label: 'Satchel', code: 'KeyI' },
   { id: 'eat', label: 'Quick eat', code: 'KeyG' },

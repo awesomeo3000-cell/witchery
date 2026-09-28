@@ -432,6 +432,14 @@ export function makeCharacter(look = {}) {
     } else if (st === 'dead') {
       hipY = 0.25; bodyX = -1.45;
       lSh = [0, 0, 1.2]; rSh = [0, 0, -1.2];
+    } else if (st === 'sneak') {
+      const amt = Math.min(1, sp / 3);
+      hipY = 0.62 + Math.abs(s) * 0.03 * amt;
+      bodyX = 0.5;
+      lHip = [-0.7 + s * 0.5 * amt, 0, 0]; rHip = [-0.7 - s * 0.5 * amt, 0, 0];
+      lK = [1.2 + Math.max(0, -c) * 0.4 * amt, 0, 0]; rK = [1.2 + Math.max(0, c) * 0.4 * amt, 0, 0];
+      lSh = [-0.3 - s * 0.3 * amt, 0, 0.2]; rSh = [-0.5, 0, -0.2]; lF = [-0.8, 0, 0]; rF = [-0.6, 0, 0];
+      brushRot = [1.2, 0, 0];
     } else if (st === 'emote_wave') {
       rSh = [-2.7, 0, -0.35 + Math.sin(phase * 2.2) * 0.4]; rF = [-0.5, 0, 0];
       lSh = [0.1, 0, 0.15]; brushRot = [0.4, 0, 0];

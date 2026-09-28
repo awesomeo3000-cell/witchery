@@ -308,6 +308,14 @@ export class Player {
     const grounded = this.state === 'ground';
     const sprint = inp.down('ShiftLeft') || inp.down('ShiftRight');
     let speed = this.aiming ? AIM_WALK : WALK;
+    // Sneak: C toggles a crouch on the ground; sprinting or leaving the ground stands you up
+    if (grounded && inp.hit('KeyC')) {
+      this.sneakOn = !this.sneakOn;
+      if (this.sneakOn && !G.guide.seen.has('sneak')) { G.guide.seen.add('sneak'); G.hud.toast('Sneaking: enemies notice you later, and sleeping giants stay asleep. Strike unaware foes for double damage!', '#c8d8ff', 5); }
+    }
+    if (!grounded || (sprint && moving)) this.sneakOn = false;
+    this.sneaking = this.sneakOn && grounded;
+    if (this.sneaking) speed *= 0.5;
     if (sprint && moving && grounded && !this.aiming && !this.exhausted && !this.lock) {
       speed = SPRINT;
       this.useStamina(14 * dt);
@@ -764,8 +772,10 @@ export class Player {
       if (arc < Math.PI && d.normalize().dot(f) < Math.cos(arc)) continue;
       a.hit.add(e.id);
       any = true;
-      const bonus = (G.flurry > 0 ? 1.5 : 1) * (this.buffs.power > 0 ? 1.5 : 1) * (G.flags.charm_power ? 1.15 : 1) * brushStats(this.upg).damage;
+      const sneak = this.sneaking && ['idle', 'sleep', 'dormant'].includes(e.state);
+      const bonus = (sneak ? 2 : 1) * (G.flurry > 0 ? 1.5 : 1) * (this.buffs.power > 0 ? 1.5 : 1) * (G.flags.charm_power ? 1.15 : 1) * brushStats(this.upg).damage;
       G.enemies.localHit(e, { dmg: Math.round(dmg * bonus), element: el, dir: d.clone().normalize(), source: 'melee', hy: this.pos.y + 1.3 });
+      if (sneak) { G.hud.toast('Sneak strike!', '#c8d8ff', 1); G.audio.play('crit'); }
       // Ink splatter flies off in the direction of the blow
       const hp = e.pos.clone().setY(e.pos.y + e.height * 0.5);
       G.particles.burst(hp, { count: 16, color: COLORS[this.color].hex, speed: 9, life: 0.45, size: 0.35, dir: d.clone().normalize().multiplyScalar(6), gravity: 12 });
@@ -921,6 +931,7 @@ export class Player {
     if (st === 'ground') st = hv > 0.5 ? 'walk' : 'idle';
     if (st === 'air') st = this.vel.y > 0 ? 'jump' : 'fall';
     if (this.dodgeT > 0) st = 'dodge';
+    if (this.sneaking && (st === 'idle' || st === 'walk')) st = 'sneak';
     // Emotes play while standing still; moving, jumping or attacking cancels them
     if (this.emote) {
       this.emoteT += dt;

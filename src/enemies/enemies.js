@@ -210,8 +210,8 @@ export class EnemyManager {
   players() {
     const out = [];
     const p = G.player;
-    if (p) out.push({ id: G.net?.id ?? 'local', pos: p.pos, alive: p.alive, local: true, state: p.state });
-    if (G.peers) for (const peer of G.peers.values()) out.push({ id: peer.id, pos: peer.pos, alive: peer.state !== 'dead', local: false, state: peer.state });
+    if (p) out.push({ id: G.net?.id ?? 'local', pos: p.pos, alive: p.alive, local: true, state: p.state, sneak: !!p.sneaking });
+    if (G.peers) for (const peer of G.peers.values()) out.push({ id: peer.id, pos: peer.pos, alive: peer.state !== 'dead', local: false, state: peer.state, sneak: peer.state === 'sneak' });
     return out;
   }
 
@@ -739,7 +739,8 @@ export class EnemyManager {
     for (const p of this.players()) {
       if (!p.alive) continue;
       if (inDungeonY(p.pos.y) !== inDungeonY(e.pos.y)) continue;
-      const d = p.pos.distanceTo(e.pos);
+      // Sneaking players are noticed much later, unless the enemy is already after them
+      const d = p.pos.distanceTo(e.pos) / (p.sneak && e.target?.id !== p.id ? 0.4 : 1);
       if (d < bd) { bd = d; best = p; }
     }
     return best;
@@ -1160,7 +1161,7 @@ const AI = {
       // Sprinting or fighting nearby wakes it
       for (const p of mgr.players()) {
         const d = p.pos.distanceTo(e.pos);
-        if (p.alive && (d < 9 || (d < 18 && p.state !== 'ground'))) { mgr._wake(e); break; }
+        if (p.alive && (p.sneak ? d < 3.5 : d < 9 || (d < 18 && p.state !== 'ground'))) { mgr._wake(e); break; }
       }
       return;
     }
@@ -1218,7 +1219,7 @@ const AI = {
   sentinel(e, dt, t, mgr) {
     e.stateT += dt;
     if (e.state === 'dormant') {
-      for (const p of mgr.players()) if (p.alive && p.pos.distanceTo(e.pos) < 13) { mgr._wake(e); break; }
+      for (const p of mgr.players()) if (p.alive && p.pos.distanceTo(e.pos) < (p.sneak ? 5 : 13)) { mgr._wake(e); break; }
       return;
     }
     if (e.state === 'wake') { if (e.stateT > 2) setState(e, 'chase'); return; }

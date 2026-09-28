@@ -19,7 +19,7 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 
 ## Remaining (in order)
 
-13. **Sneaking.** Crouch (Ctrl / L3 hold) to move quietly. Enemies notice you from a much shorter range, and sleeping field bosses stay asleep. Sneak strikes on unaware enemies deal bonus damage.
+13. ✅ **Sneaking.** Crouch (Ctrl / L3 hold) to move quietly. Enemies notice you from a much shorter range, and sleeping field bosses stay asleep. Sneak strikes on unaware enemies deal bonus damage.
 14. **Controller and touch parity** for the newer features: ping, emote and shop navigation on the gamepad, plus touch buttons for ping and emote.
 15. **Overworld paint puzzles.** Small Korok-style puzzles scattered across the map that reward Pigment, a Paint Sprite chime and map completion:
     - Colour Totems: paint the pillars to match the shrine.
