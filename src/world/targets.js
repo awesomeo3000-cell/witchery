@@ -8,7 +8,7 @@ import { MAT } from './props.js';
 
 export const GAME_TIME = 45;
 export const scoreFor = (targetColor, globColor) => (targetColor === globColor ? 3 : 1);
-export const payout = (score) => Math.floor(score / 2);
+export const payout = (score) => Math.floor(score / 3);
 
 export class TargetGallery {
   constructor(scene) {

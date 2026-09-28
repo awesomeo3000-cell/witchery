@@ -7,6 +7,8 @@ import { G, COLORS } from '../core/ctx.js';
 import { mulberry32 } from '../core/math.js';
 
 export const SCALE_PIGMENT = 40;
+// One scale per pass or so: a short cooldown let players farm the whole shop in minutes
+export const SCALE_COOLDOWN = 75;
 const SEGMENTS = 58;
 const SPACING = 1.8;
 const SPEED = 17; // m/s
@@ -131,7 +133,7 @@ export class Wyrm {
         G.particles.burst(g.pos, { count: 30, color: COLORS[g.color].hex, speed: 7, life: 0.8, size: 0.5, pool: 'glow' });
         G.audio.play('glint', 0.8);
         if (G.enemies.isHost && this.cool <= 0) {
-          this.cool = 8;
+          this.cool = SCALE_COOLDOWN;
           const k = G.enemies.spawnPickup('scale', this.segs[i].clone());
           k.life = 240;
           // Let it drift all the way down (it floats if it lands on water)

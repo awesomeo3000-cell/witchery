@@ -215,7 +215,7 @@ test('target gallery scoring and payout', async () => {
   assert.equal(scoreFor(2, 2), 3);
   assert.equal(scoreFor(2, 0), 1);
   assert.equal(payout(0), 0);
-  assert.equal(payout(17), 8);
+  assert.equal(payout(17), 5);
 });
 
 test('the merchant visits every easel in turn on a shared clock', async () => {

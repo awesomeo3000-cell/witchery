@@ -183,7 +183,7 @@ The whole budget goes to this roadmap, worked autonomously in waves. The session
 ## Wave twenty-one (final budget share)
 
 89. ✅ **Horde night.** Under the Grey Moon, with anyone in the village, three growing waves march on Palette Hollow (host-run, shared through a flag); villagers shelter indoors; holding the plaza pays 25 Pigment and an honour.
-90. **Balance pass.** Review Pigment income against costs, enemy damage on each difficulty, and field-boss health, using the soak harness to sample fights.
+90. ✅ **Balance pass.** The shop costs about 800 Pigment in total. Chroma Wyrm scales were farmable at 40 every 8 s (the whole shop in minutes); now one per 75 s. The Target Gallery pays a third of the score instead of half. Other sources (camps, puzzles, shrines, stars, horde night, the Vault) stay as they are.
 91. **Accessibility pass on new systems.** Captions and reduced-motion handling for sentries' beams, fireworks, blasts and the flyover.
 92. **Final regression and docs.** Full browser, co-op, smoke and soak runs; README and roadmap brought up to date.
 
