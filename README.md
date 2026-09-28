@@ -33,7 +33,9 @@ If the page can't reach a server (for example, when the built `dist/` is opened 
 | R | Ride the brush and fly (Space to rise, C to descend) |
 | F | Interact: talk, enter trials, continue dialogue |
 | M | Map, with fast travel to activated easels |
-| Enter | Chat |
+| I / G | Open the satchel / quick-eat the best healing item |
+| P | Photo mode (free camera, filters, Enter saves a PNG) |
+| Enter | Chat (the host can type `/weather rain`, `/time dusk`, `/greymoon`) |
 | H | Hide the controls panel |
 | Esc | Pause and settings |
 
@@ -45,8 +47,12 @@ Gamepads (Xbox/PlayStation standard mapping) work too:
 - **LB**: lock on
 - **RB / D-pad**: colours
 - **Y**: ride the brush
+- **L3**: descend while riding
+- **R3**: quick eat
 - **View**: map
 - **Start**: pause
+
+On phones and tablets, touch controls appear automatically: a floating joystick on the left, drag anywhere else to look, and action buttons on the right.
 
 ## Paint colours
 
@@ -72,14 +78,23 @@ Each Prism Shard adds a heart container. With all four shards, the barrier aroun
 
 ## Paint Sprites
 
-42 Paint Sprites are hidden around the island:
+46 Paint Sprites are hidden around the island and inside the trials:
 - under odd lavender rocks (strike them)
 - in rings of grey flowers (paint the centre stone the colour its gem shows)
 - in withered saplings (paint them with Bloom)
 - in rainbow sky hoops (fly or glide through)
 - on lonely peaks and floating islets (touch the sparkle)
+- in each trial's optional side chamber, behind a small colour challenge
 
 Bring every 4 sprites to Pip in Palette Hollow for a Heart Container or Stamina Vessel. Upgrades are shared by the whole party.
+
+## The wider world
+
+- **Enemy camps** have tents, campfires and sometimes a lookout tower with an Inkshot archer. Some are led by a tougher *Great* enemy. Clearing a camp unlocks its chest, which grants a temporary buff: golden hearts, stronger strikes, bottomless ink, or faster movement.
+- **Foraging & cooking.** Apples, sunshrooms, swiftmint, emberpeppers, frostlilies and goldpetals grow by biome and regrow over time. Eat them from the satchel, or cook up to three at a pot (in the village and at every camp) for a stronger meal. Matching buff ingredients make the effect last longer.
+- **Weather** cycles between clear, cloudy, rain and storms. It snows in the mountains, rain puts out fire paint, and storms bring lightning.
+- **The Grey Moon.** Some nights a violet moon rises at midnight. Every camp and chest refreshes, enemies hit harder, and ink creatures roam until dawn.
+- **Boss intros**, a colour-draining final fight, and a credits roll with your party's names.
 
 ## Saving
 
@@ -87,7 +102,9 @@ Online rooms save their world progress on the server in `data/rooms.json`, so it
 
 ## Graphics options
 
-The pause menu (Esc) has toggles for shadows, grass density, and *Atmosphere & bloom*. That last one is the post-processing pass that draws the height haze, sun glow, bloom and colour grade. Turn it off on slower GPUs.
+The pause menu (Esc) has Low / Medium / High presets, plus separate toggles for shadows, grass density and *Atmosphere & bloom* (the post-processing pass that draws the haze, sun glow, bloom and colour grade). "Show FPS" displays the frame rate and draw calls. Try Medium or Low on laptops with integrated graphics.
+
+All art is generated in code: painted canvas textures (bark, leaves, stone, shingles, plaster, wood, cloth, strata), leaf-card trees, sculpted boulders, and rounded characters with a soft cel ramp. No asset files need to be downloaded.
 
 ## Project layout
 
@@ -95,12 +112,14 @@ The pause menu (Esc) has toggles for shadows, grass density, and *Atmosphere & b
 server/server.js      static file server + WebSocket rooms (relay, host election, shared flags)
 src/main.js           boot, menus, networking glue, main loop
 src/core/             shared context, input, procedural audio, math/noise, post-processing (haze, bloom, grade)
-src/world/            terrain & biomes, sky/day-night, billboard clouds, floating islands, water, GPU grass, props, overworld population, collision
+src/world/            terrain & biomes, sky/day-night, weather, Grey Moon, billboard clouds, floating islands, water, GPU grass,
+                      painted textures & props, overworld population, Paint Sprites, foraging/cooking, collision
 src/player/           character model/animation and the player controller (walk, glide, climb, swim, ride, combat)
 src/combat/           paint globs/splats/elemental effects, particles, brush-stroke trails
-src/enemies/          enemy & boss models, AI, projectiles, shockwaves, loot, network snapshots
+src/enemies/          enemy & boss models, AI, camps & chests, projectiles, shockwaves, loot, network snapshots
 src/trials/           the four dungeons, their puzzles and boss arenas, and the final boss trigger
-src/ui/               HUD (hearts, compass, ink potions, stamina wheel, boss bar, map, chat) and styles
+src/ui/               HUD, tips & objectives, boss cinematics, photo mode, touch controls, styles
+src/core/save.js      local save; src/core/progress.js derives hearts/stamina from shared progress
 ```
 
 Debugging: `?solo` skips the server, and `?god` makes you invulnerable. The game state is exposed as `window.G` in the browser console.

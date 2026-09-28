@@ -4,7 +4,7 @@ import { G, COLORS } from '../core/ctx.js';
 import { mulberry32, smoothstep } from '../core/math.js';
 import { VILLAGE, TRIALS, CITADEL, WAYPOINTS, RUINS, FLAT_SPOTS, VOLCANO, WORLD_SIZE } from './layout.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { MAT, treeGeometries, rockGeometry, mergeColored, T, jitter, paintedTreeGeometries, foliageMaterial, smoothRockGeometry, rockMaterial } from './props.js';
+import { MAT, treeGeometries, mergeColored, T, jitter, paintedTreeGeometries, foliageMaterial, smoothRockGeometry, rockMaterial } from './props.js';
 import { islandGeometry, makeWaterfall, makeWaterfallMaterial } from './islands.js';
 import { makeCharacter } from '../player/character.js';
 
