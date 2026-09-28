@@ -6,14 +6,15 @@ const trailMat = () => new THREE.ShaderMaterial({
   transparent: true,
   depthWrite: false,
   side: THREE.DoubleSide,
-  uniforms: { uColor: { value: new THREE.Color() }, uTime: { value: 0 } },
+  uniforms: { uColor: { value: new THREE.Color() }, uTime: { value: 0 }, uStyle: { value: 0 } },
   vertexShader: /* glsl */`
     attribute float aAlpha; attribute vec2 aUv;
     varying float vA; varying vec2 vUv;
     void main(){ vA = aAlpha; vUv = aUv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
   fragmentShader: /* glsl */`
-    uniform vec3 uColor; uniform float uTime;
+    uniform vec3 uColor; uniform float uTime; uniform int uStyle;
     varying float vA; varying vec2 vUv;
+    vec3 hue(float x){ return clamp(abs(mod(x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0); }
     float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453); }
     float n(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
       return mix(mix(h(i),h(i+vec2(1,0)),f.x), mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x), f.y); }
@@ -23,7 +24,17 @@ const trailMat = () => new THREE.ShaderMaterial({
       float edge = smoothstep(0.0, 0.18 + streak * 0.2, vUv.y) * smoothstep(1.0, 0.82 - streak * 0.2, vUv.y);
       float a = vA * edge * (0.75 + 0.25 * streak);
       if (a < 0.02) discard;
-      vec3 c = uColor * (0.85 + 0.35 * streak) + vec3(0.08) * smoothstep(0.4, 0.5, abs(vUv.y - 0.5));
+      vec3 base = uColor;
+      // Wardrobe trail styles: 1 rainbow, 2 starlight, 3 ember sparks
+      if (uStyle == 1) base = hue(fract(vUv.x * 1.5 - uTime * 0.4 + vUv.y * 0.15)) * 1.3;
+      else if (uStyle == 2) {
+        float st = step(0.965, h(floor(vec2(vUv.x * 60.0, vUv.y * 8.0) + floor(uTime * 8.0))));
+        base = mix(vec3(0.75, 0.82, 1.0), vec3(1.0, 0.92, 0.6), vUv.x) + st * 2.5;
+      } else if (uStyle == 3) {
+        float fl = n(vec2(vUv.x * 10.0 - uTime * 6.0, vUv.y * 5.0));
+        base = mix(vec3(1.0, 0.25, 0.05), vec3(1.0, 0.85, 0.3), fl) * (1.2 + fl);
+      }
+      vec3 c = base * (0.85 + 0.35 * streak) + vec3(0.08) * smoothstep(0.4, 0.5, abs(vUv.y - 0.5));
       gl_FragColor = vec4(c, a);
     }`,
 });
@@ -62,6 +73,8 @@ export class Ribbon {
       if (this.pts.length > this.max) this.pts.shift();
       this.mat.uniforms.uColor.value.setHex(colorHex);
     }
+    this.mat.uniforms.uTime.value = G.time;
+    this.mat.uniforms.uStyle.value = this.style || 0;
     const n = this.pts.length;
     this.mesh.visible = n > 1;
     if (n < 2) return;

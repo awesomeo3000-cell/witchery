@@ -20,6 +20,7 @@ import { Weather } from './world/weather.js';
 import { Forage } from './world/forage.js';
 import { Quests } from './world/quests.js';
 import { AccessUI } from './ui/access.js';
+import { Wardrobe, applyCosmetics } from './ui/wardrobe.js';
 import { Pings } from './ui/ping.js';
 import { Races } from './world/races.js';
 import { Shop } from './world/shop.js';
@@ -110,6 +111,7 @@ class Peer {
     this.rr = m.rr || 0;
     this.attack = m.a ? { kind: m.a[0] === 'spin' ? 'spin' : m.a[0], t: m.a[1] } : null;
     if (m.c !== this.color) { this.color = m.c; this.char.setBrushColor(COLORS[m.c].hex); }
+    if (m.cs !== this.cs) { this.cs = m.cs; applyCosmetics(this.char, this.trail, m.cs); }
   }
 
   update(dt) {
@@ -310,6 +312,8 @@ class Game {
       if (save.honours) G.honours.load(save.honours);
       if (!G.net.connected && typeof save.dayT === 'number') G.sky.setTime(save.dayT);
     }
+    this.wardrobe.render(true);
+    this.wardrobe.apply();
     G.flags.wp_village = true;
     this._applyWelcomeFlags();
     this.saveTimer = 5;
@@ -382,6 +386,7 @@ class Game {
       if (e.target.checked) { G.guide.seen.clear(); G.guide._save(); e.target.checked = false; G.hud.toast('Tips will show again', '#ffe08a'); }
     });
     this.access = new AccessUI(saveSettings);
+    this.wardrobe = new Wardrobe(saveSettings);
     // Gamepad quick menu (hold View)
     G.input.onPadQuick = () => {
       if (!this.running || G.hud.choiceCb) return;
@@ -419,6 +424,7 @@ class Game {
   }
 
   _showPause(v) {
+    if (v && this.wardrobe && G.player) this.wardrobe.render(true);
     $('pause').classList.toggle('hidden', !v);
     this.paused = v;
     if (!this.chatOpen) G.input.enabled = !v;

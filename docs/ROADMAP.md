@@ -65,4 +65,10 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 36. ✅ **Rainbows.** After rain clears in daylight, a rainbow arcs across the sky opposite the sun.
 37. **Regression and docs.** Full browser regression, README pass, roadmap update.
 
+## Wave eight
+
+38. ✅ **Wardrobe.** Honours unlock cosmetics: brush trail styles (paint, rainbow, starlight, ember sparks) and glider patterns. Picked in the pause menu and synced so friends see them.
+39. **Target Gallery.** A village minigame: 45 seconds to splash popping targets with paint, earning Pigment and a room record.
+40. **Painted Tablets.** Twelve lore tablets across the island tell the story of the Hueless King. Readable in a journal.
+
 The work continues through this list until the budget is used up.

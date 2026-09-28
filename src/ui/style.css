@@ -314,3 +314,4 @@ body.touch #minimap { display: none; }
 .honour b { font: 700 13px var(--serif); }
 .honour small { font: 600 11px var(--sans); opacity: 0.8; }
 #inv-hc { font: 700 12px var(--sans); letter-spacing: 0; }
+#pause select { width: 100%; }

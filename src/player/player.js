@@ -1059,6 +1059,7 @@ export class Player {
       mhp: this.maxHp,
       rp: +this.ridePitch.toFixed(2),
       rr: +this.rideRoll.toFixed(2),
+      cs: G.game?.wardrobe ? G.game.wardrobe.code() : undefined,
     };
   }
 }

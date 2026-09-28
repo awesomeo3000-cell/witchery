@@ -195,3 +195,17 @@ test('honours unlock from checks and counted events, and round-trip a save', asy
   assert.deepEqual([...g.got].sort(), [...h.got].sort());
   assert.equal(new Set(HONOURS.map((x) => x.id)).size, HONOURS.length, 'ids are unique');
 });
+
+test('wardrobe cosmetics unlock with honours and apply from a sync code', async () => {
+  const { TRAILS, GLIDERS, unlocked, applyCosmetics } = await import('../src/ui/wardrobe.js');
+  assert.ok(unlocked(TRAILS[0], 0));
+  assert.ok(!unlocked(TRAILS.find((t) => t.id === 'star'), 9));
+  assert.ok(unlocked(TRAILS.find((t) => t.id === 'star'), 10));
+  const ribbon = {};
+  const char = { glider: { material: {} } };
+  applyCosmetics(char, ribbon, 'rainbow|rose');
+  assert.equal(ribbon.style, 1);
+  assert.equal(char.glider.material.color.getHex(), GLIDERS.find((g) => g.id === 'rose').tint);
+  applyCosmetics(char, ribbon, undefined);
+  assert.equal(ribbon.style, 0);
+});

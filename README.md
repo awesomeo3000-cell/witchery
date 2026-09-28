@@ -152,6 +152,10 @@ All art is generated in code: painted canvas textures (bark, leaves, stone, shin
 
 There are twenty-one achievements, such as First Flight, Soft Bristles (a sneak strike), Record Breaker, Cartographer, Good Samaritan (reviving a friend) and Echo Breaker. Each one pops a toast when earned, is listed with its progress in the satchel, and is saved per player.
 
+### Wardrobe
+
+Honours unlock cosmetics, picked under *Wardrobe* in the pause menu: brush trails (Ember sparks at 3 honours, Rainbow at 6, Starlight at 10) and glider tints (Sunflower gold at 4, Rose at 8, Midnight at 12). Friends see your choices.
+
 ## Accessibility
 
 The pause menu's *Accessibility* section has:
