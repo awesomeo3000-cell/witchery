@@ -25,6 +25,7 @@ import { Races } from './world/races.js';
 import { Shop } from './world/shop.js';
 import { MapFog } from './ui/mapfog.js';
 import { Puzzles } from './world/puzzles.js';
+import { Fox } from './world/fox.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
 import { Player } from './player/player.js';
@@ -194,6 +195,7 @@ class Game {
     G.shop = new Shop(G.scene);
     G.fog = new MapFog();
     G.puzzles = new Puzzles(G.scene);
+    G.fox = new Fox(G.scene);
     G.cine = new Cinematic();
     G.guide = new Guide();
     G.photo = new PhotoMode();
@@ -617,6 +619,7 @@ class Game {
     G.shop.update(dt);
     G.fog.update(dt);
     G.puzzles.update(dt);
+    G.fox.update(dt);
     G.greyMoon.update(dt);
     G.enemies.update(wdt);
     G.paint.update(wdt);

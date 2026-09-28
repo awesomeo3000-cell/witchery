@@ -80,6 +80,7 @@ export class AccessUI {
     s.hudScale ??= 1;
     s.fov ??= 65;
     s.camDist ??= 1;
+    s.fox ??= true;
     s.binds ??= {};
     const bind = (id, key, parse) => {
       const el = $(id);
@@ -98,6 +99,7 @@ export class AccessUI {
     bind('set-motion', 'reduceMotion');
     bind('set-flash', 'reduceFlash');
     bind('set-togglesprint', 'toggleSprint');
+    bind('set-fox', 'fox');
     $('binds-reset').onclick = () => { s.binds = {}; applyBindings(); this.render(); this.save(); };
     // Capture the next key press while rebinding
     window.addEventListener('keydown', (e) => {
