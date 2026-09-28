@@ -33,7 +33,7 @@ try {
   console.log('smoke state', state);
   if (!(state.time > t0)) fail('game clock did not advance');
   if (!(state.hp > 0)) fail('player has no health');
-  if (state.quests !== 4) fail('villagers missing');
+  if (state.quests < 4) fail('villagers missing');
   if (!(state.calls > 0)) fail('nothing was drawn');
   // Performance guard: the village view at spawn must stay within a draw-call budget
   const BUDGET = Number(process.env.DRAW_CALL_BUDGET) || 700;

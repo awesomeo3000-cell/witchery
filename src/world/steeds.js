@@ -9,6 +9,7 @@ import { mulberry32 } from '../core/math.js';
 import { VILLAGE } from './layout.js';
 import { makeCharacter } from '../player/character.js';
 import { MAT } from './props.js';
+import { mergeStatic } from './merge.js';
 
 export const COATS = [
   { name: 'Sienna', hex: 0xb8643a },
@@ -90,16 +91,18 @@ function buckGeometry() {
     tint(new THREE.CylinderGeometry(0.34, 0.36, 0.14, 12, 1, false, 0, Math.PI).rotateZ(Math.PI / 2).rotateY(Math.PI / 2).scale(1, 0.6, 1).translate(0, 1.62, 0.05), 0x6a3a1a),
     tint(new THREE.BoxGeometry(0.08, 0.14, 0.06).translate(0, 1.72, 0.32), 0x6a3a1a),
   ].map((g) => { g.deleteAttribute('uv'); return g; }));
-  const leg = new THREE.CylinderGeometry(0.075, 0.05, 1.0, 6).translate(0, -0.5, 0);
-  const hoof = tint(new THREE.CylinderGeometry(0.07, 0.085, 0.12, 6).translate(0, -1.0, 0), 0x2a1e18);
-  return { body: mergeGeometries(body), details: mergeGeometries(parts), saddle, leg, hoof };
+  // Leg and hoof in one mesh: white leg vertices take the coat colour, the hoof stays dark
+  const leg = mergeGeometries([
+    tint(new THREE.CylinderGeometry(0.075, 0.05, 1.0, 6).translate(0, -0.5, 0), 0xffffff),
+    tint(new THREE.CylinderGeometry(0.07, 0.085, 0.12, 6).translate(0, -0.95, 0), 0x3a2e28),
+  ].map((g) => { g.deleteAttribute('uv'); return g; }));
+  return { body: mergeGeometries(body), details: mergeGeometries(parts), saddle, leg };
 }
 
 export class Steeds {
   constructor(scene) {
     this.geo = buckGeometry();
     this.detailMat = new THREE.MeshLambertMaterial({ vertexColors: true });
-    this.hoofMat = new THREE.MeshLambertMaterial({ vertexColors: true });
     this.root = new THREE.Group();
     scene.add(this.root);
     this.sites = herdSites(G.terrain);
@@ -145,7 +148,9 @@ export class Steeds {
     this.npc = makeCharacter({ hood: 0x8a5a3a, scarf: 0xd8a040, skin: 0xe0b890, tunic: 0x5a7a4a });
     this.npc.brush.visible = false;
     this.npc.group.position.set(1.2, 0, 0.4);
+    this.npc.group.userData.keep = true;
     g.add(this.npc.group);
+    mergeStatic(g);
     scene.add(g);
     this.stable = g;
     this.stablePos = new THREE.Vector3(x, y, z);
@@ -185,6 +190,7 @@ export class Steeds {
   visual(coat) {
     const g = new THREE.Group();
     const mat = new THREE.MeshLambertMaterial({ color: COATS[coat].hex });
+    const legMat = new THREE.MeshLambertMaterial({ color: COATS[coat].hex, vertexColors: true });
     const body = new THREE.Mesh(this.geo.body, mat);
     const details = new THREE.Mesh(this.geo.details, this.detailMat);
     const saddle = new THREE.Mesh(this.geo.saddle, this.detailMat);
@@ -195,10 +201,7 @@ export class Steeds {
     for (const [x, z] of [[-0.24, 0.6], [0.24, 0.6], [-0.24, -0.55], [0.24, -0.55]]) {
       const pivot = new THREE.Group();
       pivot.position.set(x, 1.05, z);
-      const m = new THREE.Mesh(this.geo.leg, mat);
-      const h = new THREE.Mesh(this.geo.hoof, this.hoofMat);
-      h.position.y = 0.05;
-      pivot.add(m, h);
+      pivot.add(new THREE.Mesh(this.geo.leg, legMat));
       g.add(pivot);
       legs.push(pivot);
     }
@@ -352,7 +355,11 @@ export class Steeds {
     if (!p) return;
     this.root.visible = !p.inDungeon;
     if (G.input.hit('KeyX')) this.whistle();
-    if (this.npc && this.stablePos.distanceTo(p.pos) < 50) this.npc.animate({ state: 'idle', speed: 0 }, dt);
+    if (this.npc) {
+      const ds = this.stablePos.distanceTo(p.pos);
+      this.npc.setLod(ds > 28);
+      if (ds <= 28) this.npc.animate({ state: 'idle', speed: 0 }, dt);
+    }
     const m = p.mounted;
     if (m && (p.inDungeon || p.state === 'swim' || p.state === 'ride' || !p.alive)) this.dismount();
     // Interact climbs down, unless there's something else to interact with

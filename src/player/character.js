@@ -533,8 +533,59 @@ export function makeCharacter(look = {}) {
     for (const m of casters) m.castShadow = on;
   }
 
+  // Far away, an NPC is drawn as one baked mesh of its current pose instead of ~18 parts
+  let lod = null, lodOn = false, hiddenParts = null;
+  function bakeLod() {
+    root.updateMatrixWorld(true);
+    const inv = new THREE.Matrix4().copy(root.matrixWorld).invert();
+    const geos = [];
+    root.traverseVisible((m) => {
+      if (!m.isMesh || m.isInstancedMesh || Array.isArray(m.material)) return;
+      let g = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone();
+      g.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, m.matrixWorld));
+      for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'color'].includes(k)) g.deleteAttribute(k);
+      if (!g.attributes.normal) g.computeVertexNormals();
+      if (!g.attributes.color) {
+        const c = m.material.color || new THREE.Color(1, 1, 1);
+        const col = new Float32Array(g.attributes.position.count * 3);
+        for (let i = 0; i < col.length; i += 3) { col[i] = c.r; col[i + 1] = c.g; col[i + 2] = c.b; }
+        g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+      }
+      geos.push(g);
+    });
+    const merged = geos.length ? mergeGeometries(geos, false) : null;
+    if (!merged) return null;
+    // Same shading as the full model so the swap is hard to spot
+    let base = null;
+    root.traverse((m) => { if (!base && m.isMesh && m.material.isMeshToonMaterial) base = m.material; });
+    const mat = base ? base.clone() : new THREE.MeshLambertMaterial();
+    mat.vertexColors = true;
+    mat.map = null;
+    if (mat.color) mat.color.setRGB(1, 1, 1);
+    if (mat.emissive) mat.emissive.setRGB(0, 0, 0);
+    const mesh = new THREE.Mesh(merged, mat);
+    mesh.visible = false;
+    mesh.userData.lod = true;
+    root.add(mesh);
+    return mesh;
+  }
+  function setLod(far) {
+    if (far === lodOn) return;
+    if (far && !lod) lod = bakeLod();
+    if (!lod) return;
+    lodOn = far;
+    if (far) {
+      hiddenParts = new Set(root.children.filter((c) => !c.visible));
+      for (const c of root.children) if (c !== lod) c.visible = false;
+      lod.visible = true;
+    } else {
+      for (const c of root.children) if (c !== lod) c.visible = !hiddenParts.has(c);
+      lod.visible = false;
+    }
+  }
+
   return {
     group: root, brush, brushTip: brushParts.tipPoint, brushBase: brushParts.basePoint, animate, setBrushColor, setHurt,
-    hand: armR.hand, head: headG, glider, setShadow,
+    hand: armR.hand, head: headG, glider, setShadow, setLod,
   };
 }

@@ -6,6 +6,7 @@ import { G, COLORS, DUNGEON_Y } from '../core/ctx.js';
 import { MAT } from '../world/props.js';
 import { puzzleSites } from '../world/puzzles.js';
 import { Builder, textTexture } from './trials.js';
+import { mergeStatic } from '../world/merge.js';
 
 export const SHRINE_PIGMENT = 15;
 export const BRAZIER_WINDOW = 12000; // ms each shrine brazier stays lit
@@ -31,6 +32,7 @@ export class Shrines {
     ];
     const sites = puzzleSites(G.terrain, SHRINES.length, 9191, taken);
     this.list = sites.map((s, i) => this._build(i, s));
+    mergeStatic(this.surface);
     if (G.sprites) G.sprites.total += this.list.length;
   }
 
@@ -79,6 +81,7 @@ export class Shrines {
     // A faint beam of light marks shrines you haven't cleared yet (gold once cleared)
     const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.9, 70, 10, 1, true), new THREE.MeshBasicMaterial({ color: new THREE.Color(col).multiplyScalar(1.4), transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
     beam.position.y = 40;
+    swirl.userData.keep = orb.userData.keep = beam.userData.keep = true;
     g.add(swirl, orb, beam);
     this.surface.add(g);
     for (const sx of [-1, 1]) {

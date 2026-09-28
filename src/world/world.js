@@ -354,7 +354,8 @@ export class World {
     this.animated.push((t, dt) => {
       const d = G.player ? elder.group.position.distanceTo(G.player.pos) : 0;
       elder.setShadow(d < 30);
-      if (d < 60) elder.animate({ state: 'idle', speed: 0 }, dt);
+      elder.setLod(d > 28);
+      if (d <= 28) elder.animate({ state: 'idle', speed: 0 }, dt);
     });
     this.col.addCylinder(ex, ez, 0.5, this.h(ex, ez), this.h(ex, ez) + 1.8);
     let hintIdx = 0;

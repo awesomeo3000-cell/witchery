@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { G, COLORS } from '../core/ctx.js';
 import { VILLAGE, TRIALS } from './layout.js';
 import { MAT } from './props.js';
+import { mergeStatic } from './merge.js';
 
 export const BASE_H = 13; // mossy lower section
 export const SMOOTH_H = 8; // bare stone above the ledge: too tall to jump, a bounce reaches past it
@@ -36,7 +37,9 @@ export class Towers {
   constructor(scene) {
     this.root = new THREE.Group();
     scene.add(this.root);
+    this.bandMats = COLORS.map((c) => new THREE.MeshBasicMaterial({ color: new THREE.Color(c.hex).multiplyScalar(1.2) }));
     this.list = towerSites(G.terrain).map((s, i) => this._build(s, i));
+    mergeStatic(this.root);
   }
 
   active(i) { return !!G.flags[`tower_${i}`]; }
@@ -64,7 +67,7 @@ export class Towers {
     this._box(x, y + TOP_H, z, 4.8, 0.4, 4.8, ledgeMat, ['smooth']);
     // Painted bands spiralling up the shaft
     for (let k = 0; k < 4; k++) {
-      const band = new THREE.Mesh(new THREE.BoxGeometry(4.75, 0.35, 4.75), new THREE.MeshBasicMaterial({ color: new THREE.Color(COLORS[(s.color + k) % 4].hex).multiplyScalar(1.2) }));
+      const band = new THREE.Mesh(new THREE.BoxGeometry(4.75, 0.35, 4.75), this.bandMats[(s.color + k) % 4]);
       band.position.set(x, y + BASE_H + 2 + k * 1.8, z);
       this.root.add(band);
     }

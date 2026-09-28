@@ -9,6 +9,7 @@ import { INGREDIENTS } from './forage.js';
 import { MAT, jitter } from './props.js';
 
 const flag = (k) => !!G.flags[k];
+export const NPC_LOD = 28; // beyond this, villagers are drawn as one baked mesh
 const setFlag = (k, v = true) => G.trials._setFlag(k, v);
 
 // Grey statues for Ochre's quest, one per colour, beside four of the old ruins
@@ -390,8 +391,9 @@ export class Quests {
       n.mark.position.z = n.pos.z;
       const d = n.pos.distanceTo(p.pos);
       n.c.setShadow(d < 30);
+      n.c.setLod(d > NPC_LOD);
       this._bark(n, d, nightTime, dt);
-      if (d < 60) {
+      if (d <= NPC_LOD) {
         n.c.animate({ state: anim, speed: spd }, dt);
         // Turn to face a nearby player
         if (d < 7 && anim === 'idle') {

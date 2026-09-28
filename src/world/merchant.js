@@ -93,7 +93,8 @@ export class Merchant {
     if (i !== this.stop) this._move(i);
     const d = this.pos.distanceTo(p.pos);
     this.group.visible = !p.inDungeon && d < 400;
-    if (this.group.visible && d < 60) {
+    this.npc.setLod(d > 28);
+    if (this.group.visible && d <= 28) {
       this.npc.animate({ state: 'idle', speed: 0 }, dt);
       this.npc.setShadow(d < 30);
     }
