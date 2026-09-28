@@ -198,7 +198,7 @@ There are thirty-four achievements, such as First Flight, Soft Bristles (a sneak
 
 ### Wardrobe
 
-Honours unlock cosmetics, picked under *Wardrobe* in the pause menu: brush trails (Ember sparks at 3 honours, Rainbow at 6, Starlight at 10) and glider tints (Sunflower gold at 4, Rose at 8, Midnight at 12). Friends see your choices.
+Honours unlock cosmetics, picked under *Wardrobe* in the pause menu: brush trails (Ember sparks at 3 honours, Rainbow at 6, Starlight at 10), glider tints (Sunflower gold at 4, Rose at 8, Midnight at 12, and the Prismatic glider from the Prism Vault) and hats: an Angler's straw hat (Angler), a Festival flower crown (Mira's quest), Brushbuck antlers (Buck Whisperer), Rainmane's crown (Storm Tamer) and a Painter's peaked hat (15 honours). Friends see your choices.
 
 ## Accessibility
 

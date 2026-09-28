@@ -375,3 +375,15 @@ test('journey statistics format and survive a save', async () => {
   assert.equal(u.v.walked, 0);
   assert.ok(u.stats().some((s) => s.label === 'Ink creatures defeated' && s.value === '3'));
 });
+
+test('hats unlock by honour, flag or honour count', async () => {
+  const { HATS, unlocked } = await import('../src/ui/wardrobe.js');
+  const got = new Set(['angler']);
+  const hat = (id) => HATS.find((h) => h.id === id);
+  assert.equal(unlocked(hat('none'), 0, {}, got), true);
+  assert.equal(unlocked(hat('straw'), 0, {}, got), true);
+  assert.equal(unlocked(hat('crown'), 99, {}, got), false);
+  assert.equal(unlocked(hat('flower'), 0, { q_mira_done: true }, got), true);
+  assert.equal(unlocked(hat('peak'), 15, {}, got), true);
+  assert.equal(new Set(HATS.map((h) => h.id)).size, HATS.length);
+});

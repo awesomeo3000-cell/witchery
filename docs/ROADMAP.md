@@ -160,4 +160,6 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 83. ✅ **Soak test.** `npm run soak` drives the built game with seeded random input around the island and fails on page errors or NaN state.
 84. ✅ **Gamepad map cursor.** With a pad, the left stick moves a cursor on the map; A fast-travels, removes a pin or drops one; B closes the map.
 
+85. ✅ **Hats.** Five hats in the Wardrobe, each earned by a specific honour or deed (or a honour count), shown on your hood and synced to friends.
+
 The work continues through this list until the budget is used up.

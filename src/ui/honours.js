@@ -57,9 +57,12 @@ export class Honours {
     Object.assign(this.counts, d.counts || {});
   }
 
+  name(id) { return HONOURS.find((h) => h.id === id)?.name || id; }
+
   grant(h) {
     if (this.got.has(h.id)) return;
     this.got.add(h.id);
+    G.game?.wardrobe?.render(false); // newly earned cosmetics become selectable
     if (!this.ready) return;
     G.audio.play('sprite');
     G.hud.toast(`🏅 Honour earned: ${h.name}`, '#ffd84a', 3.5);
