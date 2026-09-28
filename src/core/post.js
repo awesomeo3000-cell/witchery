@@ -31,18 +31,40 @@ export class PostFX {
         uFalloff: { value: 0.018 },
         uBase: { value: 0 },
         uMaxFog: { value: 0.92 },
+        uSunUV: { value: new THREE.Vector2(0.5, 0.5) },
+        uShaft: { value: 0 },
+        uAspect: { value: 1 },
       },
       vertexShader: VERT,
       fragmentShader: /* glsl */`
         uniform sampler2D tColor, tDepth;
         uniform mat4 uProjInv, uViewInv;
         uniform vec3 uCam, uFog, uSunDir, uSunCol;
-        uniform float uDensity, uHeightDensity, uFalloff, uBase, uMaxFog;
+        uniform float uDensity, uHeightDensity, uFalloff, uBase, uMaxFog, uShaft, uAspect;
+        uniform vec2 uSunUV;
         varying vec2 vUv;
+        // Sun shafts: march toward the sun on screen and count how much open sky the path sees
+        float shafts(){
+          if (uShaft <= 0.001) return 0.0;
+          vec2 delta = uSunUV - vUv;
+          float dl = length(delta * vec2(uAspect, 1.0));
+          vec2 stepv = delta / 28.0;
+          vec2 suv = vUv + stepv * fract(sin(dot(vUv, vec2(12.9898, 78.233))) * 43758.5453);
+          float illum = 0.0, decay = 1.0, wsum = 0.0;
+          for (int i = 0; i < 28; i++) {
+            suv += stepv;
+            if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) break;
+            illum += step(0.99999, texture2D(tDepth, suv).x) * decay;
+            wsum += decay;
+            decay *= 0.965;
+          }
+          return (wsum > 0.0 ? illum / wsum : 0.0) * exp(-dl * 2.4) * uShaft;
+        }
         void main(){
           vec4 col = texture2D(tColor, vUv);
           float d = texture2D(tDepth, vUv).x;
-          if (d >= 0.99999) { gl_FragColor = col; return; }
+          float sh = shafts();
+          if (d >= 0.99999) { gl_FragColor = vec4(col.rgb + uSunCol * sh * 0.25, 1.0); return; }
           vec4 ndc = vec4(vUv * 2.0 - 1.0, d * 2.0 - 1.0, 1.0);
           vec4 vp = uProjInv * ndc; vp /= vp.w;
           vec3 wp = (uViewInv * vp).xyz;
@@ -60,7 +82,7 @@ export class PostFX {
           float fog = clamp(1.0 - (1.0 - fogD) * (1.0 - fogH), 0.0, uMaxFog);
           float sun = pow(max(dot(rd, uSunDir), 0.0), 6.0);
           vec3 fogCol = mix(uFog, uSunCol, sun * 0.55);
-          gl_FragColor = vec4(mix(col.rgb, fogCol, fog), 1.0);
+          gl_FragColor = vec4(mix(col.rgb, fogCol, fog) + uSunCol * sh * 0.45, 1.0);
         }`,
       depthTest: false,
       depthWrite: false,
@@ -153,6 +175,7 @@ export class PostFX {
     this.hazeRT.setSize(W, H);
     this.bloom.setSize(W, H);
     this.gradeMat.uniforms.uAspect.value = w / h;
+    this.hazeMat.uniforms.uAspect.value = w / h;
   }
 
   render(scene, camera, env, fx) {
@@ -167,6 +190,13 @@ export class PostFX {
       hz.uSunCol.value.copy(env.cur.sun).multiplyScalar(1 - env.night * 0.8);
     }
     hz.uSunDir.value.copy(env.sunDir);
+    // Sun position on screen for the light shafts; fade when it's behind us, low, at night or overcast
+    const camDir = camera.getWorldDirection(this._v1 || (this._v1 = new THREE.Vector3()));
+    const facing = camDir.dot(env.sunDir);
+    const sp = (this._v2 || (this._v2 = new THREE.Vector3())).copy(camera.position).addScaledVector(env.sunDir, 4000).project(camera);
+    hz.uSunUV.value.set(sp.x * 0.5 + 0.5, sp.y * 0.5 + 0.5);
+    const wx = G.weather ? G.weather.w : 0;
+    hz.uShaft.value = env.dungeon || facing <= 0 ? 0 : Math.min(1, facing * 1.6) * (1 - (env.night || 0)) * (1 - wx * 0.85) * Math.min(1, Math.max(0, env.sunDir.y + 0.05) * 6);
     if (env.dungeon) {
       hz.uDensity.value = 0.012; hz.uHeightDensity.value = 0; hz.uMaxFog.value = 0.85;
     } else {
