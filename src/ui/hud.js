@@ -402,6 +402,28 @@ export class HUD {
     });
   }
 
+  // Lock-on reticle: a red ring with four white arrowheads closing in on the target's middle
+  _lockRing(p) {
+    let r = this._ring;
+    if (!r) {
+      r = this._ring = document.createElement('div');
+      r.id = 'lockring';
+      r.innerHTML = '<i></i><i></i><i></i><i></i>';
+      this.labels.appendChild(r);
+    }
+    const e = p.lock;
+    const c = e && e.alive !== false ? this.project(e.pos.clone().setY(e.pos.y + (e.height || 1.6) * 0.5)) : null;
+    if (!c) { r.style.display = 'none'; this._ringFor = null; return; }
+    const d = Math.max(2, G.camera.position.distanceTo(e.pos));
+    const px = ((e.radius || 0.8) * 1.3 / (d * Math.tan((G.camera.fov * Math.PI) / 360))) * innerHeight * 0.5;
+    const size = Math.max(34, Math.min(220, px * 2));
+    r.style.display = '';
+    r.style.left = `${c.x}px`;
+    r.style.top = `${c.y}px`;
+    r.style.width = r.style.height = `${size}px`;
+    if (this._ringFor !== e) { this._ringFor = e; r.classList.remove('in'); void r.offsetWidth; r.classList.add('in'); }
+  }
+
   project(pos) {
     this.v.copy(pos).project(G.camera);
     if (this.v.z > 1) return null;
@@ -520,8 +542,10 @@ export class HUD {
     const boss = G.enemies.bossActive;
     for (const e of G.enemies.list) {
       if (!e.alive || e.boss) continue;
-      const show = e === p.lock || G.time - e.lastHit < 5;
-      if (!show || e.pos.distanceTo(p.pos) > 60) continue;
+      const d = e.pos.distanceTo(p.pos);
+      const alert = d < 35 && ['chase', 'attack', 'windup', 'shoot', 'recover'].includes(e.state);
+      const show = e === p.lock || G.time - e.lastHit < 5 || alert;
+      if (!show || d > 60) continue;
       const s = this.project(e.pos.clone().setY(e.pos.y + e.height + 0.6));
       if (!s) continue;
       seen.add(e.id);
@@ -538,9 +562,11 @@ export class HUD {
       l.style.top = `${s.y}px`;
       l.querySelector('.b div').style.width = `${(100 * e.hp) / e.maxHp}%`;
       l.querySelector('.lock').textContent = e === p.lock ? '▼' : '';
+      l.classList.toggle('alert', alert || G.time - e.lastHit < 5);
     }
     for (const [id, l] of this.enemyLabels) if (!seen.has(id)) { l.remove(); this.enemyLabels.delete(id); }
     this._awareness(p, dt);
+    this._lockRing(p);
     // Lock indicator on a boss
     if (p.lock && p.lock.boss) {
       const s = this.project(p.lock.pos.clone().setY(p.lock.pos.y + p.lock.height + 1));
