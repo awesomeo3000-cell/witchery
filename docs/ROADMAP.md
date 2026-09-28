@@ -2,6 +2,18 @@
 
 The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. Each phase ships as its own commit with tests or screenshots checked before it's pushed.
 
+## Budget plan (about $80 of cloud credits)
+
+The whole budget goes to this roadmap, worked autonomously in waves. The session can't read the credit meter, so spend is tracked against this allocation by wave. Each wave is built, browser-tested, committed and pushed before the next one starts.
+
+| Share | Approx. | Work | Status |
+| --- | --- | --- | --- |
+| 10% | $8 | Waves 1-4: persistence, gamepad, sprites, weather, camps, bosses, onboarding, audio, performance | ✅ done |
+| 15% | $12 | Waves 5-9: art pass, field bosses, quests, water, accessibility, tests and CI, co-op tools, races, shop, fog, sneaking, puzzles, Wyrm, wardrobe, tablets, merchant, photo mode | ✅ done |
+| 25% | $20 | Waves 10-15: shrines, fishing, critters, recipes, Brushbucks, Rainmane, cold/heat, memories, audio, towers, save backup, new quests, regression and draw-call pass | ✅ done |
+| 25% | $20 | Waves 16-20+: Compendium, fast travel, difficulty, brush tips, party panel, Prism Vault, sentries and parry, Inkspouts, festival, map pins, stats, colour chemistry, lily pads, soak test, gamepad map, hats, tandem riding, Ink Knights, opening flyover | ✅ done |
+| 25% | $20 | Waves 21+: the remaining list below (content, polish, balance, regression), until the credits run out | ▶ in progress |
+
 ## Done
 
 1. Core game: open world, four Prism Trials, bosses, co-op server, brush flight, four paint elements
@@ -167,5 +179,12 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 87. ✅ **Ink Knights.** Shielded elite-camp leaders: frontal blows are blocked, they turn slowly so flanking works, and Spring knocks the shield aside for a stagger and bonus damage.
 
 88. ✅ **Opening flyover.** New games start with a letterboxed flight past the Sky Citadel and over Palette Hollow that settles behind the hero; any key skips it.
+
+## Wave twenty-one (final budget share)
+
+89. **Horde night.** Once a week the Grey Moon brings a wave defence at the village: ink creatures march on Palette Hollow and villagers take shelter; defend the plaza for Pigment.
+90. **Balance pass.** Review Pigment income against costs, enemy damage on each difficulty, and field-boss health, using the soak harness to sample fights.
+91. **Accessibility pass on new systems.** Captions and reduced-motion handling for sentries' beams, fireworks, blasts and the flyover.
+92. **Final regression and docs.** Full browser, co-op, smoke and soak runs; README and roadmap brought up to date.
 
 The work continues through this list until the budget is used up.
