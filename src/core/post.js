@@ -78,11 +78,13 @@ export class PostFX {
         uHurt: { value: 0 },
         uAspect: { value: 1 },
         uSat: { value: 1.12 },
+        uFilter: { value: 0 },
       },
       vertexShader: VERT,
       fragmentShader: /* glsl */`
         uniform sampler2D tColor;
         uniform float uTime, uSpeed, uFlurry, uHurt, uAspect, uSat;
+        uniform int uFilter;
         varying vec2 vUv;
         float hh(float n){ return fract(sin(n) * 43758.5453); }
         float hash2(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
@@ -98,6 +100,12 @@ export class PostFX {
             float g = dot(c, vec3(0.299, 0.587, 0.114));
             c = mix(c, vec3(g * 0.75, g * 0.9, g * 1.25), uFlurry * 0.7);
           }
+          // Photo mode filters
+          if (uFilter == 1) { c = mix(vec3(dot(c, vec3(0.299,0.587,0.114))), c, 1.45); c = (c - 0.5) * 1.12 + 0.5; }
+          else if (uFilter == 2) { c *= vec3(1.12, 1.0, 0.82); c += vec3(0.04, 0.02, 0.0); }
+          else if (uFilter == 3) { float g = dot(c, vec3(0.299,0.587,0.114)); g = (g - 0.5) * 1.35 + 0.5; c = vec3(g); }
+          else if (uFilter == 4) { c = floor(c * 6.0 + 0.5) / 6.0; c = mix(vec3(dot(c, vec3(0.3,0.59,0.11))), c, 1.2); }
+          else if (uFilter == 5) { c = mix(c, vec3(1.0, 0.95, 1.0), 0.12); c = mix(vec3(dot(c, vec3(0.3,0.59,0.11))), c, 0.8); }
           vec2 p = vUv - 0.5;
           p.x *= uAspect;
           float r = length(p);
@@ -167,6 +175,7 @@ export class PostFX {
     g.uFlurry.value = fx.flurry || 0;
     g.uHurt.value = fx.hurt || 0;
     g.uSat.value = fx.sat ?? 1.12;
+    g.uFilter.value = G.photo && G.photo.active ? G.photo.filter : 0;
     r.setRenderTarget(null);
     this.gradeQuad.render(r);
   }

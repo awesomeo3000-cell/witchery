@@ -28,6 +28,7 @@ import { Net } from './net/net.js';
 import { PostFX } from './core/post.js';
 import { Cinematic } from './ui/cinematic.js';
 import { Guide } from './ui/guide.js';
+import { PhotoMode } from './ui/photo.js';
 import { loadSave, writeSave } from './core/save.js';
 import { applyStats, spriteCount } from './core/progress.js';
 import { damp, dampAngle } from './core/math.js';
@@ -181,6 +182,7 @@ class Game {
     G.hud = new HUD();
     G.cine = new Cinematic();
     G.guide = new Guide();
+    G.photo = new PhotoMode();
     // Menu backdrop camera
     G.camera.position.set(60, 60, 200);
     G.camera.lookAt(0, 40, -100);
@@ -358,7 +360,7 @@ class Game {
     const input = $('chat-input');
     window.addEventListener('keydown', (e) => {
       if (!this.running) return;
-      if (e.code === 'Enter' && !this.chatOpen && G.input.locked) {
+      if (e.code === 'Enter' && !this.chatOpen && G.input.locked && !G.photo.active) {
         this.chatOpen = true;
         G.input.enabled = false;
         G.input.keys.clear();
@@ -574,7 +576,8 @@ class Game {
       }
       if (G.hud.choiceCb && G.input.hit('Escape')) G.hud.answerChoice(G.hud.choiceN - 1);
     }
-    if (!this.mapOpen && !G.cine.frozen) p.update(dt);
+    if (G.photo.active) { p.vel.x = p.vel.z = 0; p._animate(dt); }
+    else if (!this.mapOpen && !G.cine.frozen) p.update(dt);
     else if (G.cine.frozen) { p.vel.x = p.vel.z = 0; p._animate(dt); }
     G.trials.update(wdt);
     G.sprites.update(dt);
@@ -586,7 +589,8 @@ class Game {
     G.world.update(dt, G.time);
     for (const peer of G.peers.values()) peer.update(dt);
     this._checkWaypoints();
-    p.updateCamera(dt);
+    if (G.photo.active) G.photo.update(dt);
+    else p.updateCamera(dt);
     G.cine.update(dt);
     G.weather.update(dt, G.sky);
     WET.value = Math.min(1, G.weather.w * 1.2) * (G.weather.snow.visible ? 0.3 : 1);
@@ -643,6 +647,7 @@ class Game {
       G.renderer.render(G.scene, G.camera);
       G.stats = { calls: G.renderer.info.render.calls, triangles: G.renderer.info.render.triangles };
     }
+    if (G.photo) G.photo.afterRender(G.renderer.domElement);
   }
 }
 

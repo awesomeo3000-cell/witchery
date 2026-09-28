@@ -225,3 +225,10 @@ button.secondary { background: rgba(255,255,255,0.15); color: #fff; box-shadow: 
 .pot-row button:disabled { opacity: 0.4; }
 #inv-slots { display: flex; gap: 8px; }
 #inv-slots .slot { width: 52px; height: 52px; border-radius: 50%; border: 2px dashed rgba(255,255,255,0.4); display: grid; place-items: center; font-size: 26px; }
+
+#hud.photo > * { display: none !important; }
+#hud.photo > #flash { display: block !important; }
+#photo-ui { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 6; text-align: center; background: rgba(10,12,24,0.55); padding: 8px 18px; border-radius: 12px; pointer-events: none; }
+#photo-ui .ph-title { font: 700 13px var(--serif); letter-spacing: 4px; opacity: 0.85; }
+#photo-filter { font: 800 16px var(--sans); color: var(--gold); margin: 2px 0; }
+#photo-ui .ph-help { font: 600 12px var(--sans); opacity: 0.85; }
