@@ -163,3 +163,15 @@ test('map fog reveals around a point and survives a save round trip', async () =
   assert.deepEqual([...g.cells], [...f.cells]);
   assert.equal(g.cells.length, FOG_N * FOG_N);
 });
+
+test('adventure log summarises progress', async () => {
+  const { adventureStats } = await import('../src/ui/advlog.js');
+  G.flags = { trial_ember: true, trial_frost: true, q_mira_done: true, slain_sentinel: true };
+  G.player = { pigment: 12, upg: { bristle: 1 } };
+  const s = Object.fromEntries(adventureStats().map((x) => [x.label, x.value]));
+  assert.equal(s['Prism Shards'], '2 / 4');
+  assert.equal(s['Villager quests'], '1 / 4');
+  assert.equal(s['Field giants felled'], '1 / 2');
+  assert.equal(s.Pigment, '12');
+  assert.equal(s['Brush (bristle · ink · wind)'], '1 · 0 · 0');
+});

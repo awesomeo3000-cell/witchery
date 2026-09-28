@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { G } from '../core/ctx.js';
 import { mulberry32 } from '../core/math.js';
 import { VILLAGE } from './layout.js';
+import { renderAdventureLog } from '../ui/advlog.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -194,6 +195,9 @@ export class Forage {
     $('inv-qh').classList.toggle('hidden', this.cooking);
     $('inv-quests').classList.toggle('hidden', this.cooking);
     if (G.quests) G.quests.renderLog($('inv-quests'));
+    $('inv-lh').classList.toggle('hidden', this.cooking);
+    $('inv-log').classList.toggle('hidden', this.cooking);
+    if (!this.cooking) renderAdventureLog($('inv-log'));
   }
 
   _desc(d) {
