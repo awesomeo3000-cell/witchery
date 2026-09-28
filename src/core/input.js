@@ -90,7 +90,7 @@ export class Input {
     const pads = navigator.getGamepads ? navigator.getGamepads() : [];
     let gp = null;
     for (const p of pads) if (p && p.connected) { gp = p; break; }
-    if (!gp) { this.stick.x = this.stick.z = 0; return; }
+    if (!gp) { if (!this.touch) this.stick.x = this.stick.z = 0; return; }
     const b = (i) => !!(gp.buttons[i] && (gp.buttons[i].pressed || gp.buttons[i].value > 0.4));
     const dz = (v) => (Math.abs(v) < 0.18 ? 0 : (v - Math.sign(v) * 0.18) / 0.82);
     const lx = dz(gp.axes[0] || 0), ly = dz(gp.axes[1] || 0);

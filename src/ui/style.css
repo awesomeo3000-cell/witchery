@@ -232,3 +232,17 @@ button.secondary { background: rgba(255,255,255,0.15); color: #fff; box-shadow: 
 #photo-ui .ph-title { font: 700 13px var(--serif); letter-spacing: 4px; opacity: 0.85; }
 #photo-filter { font: 800 16px var(--sans); color: var(--gold); margin: 2px 0; }
 #photo-ui .ph-help { font: 600 12px var(--sans); opacity: 0.85; }
+
+body.touch { touch-action: none; }
+body.touch #controls { display: none; }
+#touch { position: fixed; inset: 0; z-index: 4; pointer-events: none; }
+#touch-zone { position: absolute; inset: 0; pointer-events: auto; }
+#touch-stick { position: absolute; width: 110px; height: 110px; margin: -55px 0 0 -55px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.35); background: rgba(0,0,0,0.15); display: none; }
+#touch-stick.on { display: block; }
+#touch-knob { position: absolute; left: 30px; top: 30px; width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.55); }
+#touch-buttons { position: absolute; right: 12px; bottom: 120px; width: 250px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; pointer-events: auto; }
+.tbtn { width: 56px; height: 56px; border-radius: 50%; background: rgba(10,12,24,0.45); border: 2px solid rgba(255,255,255,0.5); display: grid; place-items: center; align-content: center; user-select: none; }
+.tbtn span { font: 800 20px var(--sans); line-height: 1; }
+.tbtn small { font: 700 8px var(--sans); opacity: 0.8; }
+.tbtn.down, .tbtn.on { background: rgba(255,224,138,0.45); }
+.tbtn.t-jump, .tbtn.t-atk { width: 66px; height: 66px; }

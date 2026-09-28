@@ -29,6 +29,7 @@ import { PostFX } from './core/post.js';
 import { Cinematic } from './ui/cinematic.js';
 import { Guide } from './ui/guide.js';
 import { PhotoMode } from './ui/photo.js';
+import { TouchControls } from './ui/touch.js';
 import { loadSave, writeSave } from './core/save.js';
 import { applyStats, spriteCount } from './core/progress.js';
 import { damp, dampAngle } from './core/math.js';
@@ -183,6 +184,7 @@ class Game {
     G.cine = new Cinematic();
     G.guide = new Guide();
     G.photo = new PhotoMode();
+    G.touch = new TouchControls();
     // Menu backdrop camera
     G.camera.position.set(60, 60, 200);
     G.camera.lookAt(0, 40, -100);
