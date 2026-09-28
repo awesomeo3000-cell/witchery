@@ -39,6 +39,8 @@ If the page can't reach a server (for example, when the built `dist/` is opened 
 | H | Hide the controls panel |
 | Esc | Pause and settings |
 
+Every keyboard action can be rebound under *Key bindings* in the pause menu.
+
 Gamepads (Xbox/PlayStation standard mapping) work too:
 - **A**: jump, or interact when something's in reach
 - **B**: sprint
@@ -94,6 +96,9 @@ Bring every 4 sprites to Pip in Palette Hollow for a Heart Container or Stamina 
 - **Foraging & cooking.** Apples, sunshrooms, swiftmint, emberpeppers, frostlilies and goldpetals grow by biome and regrow over time. Eat them from the satchel, or cook up to three at a pot (in the village and at every camp) for a stronger meal. Matching buff ingredients make the effect last longer.
 - **Weather** cycles between clear, cloudy, rain and storms. It snows in the mountains, rain puts out fire paint, and storms bring lightning.
 - **The Grey Moon.** Some nights a violet moon rises at midnight. Every camp and chest refreshes, enemies hit harder, and ink creatures roam until dawn.
+- **Field bosses.** Blot Giants sleep in the meadows: sneak up for bonus damage and hit the eye up top to topple them. Stone Sentinels pose as boulders until you get close, and only take damage on the crystal on their back, so bounce or glide onto them. Both drop a buff tonic and return after a while.
+- **Villager quests.** Four villagers in Palette Hollow have errands, marked with **!** (and **?** when you can turn one in). Gather dyes for Mira, fetch Tilly's kite from a sky islet, bring down both field bosses for Bram, and repaint Painter Ochre's four grey statues out by the ruins. Rewards are permanent: more stamina, a heart container, stronger strikes and faster ink. Active quests are listed in the satchel (I), and their targets appear on the compass.
+- **Living water.** The sea has rolling swells that grow in storms, sky reflections, caustics in the shallows, and ripples when you splash, swim or paint it.
 - **Boss intros**, a colour-draining final fight, and a credits roll with your party's names.
 
 ## Saving
@@ -106,6 +111,28 @@ The pause menu (Esc) has Low / Medium / High presets, plus separate toggles for 
 
 All art is generated in code: painted canvas textures (bark, leaves, stone, shingles, plaster, wood, cloth, strata), leaf-card trees, sculpted boulders, and rounded characters with a soft cel ramp. No asset files need to be downloaded.
 
+## Accessibility
+
+The pause menu's *Accessibility* section has:
+- a HUD size slider
+- colour symbols (▲ Ember, ❄ Frost, ● Spring, ✿ Bloom) on the potions, colour wheel and compass
+- *Reduce motion*, which removes speed lines, the FOV kick and the underwater wobble
+- *Reduce screen flashes*
+- toggle sprint
+
+*Key bindings* remaps any keyboard action. If the key is already taken, the two actions swap.
+
+## Development
+
+```
+npm run lint    # ESLint
+npm test        # unit tests (math, terrain/collision, combat rules, progress, quests, key bindings) + server protocol tests
+npm run build   # production build into dist/
+npm run smoke   # boots the built game in headless Chromium against the real server (needs `npx playwright install chromium` once)
+```
+
+GitHub Actions (`.github/workflows/ci.yml`) runs lint, tests, build and the smoke test on every push and pull request.
+
 ## Project layout
 
 ```
@@ -113,12 +140,13 @@ server/server.js      static file server + WebSocket rooms (relay, host election
 src/main.js           boot, menus, networking glue, main loop
 src/core/             shared context, input, procedural audio, math/noise, post-processing (haze, bloom, grade)
 src/world/            terrain & biomes, sky/day-night, weather, Grey Moon, billboard clouds, floating islands, water, GPU grass,
-                      painted textures & props, overworld population, Paint Sprites, foraging/cooking, collision
+                      painted textures & props, overworld population, Paint Sprites, foraging/cooking, villager quests, collision
 src/player/           character model/animation and the player controller (walk, glide, climb, swim, ride, combat)
 src/combat/           paint globs/splats/elemental effects, particles, brush-stroke trails
 src/enemies/          enemy & boss models, AI, camps & chests, projectiles, shockwaves, loot, network snapshots
 src/trials/           the four dungeons, their puzzles and boss arenas, and the final boss trigger
-src/ui/               HUD, tips & objectives, boss cinematics, photo mode, touch controls, styles
+src/ui/               HUD, tips & objectives, boss cinematics, photo mode, touch controls, accessibility & key bindings, styles
+test/                 node:test unit and server tests; test/smoke/ has the headless browser check
 src/core/save.js      local save; src/core/progress.js derives hearts/stamina from shared progress
 ```
 
