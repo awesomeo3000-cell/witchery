@@ -669,6 +669,7 @@ export class HUD {
     if (G.quests) G.quests.mapMarkers(add);
     if (G.races) G.races.mapMarkers(add);
     if (G.puzzles) G.puzzles.mapMarkers(add);
+    if (G.merchant) G.merchant.mapMarkers(add);
     const p = G.player;
     const me = add(p.pos.x, p.pos.z, 'me', '', 'You');
     me.querySelector('.dot').style.transform = `rotate(${-p.camYaw}rad)`;

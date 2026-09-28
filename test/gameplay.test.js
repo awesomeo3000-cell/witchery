@@ -217,3 +217,13 @@ test('target gallery scoring and payout', async () => {
   assert.equal(payout(0), 0);
   assert.equal(payout(17), 8);
 });
+
+test('the merchant visits every easel in turn on a shared clock', async () => {
+  const { stopIndex, STAY_MS, WARES } = await import('../src/world/merchant.js');
+  const { WAYPOINTS } = await import('../src/world/layout.js');
+  const seen = new Set();
+  for (let k = 0; k < WAYPOINTS.length; k++) seen.add(stopIndex(k * STAY_MS + 5));
+  assert.equal(seen.size, WAYPOINTS.length);
+  assert.equal(stopIndex(1000), stopIndex(STAY_MS - 1));
+  for (const w of WARES) assert.ok(w.cost > 0 && typeof w.give === 'function');
+});

@@ -36,6 +36,7 @@ import { Wyrm } from './world/wyrm.js';
 import { Rainbow } from './world/rainbow.js';
 import { TargetGallery } from './world/targets.js';
 import { Tablets } from './world/tablets.js';
+import { Merchant } from './world/merchant.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
 import { Player } from './player/player.js';
@@ -221,6 +222,7 @@ class Game {
     G.rainbow = timed('rainbow', () => new Rainbow(G.scene));
     G.targets = timed('targets', () => new TargetGallery(G.scene));
     G.tablets = timed('tablets', () => new Tablets(G.scene));
+    G.merchant = timed('merchant', () => new Merchant(G.scene));
     G.cine = timed('cine', () => new Cinematic());
     G.guide = timed('guide', () => new Guide());
     G.photo = timed('photo', () => new PhotoMode());
@@ -652,7 +654,7 @@ class Game {
     if (G.input.hit('KeyM') && !this.chatOpen && !G.hud.choiceCb && !G.photo.active) this.toggleMap();
     // Choice dialogs eat number keys before they can switch colours
     if (G.hud.choiceCb) {
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 5; i++) {
         if (G.input.hit(`Digit${i + 1}`)) {
           G.input.pressed.delete(`Digit${i + 1}`);
           G.hud.answerChoice(i);
@@ -683,6 +685,7 @@ class Game {
     G.rainbow.update(dt);
     G.targets.update(dt);
     G.tablets.update(dt);
+    G.merchant.update(dt);
     G.greyMoon.update(dt);
     G.enemies.update(wdt);
     G.paint.update(wdt);
