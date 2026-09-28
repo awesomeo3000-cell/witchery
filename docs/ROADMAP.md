@@ -190,5 +190,6 @@ The whole budget goes to this roadmap, worked autonomously in waves. The session
 ## Wave twenty-two
 
 93. ✅ **Bounty board.** A noticeboard on the west edge of the plaza posts three jobs every 20 minutes (defeat certain ink creatures, catch fish or critters, cook). Postings come from the wall clock so friends see the same notices; progress and pay (6-14 Pigment each) are your own. A Bounty Hunter honour for five collected.
+94. ✅ **Your own cottage.** An empty plot south of the plaza sells for 80 Pigment. The cottage goes up on purchase; inside you can rest until morning, evening or night (host or solo, full heal) and repaint the roof in five colours. A trophy garden out front fills with glazed figurines of each trial boss, field boss and the Hueless King you've beaten.
 
 The work continues through this list until the budget is used up.

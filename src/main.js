@@ -50,6 +50,7 @@ import { Festival } from './world/festival.js';
 import { Pins } from './ui/pins.js';
 import { Tally } from './ui/tally.js';
 import { Bounties } from './world/bounties.js';
+import { Home } from './world/home.js';
 import { MapCursor } from './ui/mapcursor.js';
 import { Siege } from './world/siege.js';
 import { Merchant } from './world/merchant.js';
@@ -268,6 +269,7 @@ class Game {
     G.mapCursor = timed('mapCursor', () => new MapCursor());
     G.siege = timed('siege', () => new Siege());
     G.bounties = timed('bounties', () => new Bounties(G.scene));
+    G.home = timed('home', () => new Home(G.scene));
     G.merchant = timed('merchant', () => new Merchant(G.scene));
     G.cine = timed('cine', () => new Cinematic());
     G.guide = timed('guide', () => new Guide());
@@ -371,6 +373,7 @@ class Game {
       if (save.pins) G.pins.load(save.pins);
       if (save.tally) G.tally.load(save.tally);
       if (save.bounties) G.bounties.load(save.bounties);
+      if (save.home) G.home.load(save.home);
       if (!G.net.connected && typeof save.dayT === 'number') G.sky.setTime(save.dayT);
     }
     this.wardrobe.render(true);
@@ -776,6 +779,7 @@ class Game {
     G.tally.update(dt);
     G.siege.update(dt);
     G.bounties.update(dt);
+    G.home.update(dt);
     G.merchant.update(dt);
     G.greyMoon.update(dt);
     G.enemies.update(wdt);

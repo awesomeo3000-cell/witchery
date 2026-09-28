@@ -167,3 +167,13 @@ test('bounty postings are shared, varied and always include a job that isn\'t a 
   }
   assert.equal(seen.size, JOBS.length, 'every job turns up');
 });
+
+test('the cottage plot sits on flat village ground with room for its trophy garden', async () => {
+  const { HOME_AT, TROPHIES, REST } = await import('../src/world/home.js').catch(() => ({}));
+  if (!HOME_AT) return; // needs browser-only model code
+  const x = VILLAGE.x + HOME_AT.dx, z = VILLAGE.z + HOME_AT.dz;
+  assert.ok(Math.hypot(HOME_AT.dx, HOME_AT.dz) < VILLAGE.r - 20, 'inside the village fence');
+  for (const [dx, dz] of [[-4, -4], [4, -4], [-3, 11], [3, 11]]) assert.ok(Math.abs(terrain.heightAt(x + dx, z + dz) - terrain.heightAt(x, z)) < 0.6, 'flat plot');
+  assert.equal(new Set(TROPHIES.map((t) => t.flag)).size, TROPHIES.length);
+  for (const r of REST) assert.ok(r.t >= 0 && r.t < 1);
+});
