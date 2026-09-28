@@ -24,6 +24,7 @@ export const HONOURS = [
   { id: 'brush', name: 'Master Brushwright', desc: 'Max out a brush upgrade', check: () => G.player && UPGRADES.some((u) => (G.player.upg[u.key] || 0) >= u.costs.length) },
   { id: 'wyrm', name: 'Scale of the Wyrm', desc: 'Catch a Chroma Scale from the Chroma Wyrm', event: 'wyrm' },
   { id: 'targets', name: 'Sharpshooter', desc: 'Set a Target Gallery record', event: 'targets' },
+  { id: 'lore', name: 'Loremaster', desc: 'Read all twelve Painted Tablets', event: 'lore' },
   { id: 'star', name: 'Star Catcher', desc: 'Pick up a Star Fragment', event: 'star' },
   { id: 'bat', name: 'Night Watch', desc: 'Pop an Inkbat', event: 'inkbat' },
   { id: 'revive', name: 'Good Samaritan', desc: 'Pick up a fainted friend', event: 'revive' },

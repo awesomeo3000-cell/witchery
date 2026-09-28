@@ -198,6 +198,9 @@ export class Forage {
     $('inv-lh').classList.toggle('hidden', this.cooking);
     $('inv-log').classList.toggle('hidden', this.cooking);
     if (!this.cooking) renderAdventureLog($('inv-log'));
+    $('inv-jh').classList.toggle('hidden', this.cooking);
+    $('inv-jour').classList.toggle('hidden', this.cooking);
+    if (!this.cooking && G.tablets) { G.tablets.render($('inv-jour')); $('inv-jc').textContent = `(${G.tablets.read.size}/12 tablets)`; }
     $('inv-hh').classList.toggle('hidden', this.cooking);
     $('inv-hon').classList.toggle('hidden', this.cooking);
     if (!this.cooking && G.honours) { G.honours.render($('inv-hon')); $('inv-hc').textContent = `(${G.honours.got.size})`; }

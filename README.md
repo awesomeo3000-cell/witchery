@@ -102,6 +102,7 @@ Bring every 4 sprites to Pip in Palette Hollow for a Heart Container or Stamina 
 - **Living water.** The sea has rolling swells that grow in storms, sky reflections, caustics in the shallows, and ripples when you splash, swim or paint it.
 - **Shooting stars.** On clear nights a star sometimes streaks down nearby. Follow its light beam to a Star Fragment worth 20 Pigment. It's shared in co-op, so it's first come, first served.
 - **The Chroma Wyrm.** A huge, peaceful rainbow serpent loops the skies over the island (it shows on the compass when near). Hit it with a paint glob to knock loose a Chroma Scale, which drifts to the ground and is worth 40 Pigment. It can drop one every 8 seconds, and everyone in the room sees it in the same place.
+- **Painted Tablets.** Twelve stone tablets with glowing glyphs tell the story of the island and the Hueless King. Read ones go into the Journal in your satchel, where you can reread them.
 - **Island puzzles.** Ten small puzzles are hidden around the island:
   - **Colour Totems:** a plinth shows three colours; paint the three pillars to match, in order.
   - **Brazier Rings:** light one brazier with Ember, then the rest before the flames die.
@@ -151,7 +152,7 @@ All art is generated in code: painted canvas textures (bark, leaves, stone, shin
 
 ## Painter's Honours
 
-There are twenty-one achievements, such as First Flight, Soft Bristles (a sneak strike), Record Breaker, Cartographer, Good Samaritan (reviving a friend) and Echo Breaker. Each one pops a toast when earned, is listed with its progress in the satchel, and is saved per player.
+There are twenty-three achievements, such as First Flight, Soft Bristles (a sneak strike), Record Breaker, Cartographer, Good Samaritan (reviving a friend) and Echo Breaker. Each one pops a toast when earned, is listed with its progress in the satchel, and is saved per player.
 
 ### Wardrobe
 

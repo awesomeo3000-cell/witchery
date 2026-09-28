@@ -73,3 +73,13 @@ test('puzzle sites are deterministic, dry, flat and spread out', async () => {
     for (const o of all) if (o !== s) assert.ok(Math.hypot(o.x - s.x, o.z - s.z) >= 110, 'spread out');
   }
 });
+
+test('twelve lore tablets fit around the island puzzles', async () => {
+  const { puzzleSites } = await import('../src/world/puzzles.js');
+  const { TABLETS } = await import('../src/world/tablets.js');
+  const a = puzzleSites(terrain, 6, 4242);
+  const b = puzzleSites(terrain, 4, 777, a);
+  const c = puzzleSites(terrain, TABLETS.length, 1313, [...a, ...b]);
+  assert.equal(c.length, TABLETS.length);
+  for (const t of TABLETS) assert.ok(t.title && t.text.length > 40);
+});

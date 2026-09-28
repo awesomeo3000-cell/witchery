@@ -315,3 +315,8 @@ body.touch #minimap { display: none; }
 .honour small { font: 600 11px var(--sans); opacity: 0.8; }
 #inv-hc { font: 700 12px var(--sans); letter-spacing: 0; }
 #pause select { width: 100%; }
+#inv-jour { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px; }
+#inv-jour .tab { padding: 6px 10px; border-radius: 8px; background: rgba(255,255,255,0.04); font: 700 13px var(--serif); opacity: 0.45; }
+#inv-jour .tab.read { opacity: 1; cursor: pointer; background: rgba(200,168,255,0.12); }
+#inv-jour .tab.read:hover { background: rgba(200,168,255,0.25); }
+#inv-jc { font: 700 12px var(--sans); letter-spacing: 0; }

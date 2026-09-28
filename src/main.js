@@ -35,6 +35,7 @@ import { Honours } from './ui/honours.js';
 import { Wyrm } from './world/wyrm.js';
 import { Rainbow } from './world/rainbow.js';
 import { TargetGallery } from './world/targets.js';
+import { Tablets } from './world/tablets.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
 import { Player } from './player/player.js';
@@ -219,6 +220,7 @@ class Game {
     G.wyrm = timed('wyrm', () => new Wyrm(G.scene));
     G.rainbow = timed('rainbow', () => new Rainbow(G.scene));
     G.targets = timed('targets', () => new TargetGallery(G.scene));
+    G.tablets = timed('tablets', () => new Tablets(G.scene));
     G.cine = timed('cine', () => new Cinematic());
     G.guide = timed('guide', () => new Guide());
     G.photo = timed('photo', () => new PhotoMode());
@@ -312,6 +314,7 @@ class Game {
       if (save.upg) Object.assign(G.player.upg, save.upg);
       if (save.fog) G.fog.load(save.fog);
       if (save.honours) G.honours.load(save.honours);
+      if (save.tablets) G.tablets.load(save.tablets);
       if (!G.net.connected && typeof save.dayT === 'number') G.sky.setTime(save.dayT);
     }
     this.wardrobe.render(true);
@@ -679,6 +682,7 @@ class Game {
     G.wyrm.update(dt);
     G.rainbow.update(dt);
     G.targets.update(dt);
+    G.tablets.update(dt);
     G.greyMoon.update(dt);
     G.enemies.update(wdt);
     G.paint.update(wdt);
