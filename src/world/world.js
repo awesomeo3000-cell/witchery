@@ -373,6 +373,8 @@ export class World {
           'Tap Left Mouse while aiming (Right Mouse) to flick paint. Hold it to paint a stroke.',
           'Red burns brambles and lights braziers. Blue freezes water into floes. Yellow makes bounce pads. Green grows vines you can climb.',
           'Press R to ride your brush through the skies. Mind your stamina!',
+          'Some of the villagers could use a hand. Look for the ones with a ! over their heads.',
+          'Sable at the market reworks brushes, if you bring Pigment from the ink creatures.',
           `You have ${done} of 4 Prism Shards.`,
         ];
         G.hud.dialog('Elder Umber', lines[hintIdx % lines.length]);

@@ -15,6 +15,17 @@ const setFlag = (k, v = true) => G.trials._setFlag(k, v);
 const STATUES = [0, 1, 2, 3].map((i) => ({ i, x: RUINS[i].x + 7, z: RUINS[i].z - 5 }));
 const MIRA_NEEDS = { pepper: 3, lily: 2 };
 
+// Ambient lines villagers call out when you wander past
+const BARKS = {
+  mira: ['Red from peppers, blue from lilies... simple!', 'Mind the vats, they stain everything.', 'The festival needs every colour we can find.'],
+  tilly: ['Wanna race? Oh wait, you can FLY.', 'I saw a sky whale once. Probably.', 'Grandpa Umber says the sky used to be even bluer!'],
+  bram: ['Keep your brush up and your eyes open.', 'Those Inkbats come out after dark. Nasty.', 'A good hunter watches before striking.'],
+  ochre: ['Every grey thing is just a painting waiting to happen.', 'Hold still... no, never mind, keep moving.', 'Have you seen the light over the mesas at dusk?'],
+};
+const NIGHT_BARKS = ['Warm pot, good company.', "Can't sleep with the ink creatures about.", 'Stay by the fire a while.'];
+// At night the villagers gather to sit around the cooking pot
+const POT = { x: 9, z: -6 };
+
 export const QUESTS = [
   {
     id: 'mira', giver: 'Mira the Dyer', title: 'Dyes for the Festival',
@@ -88,15 +99,19 @@ export class Quests {
       c.brush.visible = q.id === 'ochre';
       if (q.id === 'ochre') { c.brush.scale.setScalar(0.5); }
       this.root.add(c.group);
-      G.collision.addCylinder(x, z, 0.5, y, y + 1.8);
+      const col = G.collision.addCylinder(x, z, 0.5, y, y + 1.8, { dynamic: true });
       const mark = new THREE.Sprite(new THREE.SpriteMaterial({ map: this._glyph('!'), depthWrite: false, transparent: true, fog: false }));
       mark.scale.set(1.3, 1.3, 1);
       mark.position.set(x, y + (q.child ? 2.4 : 2.9), z);
       this.root.add(mark);
-      const npc = { q, c, mark, pos: new THREE.Vector3(x, y, z), phase: Math.random() * 6 };
+      const i = this.npcs.length;
+      const na = (i / QUESTS.length) * Math.PI * 2 + 0.4;
+      const night = new THREE.Vector3(vx + POT.x + Math.cos(na) * 2.6, 0, vz + POT.z + Math.sin(na) * 2.6);
+      night.y = G.terrain.heightAt(night.x, night.z);
+      const npc = { q, c, mark, col, pos: new THREE.Vector3(x, y, z), day: new THREE.Vector3(x, y, z), night, ipos: new THREE.Vector3(x, y + 1, z), phase: Math.random() * 6, barkT: 0, bubble: null };
       this.npcs.push(npc);
       G.world.interactables.push({
-        pos: npc.pos.clone().setY(y + 1), radius: 3,
+        pos: npc.ipos, radius: 3,
         prompt: () => `Talk to ${q.giver}`,
         action: () => this.talk(q),
       });
@@ -241,6 +256,29 @@ export class Quests {
     if (k === 'q_kite_got' && G.player && this.kite.pos.distanceTo(G.player.pos) > 20) G.hud.toast("A friend found Tilly's kite!", '#9ee0ff', 3);
   }
 
+  // Speech bubble with an ambient line when a player strolls past
+  _bark(n, d, nightTime, dt) {
+    n.barkT -= dt;
+    if (!n.bubble && d < 8 && n.barkT <= 0 && G.hud.dialogTimer <= 0) {
+      const lines = nightTime ? NIGHT_BARKS : BARKS[n.q.id];
+      n.bubble = document.createElement('div');
+      n.bubble.className = 'bubble';
+      n.bubble.textContent = lines[Math.floor(Math.random() * lines.length)];
+      G.hud.labels.appendChild(n.bubble);
+      n.bubbleT = 4;
+      n.barkT = 30 + Math.random() * 20;
+      G.audio.voice(G.hud._voice(n.q.giver));
+    }
+    if (n.bubble) {
+      n.bubbleT -= dt;
+      const s = G.hud.project(n.pos.clone().setY(n.pos.y + (n.q.child ? 2.1 : 2.5)));
+      if (n.bubbleT <= 0 || !s || G.hud.dialogTimer > 0) { n.bubble.remove(); n.bubble = null; return; }
+      n.bubble.style.left = `${s.x}px`;
+      n.bubble.style.top = `${s.y}px`;
+      n.bubble.style.opacity = Math.min(1, n.bubbleT * 2);
+    }
+  }
+
   // Villagers with news, active quest targets and field bosses already spotted
   mapMarkers(add) {
     const states = this.npcs.map((n) => this.state(n.q));
@@ -284,11 +322,37 @@ export class Quests {
         if (n.mark.userData.ch !== want) { n.mark.material.map = this._glyph(want); n.mark.userData.ch = want; n.mark.material.needsUpdate = true; }
         n.mark.position.y = n.pos.y + (n.q.child ? 2.4 : 2.9) + Math.sin(t * 2.5 + n.phase) * 0.12;
       }
+      // Walk between the day spot and the evening gathering at the pot
+      const nightTime = G.sky && G.sky.night > 0.55;
+      const goal = nightTime ? n.night : n.day;
+      const to = goal.clone().sub(n.pos).setY(0);
+      const dist = to.length();
+      let anim = 'idle', spd = 0;
+      if (dist > 0.25) {
+        const step = Math.min(dist, 1.7 * dt);
+        n.pos.addScaledVector(to.normalize(), step);
+        n.pos.y = G.terrain.heightAt(n.pos.x, n.pos.z);
+        const want = Math.atan2(to.x, to.z);
+        n.c.group.rotation.y += Math.atan2(Math.sin(want - n.c.group.rotation.y), Math.cos(want - n.c.group.rotation.y)) * Math.min(1, dt * 6);
+        anim = 'walk'; spd = 1.7;
+      } else if (nightTime) {
+        anim = 'emote_sit';
+        const want = Math.atan2(VILLAGE.x + POT.x - n.pos.x, VILLAGE.z + POT.z - n.pos.z);
+        n.c.group.rotation.y += Math.atan2(Math.sin(want - n.c.group.rotation.y), Math.cos(want - n.c.group.rotation.y)) * Math.min(1, dt * 3);
+      }
+      n.c.group.position.copy(n.pos);
+      n.ipos.set(n.pos.x, n.pos.y + 1, n.pos.z);
+      n.col.min.set(n.pos.x - 0.5, n.pos.y, n.pos.z - 0.5);
+      n.col.max.set(n.pos.x + 0.5, n.pos.y + 1.8, n.pos.z + 0.5);
+      n.col.x = n.pos.x; n.col.z = n.pos.z;
+      n.mark.position.x = n.pos.x;
+      n.mark.position.z = n.pos.z;
       const d = n.pos.distanceTo(p.pos);
+      this._bark(n, d, nightTime, dt);
       if (d < 60) {
-        n.c.animate({ state: 'idle', speed: 0 }, dt);
+        n.c.animate({ state: anim, speed: spd }, dt);
         // Turn to face a nearby player
-        if (d < 7) {
+        if (d < 7 && anim === 'idle') {
           const want = Math.atan2(p.pos.x - n.pos.x, p.pos.z - n.pos.z);
           let da = want - n.c.group.rotation.y;
           da = Math.atan2(Math.sin(da), Math.cos(da));
