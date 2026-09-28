@@ -149,3 +149,17 @@ test('brush upgrades cost pigment and scale stats', async () => {
   assert.ok(Math.abs(s.flightCost - 0.55) < 1e-9);
   assert.deepEqual(brushStats(), { damage: 1, inkRegen: 1, flightCost: 1 });
 });
+
+test('map fog reveals around a point and survives a save round trip', async () => {
+  const { MapFog, FOG_N } = await import('../src/ui/mapfog.js');
+  const f = new MapFog();
+  const start = f.explored();
+  assert.ok(start > 0 && start < 0.1, 'the village starts revealed');
+  f.reveal(500, -500, 150);
+  assert.ok(f.explored() > start);
+  const g = new MapFog();
+  g.cells.fill(0);
+  g.load(f.serialize());
+  assert.deepEqual([...g.cells], [...f.cells]);
+  assert.equal(g.cells.length, FOG_N * FOG_N);
+});

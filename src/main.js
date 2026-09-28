@@ -23,6 +23,7 @@ import { AccessUI } from './ui/access.js';
 import { Pings } from './ui/ping.js';
 import { Races } from './world/races.js';
 import { Shop } from './world/shop.js';
+import { MapFog } from './ui/mapfog.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
 import { Player } from './player/player.js';
@@ -190,6 +191,7 @@ class Game {
     G.pings = new Pings(G.scene);
     G.races = new Races(G.scene);
     G.shop = new Shop(G.scene);
+    G.fog = new MapFog();
     G.cine = new Cinematic();
     G.guide = new Guide();
     G.photo = new PhotoMode();
@@ -261,6 +263,7 @@ class Game {
       if (save.forage) G.forage.load(save.forage);
       if (typeof save.pigment === 'number') G.player.pigment = save.pigment;
       if (save.upg) Object.assign(G.player.upg, save.upg);
+      if (save.fog) G.fog.load(save.fog);
       if (!G.net.connected && typeof save.dayT === 'number') G.sky.setTime(save.dayT);
     }
     G.flags.wp_village = true;
@@ -601,6 +604,7 @@ class Game {
     G.pings.update(dt);
     G.races.update(dt);
     G.shop.update(dt);
+    G.fog.update(dt);
     G.greyMoon.update(dt);
     G.enemies.update(wdt);
     G.paint.update(wdt);

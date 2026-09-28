@@ -558,13 +558,14 @@ export class HUD {
   openMap() {
     const m = $('map');
     m.classList.remove('hidden');
-    if (!this.mapDrawn) {
-      this.mapDrawn = true;
-      const src = G.terrain.renderMapCanvas(320);
-      const cv = $('map-canvas');
-      const ctx = cv.getContext('2d');
-      ctx.imageSmoothingEnabled = true;
-      ctx.drawImage(src, 0, 0, cv.width, cv.height);
+    if (!this.mapBase) this.mapBase = G.terrain.renderMapCanvas(320);
+    const cv = $('map-canvas');
+    const ctx = cv.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(this.mapBase, 0, 0, cv.width, cv.height);
+    if (G.fog) {
+      G.fog.draw(ctx, cv.width, cv.height);
+      $('map-explored').textContent = `${Math.round(G.fog.explored() * 100)}% explored · `;
     }
     this.renderMapMarkers();
   }
