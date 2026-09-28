@@ -3,6 +3,8 @@ import * as THREE from 'three';
 import { makeNoise2D, fbm, smoothstep, clamp, lerp, hash2 } from '../core/math.js';
 import { WORLD_SIZE, WORLD_SEG, FLAT_SPOTS, VOLCANO, LAKE } from './layout.js';
 
+export const WET = { value: 0 };
+
 const BIOME_DIRS = { frost: 0, ember: Math.PI / 2, spring: Math.PI, bloom: -Math.PI / 2 };
 
 export class Terrain {
@@ -225,12 +227,14 @@ export class Terrain {
 
     const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
     mat.onBeforeCompile = (shader) => {
+      shader.uniforms.uWet = WET;
       shader.vertexShader = shader.vertexShader
         .replace('#include <common>', '#include <common>\nvarying vec3 vWPos; varying vec3 vWN;')
         .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWPos = (modelMatrix * vec4(transformed,1.0)).xyz; vWN = normalize(mat3(modelMatrix) * objectNormal);');
       shader.fragmentShader = shader.fragmentShader
         .replace('#include <common>', `#include <common>
           varying vec3 vWPos; varying vec3 vWN;
+          uniform float uWet;
           float th(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453); }
           float tn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
             return mix(mix(th(i),th(i+vec2(1,0)),f.x), mix(th(i+vec2(0,1)),th(i+vec2(1,1)),f.x), f.y); }`)
@@ -246,7 +250,10 @@ export class Terrain {
           float band = sin(vWPos.y * 1.7 + tn(vWPos.xz * 0.15) * 4.0);
           float band2 = sin(vWPos.y * 0.45 + tn(vWPos.xz * 0.05) * 3.0);
           diffuseColor.rgb *= mix(1.0, 0.82 + 0.1 * band + 0.12 * band2, cliff);
-          diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.95, 0.93, 1.02), cliff * 0.5);`);
+          diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.95, 0.93, 1.02), cliff * 0.5);
+          // Rain darkens and cools the ground
+          diffuseColor.rgb *= 1.0 - uWet * 0.25;
+          diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.9, 0.95, 1.08), uWet);`);
     };
     this.mesh = new THREE.Mesh(geo, mat);
     this.mesh.receiveShadow = true;

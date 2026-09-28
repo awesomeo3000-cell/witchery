@@ -121,6 +121,7 @@ export class Environment {
     else if (e < 0.1) k = mixKey(KEYS.night, KEYS.dusk, smoothstep(-0.12, 0.1, e));
     else k = mixKey(KEYS.dusk, KEYS.day, smoothstep(0.1, 0.4, e));
     if (dungeon) k = mixKey(KEYS.dungeon, KEYS.dungeon, 0);
+    else if (G.weather) k = G.weather.tint(k);
     this.cur = k;
     const night = dungeon ? 0 : 1 - smoothstep(-0.2, 0.05, e);
     this.night = night;

@@ -16,6 +16,8 @@ import { Particles } from './combat/particles.js';
 import { EnemyManager } from './enemies/enemies.js';
 import { Trials } from './trials/trials.js';
 import { Sprites } from './world/sprites.js';
+import { Weather } from './world/weather.js';
+import { WET } from './world/terrain.js';
 import { Player } from './player/player.js';
 import { makeCharacter } from './player/character.js';
 import { Ribbon } from './combat/trails.js';
@@ -169,6 +171,7 @@ class Game {
     G.enemies = new EnemyManager(G.scene);
     G.trials = new Trials(G.scene);
     G.sprites = new Sprites(G.scene);
+    G.weather = new Weather(G.scene);
     G.hud = new HUD();
     // Menu backdrop camera
     G.camera.position.set(60, 60, 200);
@@ -330,7 +333,9 @@ class Game {
     input.addEventListener('keydown', (e) => {
       if (e.code === 'Enter') {
         const text = input.value.trim();
-        if (text) {
+        if (text.startsWith('/')) {
+          this._command(text);
+        } else if (text) {
           G.net?.send({ t: 'chat', text, name: G.player.name });
           G.hud.chat(G.player.name, text, '#ffe08a');
         }
@@ -338,6 +343,16 @@ class Game {
       } else if (e.code === 'Escape') this._closeChat();
       e.stopPropagation();
     });
+  }
+
+  // Small host commands: /weather clear|cloudy|rain|storm, /time dawn|day|dusk|night
+  _command(text) {
+    const [cmd, arg] = text.slice(1).split(/\s+/);
+    if (G.net.connected && !G.net.isHost) { G.hud.chat('', 'Only the host can use commands.', '#ffb0b0'); return; }
+    if (cmd === 'weather' && ['clear', 'cloudy', 'rain', 'storm'].includes(arg)) { G.weather.set(arg); G.hud.chat('', `Weather: ${arg}`, '#dddddd'); return; }
+    const times = { dawn: 0.26, day: 0.4, noon: 0.5, dusk: 0.72, night: 0.95 };
+    if (cmd === 'time' && arg in times) { G.sky.setTime(times[arg]); G.hud.chat('', `Time: ${arg}`, '#dddddd'); return; }
+    G.hud.chat('', 'Commands: /weather clear|cloudy|rain|storm · /time dawn|day|noon|dusk|night', '#dddddd');
   }
 
   _closeChat() {
@@ -504,6 +519,8 @@ class Game {
     for (const peer of G.peers.values()) peer.update(dt);
     this._checkWaypoints();
     p.updateCamera(dt);
+    G.weather.update(dt, G.sky);
+    WET.value = Math.min(1, G.weather.w * 1.2) * (G.weather.snow.visible ? 0.3 : 1);
     G.sky.update(dt, p.pos);
     G.water.update(dt, G.sky);
     const pushers = [p.pos];

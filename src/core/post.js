@@ -151,7 +151,8 @@ export class PostFX {
     if (env.dungeon) {
       hz.uDensity.value = 0.012; hz.uHeightDensity.value = 0; hz.uMaxFog.value = 0.85;
     } else {
-      hz.uDensity.value = 0.00038; hz.uHeightDensity.value = 0.0013; hz.uFalloff.value = 0.02; hz.uBase.value = 0; hz.uMaxFog.value = 0.9;
+      const w = G.weather ? G.weather.w : 0;
+      hz.uDensity.value = 0.00038 + w * 0.0016; hz.uHeightDensity.value = 0.0013 + w * 0.002; hz.uFalloff.value = 0.02; hz.uBase.value = 0; hz.uMaxFog.value = 0.9 + w * 0.06;
     }
     r.setRenderTarget(this.sceneRT);
     r.clear();

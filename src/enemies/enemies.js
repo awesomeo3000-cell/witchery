@@ -745,6 +745,7 @@ export class EnemyManager {
       w: this.waves.map((w) => [w.id, r(w.pos.x), r(w.pos.y), r(w.pos.z), r(w.r), w.speed, w.maxR, w.width, w.color]),
       k: this.pickups.map((k) => [k.id, k.kind, r(k.pos.x), r(k.pos.y), r(k.pos.z)]),
       d: G.sky ? r(G.sky.dayT * 1000) / 1000 : 0,
+      wx: G.weather ? G.weather.code() : 0,
     };
   }
 
@@ -805,6 +806,7 @@ export class EnemyManager {
     for (let i = this.pickups.length - 1; i >= 0; i--) {
       if (!kseen.has(this.pickups[i].id)) { this.scene.remove(this.pickups[i].mesh); this.pickups.splice(i, 1); }
     }
+    if (G.weather && typeof m.wx === 'number') G.weather.sync(m.wx);
     if (G.sky && typeof m.d === 'number' && Math.abs(G.sky.dayT - m.d) > 0.01) G.sky.setTime(m.d);
   }
 

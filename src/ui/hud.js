@@ -450,7 +450,9 @@ export class HUD {
     // Net status
     if (G.net) {
       const n = (G.peers ? G.peers.size : 0) + 1;
-      $('net-status').textContent = G.net.connected ? `Room "${G.net.room}" · ${n} player${n > 1 ? 's' : ''}${G.net.isHost ? ' · host' : ''}` : 'Solo (offline)';
+      let wx = G.weather ? { clear: '☀ Clear', cloudy: '☁ Cloudy', rain: '☂ Rain', storm: '⚡ Storm' }[G.weather.state] : '';
+      if (G.weather && G.weather.snow.visible) wx = '❄ Snow';
+      $('net-status').textContent = `${wx} · ` + (G.net.connected ? `Room "${G.net.room}" · ${n} player${n > 1 ? 's' : ''}${G.net.isHost ? ' · host' : ''}` : 'Solo (offline)');
     }
   }
 

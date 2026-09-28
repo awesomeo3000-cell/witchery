@@ -29,6 +29,26 @@ export class Audio {
     for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
   }
 
+  // Continuous rain bed; level 0..1
+  setRain(level) {
+    if (!this.ctx) return;
+    if (!this.rainNode) {
+      const src = this.ctx.createBufferSource();
+      src.buffer = this.noiseBuf;
+      src.loop = true;
+      const f = this.ctx.createBiquadFilter();
+      f.type = 'bandpass';
+      f.frequency.value = 2200;
+      f.Q.value = 0.4;
+      this.rainGain = this.ctx.createGain();
+      this.rainGain.gain.value = 0;
+      src.connect(f).connect(this.rainGain).connect(this.master);
+      src.start();
+      this.rainNode = src;
+    }
+    this.rainGain.gain.setTargetAtTime(level * 0.12, this.ctx.currentTime, 0.5);
+  }
+
   setVolume(v) {
     if (this.master) this.master.gain.value = v;
   }
@@ -101,6 +121,7 @@ export class Audio {
       case 'shoot': this.tone(500, 0.18, 'square', 0.08 * vol, 0.5); break;
       case 'glint': this.tone(2400, 0.18, 'sine', 0.08 * vol, 1.3); this.tone(3600, 0.12, 'sine', 0.05 * vol, 1, 0.04); break;
       case 'sprite': [0, 4, 7, 12, 7, 12, 16].forEach((n, i) => this.tone(784 * Math.pow(2, n / 12), 0.18, 'triangle', 0.13 * vol, 1, i * 0.07)); break;
+      case 'thunder': this.noise(2.5, 90, 0.5, 0.55 * vol, 'lowpass', 40); this.noise(0.5, 400, 0.5, 0.25 * vol, 'lowpass', 80); break;
       case 'flurry': this.tone(1200, 0.6, 'sine', 0.15 * vol, 0.4); this.noise(0.6, 3000, 0.5, 0.2 * vol, 'highpass', 800); break;
       case 'chat': this.tone(880, 0.08, 'sine', 0.1 * vol); break;
       case 'waypoint': [0, 5, 9, 12].forEach((n, i) => this.tone(440 * Math.pow(2, n / 12), 0.5, 'sine', 0.12 * vol, 1, i * 0.1)); break;
