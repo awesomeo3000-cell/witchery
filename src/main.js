@@ -563,7 +563,7 @@ class Game {
       this._render({});
       return;
     }
-    if (G.debugFreeze) { this._render({}); return; }
+    if (G.debugFreeze) { this._render({ under: G.water.underwater() }); return; }
     if (G.hitStop > 0) { G.hitStop -= dt; dt *= 0.12; }
     // Flurry Rush slows everything except the player
     if (G.flurry > 0) G.flurry -= dt;
@@ -633,6 +633,7 @@ class Game {
       flurry: Math.min(1, (G.flurry || 0) * 3),
       hurt: p.hurtFlash > 0 ? p.hurtFlash * 2 : (p.hp <= 2 && p.alive ? 0.25 + Math.sin(G.time * 6) * 0.15 : 0),
       sat: this._saturation(dt),
+      under: G.water.underwater(),
     });
   }
 

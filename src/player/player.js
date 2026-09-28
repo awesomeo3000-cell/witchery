@@ -548,6 +548,7 @@ export class Player {
         if (this.state !== 'swim') {
           this.state = 'swim';
           G.particles.burst(this.pos.clone().setY(w.level), { count: 20, color: 0xffffff, speed: 4, up: 3, life: 0.6, size: 0.4 });
+          G.water?.ripple(this.pos.x, this.pos.z, Math.min(1.6, 0.6 + Math.abs(this.vel.y) * 0.06));
           G.audio.play('splat', 0.6);
         }
       } else if (this.state === 'swim' && (!w || this.pos.y > w.level - 0.9)) {

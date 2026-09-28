@@ -76,6 +76,7 @@ export class PostFX {
         uSpeed: { value: 0 },
         uFlurry: { value: 0 },
         uHurt: { value: 0 },
+        uUnder: { value: 0 },
         uAspect: { value: 1 },
         uSat: { value: 1.12 },
         uFilter: { value: 0 },
@@ -83,13 +84,22 @@ export class PostFX {
       vertexShader: VERT,
       fragmentShader: /* glsl */`
         uniform sampler2D tColor;
-        uniform float uTime, uSpeed, uFlurry, uHurt, uAspect, uSat;
+        uniform float uTime, uSpeed, uFlurry, uHurt, uUnder, uAspect, uSat;
         uniform int uFilter;
         varying vec2 vUv;
         float hh(float n){ return fract(sin(n) * 43758.5453); }
         float hash2(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
         void main(){
-          vec3 c = texture2D(tColor, vUv).rgb;
+          vec2 suv = vUv;
+          // Underwater: wobble the image and wash it teal
+          if (uUnder > 0.0) suv += vec2(sin(vUv.y * 24.0 + uTime * 2.1), cos(vUv.x * 19.0 + uTime * 1.7)) * 0.004 * uUnder;
+          vec3 c = texture2D(tColor, suv).rgb;
+          if (uUnder > 0.0) {
+            float lu = dot(c, vec3(0.3, 0.59, 0.11));
+            vec3 tint = mix(vec3(0.02, 0.16, 0.24), vec3(0.3, 0.75, 0.8), lu);
+            c = mix(c, tint, 0.65 * uUnder);
+            c += vec3(0.2, 0.35, 0.3) * pow(max(0.0, sin(vUv.x * 30.0 + vUv.y * 11.0 + uTime) * sin(vUv.x * 13.0 - vUv.y * 27.0 - uTime * 1.3)), 6.0) * (1.0 - vUv.y) * 0.4 * uUnder;
+          }
           // Painterly grade: gentle warm highlights, cool shadows, a little extra saturation
           float l = dot(c, vec3(0.299, 0.587, 0.114));
           c = mix(vec3(l), c, uSat);
@@ -174,6 +184,7 @@ export class PostFX {
     g.uSpeed.value = fx.speed || 0;
     g.uFlurry.value = fx.flurry || 0;
     g.uHurt.value = fx.hurt || 0;
+    g.uUnder.value += ((fx.under || 0) - g.uUnder.value) * 0.3;
     g.uSat.value = fx.sat ?? 1.12;
     g.uFilter.value = G.photo && G.photo.active ? G.photo.filter : 0;
     r.setRenderTarget(null);

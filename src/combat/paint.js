@@ -133,6 +133,7 @@ export class PaintSystem {
     if (opts.hostile) splat.life = splat.max = el === 'fire' ? 5 : 8;
 
     if (onWater) {
+      G.water?.ripple(point.x, point.z, 0.8);
       if (el === 'ice') {
         const floe = new THREE.Mesh(this.floeGeo, new THREE.MeshLambertMaterial({ color: 0xd8f2ff, emissive: 0x4080b0, emissiveIntensity: 0.25, flatShading: true, transparent: true, opacity: 1 }));
         floe.position.set(point.x, point.y - 0.05, point.z);
