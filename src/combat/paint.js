@@ -229,6 +229,7 @@ export class PaintSystem {
     const c = { pos: pos.clone(), r: 5, life: 7 };
     this.steams.push(c);
     G.audio.play('glide', 0.8);
+    G.hud.caption('Steam hisses up', pos);
     G.particles.burst(pos.clone().setY(pos.y + 1), { count: 40, color: 0xf2f2f2, speed: 3, up: 3, life: 2.5, size: 2.2, gravity: -0.6, alpha: 0.55, grow: 1.8 });
     if (!G.guide?.seen.has('steam')) { G.guide?.seen.add('steam'); G.hud.toast('Steam! Enemies can\'t see you while you stand in it.', '#e8e8e8', 3); }
   }
@@ -239,6 +240,7 @@ export class PaintSystem {
   _blast(pos, local) {
     G.audio.play('slam');
     G.audio.play('fire');
+    G.hud.caption('A pad bursts in flame', pos);
     G.particles.burst(pos.clone().setY(pos.y + 0.6), { count: 60, color: 0xffa040, speed: 12, life: 0.7, size: 0.8, pool: 'glow', gravity: 6 });
     G.particles.flames(pos, 2.5, 30, 1.5);
     if (G.player && G.player.pos.distanceTo(pos) < 25) G.player.cameraShake = Math.max(G.player.cameraShake, 0.4);

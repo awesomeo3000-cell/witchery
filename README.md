@@ -210,10 +210,11 @@ Honours unlock cosmetics, picked under *Wardrobe* in the pause menu: brush trail
 The pause menu's *Accessibility* section has:
 - HUD size, text size (dialogue, captions, satchel), field of view and camera distance sliders
 - colour symbols (▲ Ember, ❄ Frost, ● Spring, ✿ Bloom) on the potions, colour wheel and compass
-- *Reduce motion*, which removes speed lines, the FOV kick and the underwater wobble
-- *Reduce screen flashes*
-- *Captions for important sounds* (boss roars, thunder, ground shakes, enemies spotting you, shooting stars, the Wyrm...), with an arrow toward the source when it's known
+- *Reduce motion*, which removes speed lines, the FOV kick and the underwater wobble, shrinks camera shake, and skips the opening flyover
+- *Reduce screen flashes*, which also softens fireworks
+- *Captions for important sounds* (boss roars, thunder, ground shakes, enemies spotting you, sentries locking on, blasts and steam, fireworks, splashing fish, your whistle, shooting stars, the Wyrm...), with an arrow toward the source when it's known
 - toggle sprint
+- a *Difficulty* setting (Story halves damage taken) and the Paint Fox, minimap and gamepad rumble toggles
 
 *Key bindings* remaps any keyboard action. If the key is already taken, the two actions swap.
 

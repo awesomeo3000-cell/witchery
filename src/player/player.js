@@ -1079,7 +1079,7 @@ export class Player {
     if (this.camPos.distanceTo(want) > 30) this.camPos.copy(want);
     cam.position.copy(this.camPos);
     if (this.cameraShake > 0) {
-      const s = this.cameraShake * 0.5;
+      const s = this.cameraShake * (G.settings.reduceMotion ? 0.12 : 0.5);
       cam.position.x += (Math.random() - 0.5) * s;
       cam.position.y += (Math.random() - 0.5) * s;
     }

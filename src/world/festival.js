@@ -32,13 +32,15 @@ export class Festival {
     const y = G.terrain.heightAt(VILLAGE.x, VILLAGE.z) + 45 + Math.random() * 25;
     const c = COLORS[Math.floor(Math.random() * 4)];
     const pos = new THREE.Vector3(x, y, z);
-    G.particles.burst(pos, { count: 70, color: c.hex, speed: 14, life: 1.6, size: 0.9, pool: 'glow', gravity: 3 });
-    G.particles.burst(pos, { count: 20, color: 0xffffff, speed: 6, life: 0.8, size: 0.6, pool: 'glow', gravity: 2 });
+    const soft = G.settings.reduceFlash;
+    G.particles.burst(pos, { count: soft ? 35 : 70, color: c.hex, speed: 14, life: 1.6, size: soft ? 0.6 : 0.9, pool: soft ? undefined : 'glow', gravity: 3 });
+    if (!soft) G.particles.burst(pos, { count: 20, color: 0xffffff, speed: 6, life: 0.8, size: 0.6, pool: 'glow', gravity: 2 });
     const d = G.player ? G.player.pos.distanceTo(pos) : 999;
     if (d < 250) {
       const v = Math.max(0.15, 1 - d / 250);
       G.audio.noise?.(0.5, 300, 0.6, 0.25 * v, 'lowpass', 80);
       G.audio.tone?.(1800 + Math.random() * 600, 0.4, 'sine', 0.03 * v, 0.4, 0.05);
+      G.hud.caption('Fireworks burst overhead', pos);
     }
   }
 

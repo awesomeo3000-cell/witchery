@@ -6,7 +6,7 @@ const CAPTIONS = {
   bossRoar: 'A deep roar', thunder: 'Thunder rumbles', hurt: 'You take a hit', shard: 'A Prism Shard rings out',
   sprite: 'A bright chime', waypoint: 'An easel hums awake', break: 'Something shatters', shield: 'Your strike is blocked',
   quest: 'A cheerful fanfare', flurry: 'Time slows', solve: 'A satisfying chime',
-  whistle: 'A whistled tune', memory: 'A distant melody',
+  whistle: 'A whistled tune', memory: 'A distant melody', fishSplash: 'A fish splashes', critter: 'A soft chime',
 };
 
 export class Audio {
