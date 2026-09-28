@@ -115,7 +115,10 @@ export class Trials {
     d.spawn = b.w(0, 0.1, 2);
     // Entry room shared by all trials
     b.box(0, -1, 5, 14, 1, 14, MAT.dungeonFloor);
-    b.box(-7.5, -1, 5, 1, 12, 14, MAT.dungeon);
+    // Left wall has a doorway (z 4..8) into an optional side chamber
+    b.box(-7.5, -1, 1, 1, 12, 6, MAT.dungeon);
+    b.box(-7.5, -1, 10, 1, 12, 4, MAT.dungeon);
+    b.box(-7.5, 4, 6, 1, 7, 4, MAT.dungeon);
     b.box(7.5, -1, 5, 1, 12, 14, MAT.dungeon);
     b.box(0, -1, -2.5, 16, 12, 1, MAT.dungeon);
     b.box(0, 10, 5, 16, 1, 16, MAT.dungeon, { shadow: false });
@@ -133,6 +136,103 @@ export class Trials {
     if (t.key === 'spring') this._buildSpring(d);
     if (t.key === 'bloom') this._buildBloom(d);
     this._buildArena(d);
+    this._buildSide(d);
+  }
+
+  // Optional side chamber: a small colour challenge guarding a chest with a Paint Sprite
+  _buildSide(d) {
+    const b = d.builder;
+    const key = d.trial.key;
+    b.box(-20.5, -1, 5, 1, 12, 15, MAT.dungeon);
+    b.box(-14, -1, -2.5, 14, 12, 1, MAT.dungeon);
+    b.box(-14, -1, 12.5, 14, 12, 1, MAT.dungeon);
+    b.box(-14, 10, 5, 14, 1, 15, MAT.dungeon, { shadow: false });
+    b.light(-14, 7, 5, COLORS[d.trial.color].hex, 14, 22);
+    let chestAt = [-17, 0, 5];
+    if (key === 'frost') {
+      // A freezing channel: freeze it to cross
+      b.box(-9, -1, 5, 2, 1, 14, MAT.dungeonFloor);
+      b.box(-19, -1, 5, 2, 1, 14, MAT.dungeonFloor);
+      b.box(-14, -7, 5, 8, 1, 14, MAT.dungeonFloor);
+      const water = new THREE.Mesh(new THREE.PlaneGeometry(8, 14), MAT.dungeonWater);
+      water.rotation.x = -Math.PI / 2;
+      water.position.copy(b.w(-14, -0.4, 5));
+      this.root.add(water);
+      G.collision.water.push({ min: b.w(-18, -7, -2), max: b.w(-10, 0, 12), level: b.o.y - 0.4, cold: true, active: true });
+      chestAt = [-19, 0, 5];
+    } else {
+      b.box(-14, -1, 5, 12, 1, 14, MAT.dungeonFloor);
+    }
+    if (key === 'ember') {
+      this._bramble(d, 'side', -8, 0, 6, 4, 5, 'z');
+      // The chest is sealed in ice: melt it with fire
+      d.sideNeeds = this._iceBlock(d, -17, 5, 3.2);
+    }
+    if (key === 'spring') { b.box(-17, -1, 5, 5, 8, 5, MAT.dungeon); chestAt = [-17, 7, 5]; }
+    if (key === 'bloom') { b.box(-17, -1, 5, 5, 8, 5, MAT.mossWall, { tags: ['mossy'] }); chestAt = [-17, 7, 5]; }
+    const hints = { ember: 'Frozen treasure...', frost: 'Across the cold channel', spring: 'Treasure up high', bloom: 'Moss climbs to treasure' };
+    const hint = new THREE.Mesh(new THREE.PlaneGeometry(4.5, 0.9), new THREE.MeshBasicMaterial({ map: textTexture(hints[key], COLORS[d.trial.color].light), transparent: true }));
+    hint.position.copy(b.w(-19.9, 5, 5));
+    hint.rotation.y = Math.PI / 2;
+    this.root.add(hint);
+    this._trialChest(d, ...chestAt);
+  }
+
+  _iceBlock(d, x, z, size = 1.6) {
+    const b = d.builder;
+    const { mesh, col } = b.box(x, 0, z, size, 3, size, MAT.ice, { dynamic: true, tags: ['smooth'] });
+    const flag = `ice_${d.trial.key}_${x}_${z}`;
+    const pos = b.w(x, 1.5, z);
+    const r = this._reactive(d, {
+      pos,
+      radius: size * 0.6 + 0.8, hitbox: size * 0.6 + 0.4,
+      onPaint: (el) => { if (el === 'fire' && !G.flags[flag]) this._setFlag(flag); },
+      tick: () => {
+        if (G.flags[flag] && mesh.visible) {
+          mesh.visible = false;
+          col.active = false;
+          r.active = false;
+          G.particles.burst(pos, { count: 30, color: 0xcdefff, speed: 5, life: 0.8, size: 0.5 });
+          G.particles.burst(pos, { count: 10, color: 0xdddddd, speed: 2, up: 3, life: 1.2, size: 0.9, gravity: -1, alpha: 0.5 });
+          G.audio.play('ice');
+        }
+      },
+    });
+    return flag;
+  }
+
+  _trialChest(d, x, y, z) {
+    const b = d.builder;
+    const flag = `sprite_trial_${d.trial.key}`;
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.7, 0.8), new THREE.MeshLambertMaterial({ color: 0x5a4a8a, flatShading: true }));
+    body.position.y = 0.35;
+    const trim = new THREE.Mesh(new THREE.BoxGeometry(1.24, 0.12, 0.84), new THREE.MeshLambertMaterial({ color: COLORS[d.trial.color].hex, emissive: COLORS[d.trial.color].hex, emissiveIntensity: 0.4 }));
+    trim.position.y = 0.55;
+    const lid = new THREE.Group();
+    lid.position.set(0, 0.7, -0.4);
+    const lidM = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.2, 8, 1, false, 0, Math.PI), body.material);
+    lidM.rotation.z = Math.PI / 2;
+    lidM.position.z = 0.4;
+    lid.add(lidM);
+    g.add(body, trim, lid);
+    g.position.copy(b.w(x, y, z));
+    g.rotation.y = Math.PI / 2;
+    this.root.add(g);
+    G.collision.addBox(g.position.x, g.position.y + 0.35, g.position.z, 1.1, 0.7, 1.1);
+    const pos = g.position.clone();
+    this._reactive(d, { pos, radius: 0.1, onPaint: () => {}, tick: (dt) => { lid.rotation.x += ((G.flags[flag] ? -1.9 : 0) - lid.rotation.x) * Math.min(1, dt * 4); } });
+    this.interactables.push({
+      pos: pos.clone().setY(pos.y + 0.6), radius: 2.3, prompt: 'Open the trial chest',
+      enabled: () => !G.flags[flag] && (!d.sideNeeds || G.flags[d.sideNeeds]),
+      action: () => {
+        if (G.flags[flag]) return;
+        this._setFlag(flag);
+        if (G.sprites) G.sprites._pop(pos.clone().setY(pos.y + 1.2));
+        G.audio.play('sprite');
+        G.hud.toast(`A Paint Sprite was hiding in the chest! (${Object.keys(G.flags).filter((f) => f.startsWith('sprite_') && G.flags[f]).length}/${G.sprites ? G.sprites.total : 46})`, '#fff09a', 3);
+      },
+    });
   }
 
   _door(d, x, y, z, w, h, flagFn, axis = 'x') {

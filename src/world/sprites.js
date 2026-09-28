@@ -86,7 +86,7 @@ export class Sprites {
       n++;
     }
     for (const s of this.list) this._build(s);
-    this.total = this.list.length;
+    this.total = this.list.length + 4; // plus one hidden in each trial's side chamber
   }
 
   _build(s) {
