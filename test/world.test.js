@@ -130,3 +130,14 @@ test('peaks are cold, the volcano top is hot, the village is mild', async () => 
   assert.equal(protectedFrom(-1, { power: 0, ink: 30 }), false);
   assert.equal(protectedFrom(1, { power: 0, ink: 30 }), true);
 });
+
+test('memory spots sit on dry land with a view', async () => {
+  const { MEMORIES } = await import('../src/world/memories.js');
+  assert.equal(MEMORIES.length, 8);
+  for (const m of MEMORIES) {
+    let [x, z] = m.at;
+    for (let k = 0; k < 30 && terrain.heightAt(x, z) < 1.5; k++) { x *= 0.95; z *= 0.95; }
+    assert.ok(terrain.heightAt(x, z) >= 1.5, m.title);
+    assert.ok(Math.hypot(m.look[0] - x, m.look[2] - z) > 60, `${m.title} looks at something distant`);
+  }
+});

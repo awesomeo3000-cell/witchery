@@ -97,8 +97,14 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 
 ## Wave thirteen
 
-53. **Rainmane.** A Lynel-style painted centaur prowls the open plain south of Palette Hollow. Its mane cycles through the four colours and only the colour that undoes it bites deep. It sweeps its glaive, charges, fires paint volleys and leaps onto you.
-54. **Cold and heat.** Snowy peaks chill you and the volcano's upper slopes scorch you, slowly costing hearts. Spicy (Bold) meals keep you warm; Inky meals keep you cool. A frost or heat edge on the screen warns you, and easels and trial doorways are safe shelters.
+53. ✅ **Rainmane.** A Lynel-style painted centaur prowls the open plain south of Palette Hollow. Its mane cycles through the four colours and only the colour that undoes it bites deep. It sweeps its glaive, charges, fires paint volleys and leaps onto you.
+54. ✅ **Cold and heat.** Snowy peaks chill you and the volcano's upper slopes scorch you, slowly costing hearts. Spicy (Bold) meals keep you warm; Inky meals keep you cool. A frost or heat edge on the screen warns you, and easels and trial doorways are safe shelters.
 55. **Regression and docs.**
+
+## Wave fourteen
+
+56. ✅ **Painted Memories.** The journal's sketchbook holds eight sketches of places around the island, drawn in-engine from the real spots. Stand where a sketch was drawn to recover the memory: a short scene from the Painters' past, kept in the journal.
+57. **Audio polish.** A whistle melody, hoofbeats that follow the gait, splashes and chimes for fishing and critters, and a soft hum inside the shrines.
+58. **Regression and docs.**
 
 The work continues through this list until the budget is used up.
