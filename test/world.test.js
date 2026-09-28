@@ -58,3 +58,18 @@ test('raycast hits a cylinder in front of the ray', () => {
 test('dungeons ignore the overworld terrain', () => {
   assert.equal(col.terrainHeight(0, DUNGEON_Y + 5, 0), -Infinity);
 });
+
+test('puzzle sites are deterministic, dry, flat and spread out', async () => {
+  const { puzzleSites } = await import('../src/world/puzzles.js');
+  const a = puzzleSites(terrain, 6, 4242);
+  const b = puzzleSites(terrain, 4, 777, a);
+  assert.equal(a.length, 6);
+  assert.equal(b.length, 4);
+  assert.deepEqual(puzzleSites(terrain, 6, 4242), a);
+  const all = [...a, ...b];
+  for (const s of all) {
+    assert.ok(s.y > 3, 'above water');
+    assert.ok(Math.hypot(s.x - VILLAGE.x, s.z - VILLAGE.z) > VILLAGE.r + 20, 'outside the village');
+    for (const o of all) if (o !== s) assert.ok(Math.hypot(o.x - s.x, o.z - s.z) >= 110, 'spread out');
+  }
+});
