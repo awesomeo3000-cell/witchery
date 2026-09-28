@@ -142,4 +142,6 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 
 74. ✅ **Ruin Sentries and parrying.** Guardian-like turrets at the outer ruins lock a beam on you, then fire a bolt; a well-timed swing facing it reflects bolts (and camp arrows) back for 40 damage. Co-op aware: the host checks each player's swing.
 
+75. ✅ **The Colour Festival.** After Mira's quest, nightly fireworks and a ring of coloured lanterns over the village square; quick chat on touch screens.
+
 The work continues through this list until the budget is used up.

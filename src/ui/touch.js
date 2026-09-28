@@ -16,6 +16,7 @@ const BUTTONS = [
   { mini: true, id: 'emote', label: '☺', title: 'Emote', key: 'KeyB' },
   { mini: true, id: 'eat', label: '🍎', title: 'Eat', key: 'KeyG' },
   { mini: true, id: 'whistle', label: '♪', title: 'Whistle', key: 'KeyX' },
+  { mini: true, id: 'qchat', label: '💬', title: 'Quick chat', key: 'KeyT' },
   { mini: true, id: 'map', label: '🗺', title: 'Map', key: 'KeyM' },
   { mini: true, id: 'menu', label: '☰', title: 'Menu', menu: true },
 ];

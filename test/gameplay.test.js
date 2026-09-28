@@ -347,3 +347,10 @@ test('Prism Vault crystals follow the mural order, and its glider is a world rew
   assert.equal(unlocked(prism, 99, {}), false);
   assert.equal(unlocked(prism, 0, { vault_done: true }), true);
 });
+
+test('the Colour Festival runs at night once Mira has her dyes', async () => {
+  const { festivalOn } = await import('../src/world/festival.js');
+  assert.equal(festivalOn({}, 1), false);
+  assert.equal(festivalOn({ q_mira_done: true }, 0.2), false);
+  assert.equal(festivalOn({ q_mira_done: true }, 0.9), true);
+});
