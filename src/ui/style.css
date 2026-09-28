@@ -301,3 +301,6 @@ body.reduce-motion .potion.shake { animation: none; }
 #fl-wind { display: inline-block; font-size: 20px; color: #bfe6ff; transition: transform 0.3s; }
 #minimap { position: absolute; right: 26px; bottom: 138px; width: 170px; height: 170px; border-radius: 50%; box-shadow: 0 4px 14px rgba(0,0,0,0.45); zoom: var(--hud-scale, 1); }
 body.touch #minimap { display: none; }
+.aware { position: absolute; transform: translate(-50%, -100%); font: 900 36px var(--serif); color: #ffe070; text-shadow: 0 0 4px #000, 0 2px 6px rgba(0,0,0,0.7); pointer-events: none; }
+.aware.alarm { color: #ff5a4a; animation: pop 0.25s ease-out; }
+@keyframes pop { from { transform: translate(-50%, -100%) scale(1.8); } to { transform: translate(-50%, -100%) scale(1); } }

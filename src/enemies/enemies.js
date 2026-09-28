@@ -751,13 +751,13 @@ export class EnemyManager {
     }
   }
 
-  _nearestPlayer(e, range) {
+  _nearestPlayer(e, range, alert = false) {
     let best = null, bd = range;
     for (const p of this.players()) {
       if (!p.alive) continue;
       if (inDungeonY(p.pos.y) !== inDungeonY(e.pos.y)) continue;
       // Sneaking players are noticed much later, unless the enemy is already after them
-      const d = p.pos.distanceTo(e.pos) / (p.sneak && e.target?.id !== p.id ? 0.4 : 1);
+      const d = p.pos.distanceTo(e.pos) / (p.sneak && !alert && e.target?.id !== p.id ? 0.4 : 1);
       if (d < bd) { bd = d; best = p; }
     }
     return best;
@@ -792,7 +792,13 @@ export class EnemyManager {
     }
 
     if (e.introT > 0) { e.introT -= dt; this._physics(e, dt); return; }
-    const target = this._nearestPlayer(e, e.def.aggro);
+    // Alerted enemies look twice as far and can't be fooled by sneaking
+    if (e.alertT > 0) e.alertT -= dt;
+    const target = this._nearestPlayer(e, e.def.aggro * (e.alertT > 0 ? 2 : 1), e.alertT > 0);
+    // Spotting someone raises the alarm for the rest of the camp
+    if (target && !e.target && e.camp !== undefined && !e.boss) {
+      for (const m of this.camps[e.camp]?.members || []) if (m !== e && m.alive) m.alertT = 8;
+    }
     e.target = target;
     const ai = AI[e.type];
     const disabled = s.frozen > 0 || s.stun > 0;

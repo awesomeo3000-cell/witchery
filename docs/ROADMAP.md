@@ -47,4 +47,10 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 27. ✅ **Minimap.** An optional corner minimap (fogged like the map) with markers, rotating with the camera.
 28. ✅ **Startup time.** Profile world generation on load and cut the slowest steps.
 
+## Wave five
+
+29. ✅ **Enemy awareness.** A "?" pops up when an enemy grows suspicious and a "!" when it spots you, and camp members alert each other.
+30. **Co-op revives.** A fainted friend stays down briefly where they fell. Hold Interact beside them to pick them back up before they respawn at a checkpoint.
+31. **Painter's Honours.** Achievements unlocked by play (first flight, first sneak strike, race records, full map...), with toasts and a list in the Adventure Log.
+
 The work continues through this list until the budget is used up.

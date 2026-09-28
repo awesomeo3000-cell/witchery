@@ -143,6 +143,35 @@ export class HUD {
     return m;
   }
 
+  // BotW-style awareness: "!" when an enemy switches to attacking, "?" when a sneaking player is
+  // inside its normal sight range but hasn't been noticed yet
+  _awareness(p, dt) {
+    const CALM = ['idle', 'sleep', 'dormant'];
+    const seen = new Set();
+    this.awareLabels ||= new Map();
+    for (const e of G.enemies.list) {
+      if (!e.alive || e.boss || e.def.fly) continue;
+      const d = e.pos.distanceTo(p.pos);
+      const calm = CALM.includes(e.state);
+      if (e._wasCalm && !calm && d < 50) { e.alarmT = 1.4; if (d < 30) G.audio.play('glint', 0.5); }
+      e._wasCalm = calm;
+      e.alarmT = Math.max(0, (e.alarmT || 0) - dt);
+      const sus = calm && p.sneaking && d < e.def.aggro && e.state !== 'sleep' && e.state !== 'dormant';
+      const icon = e.alarmT > 0 ? '!' : sus ? '?' : null;
+      if (!icon) continue;
+      const s = this.project(e.pos.clone().setY(e.pos.y + e.height + (G.time - e.lastHit < 5 || e === p.lock ? 1.5 : 0.7)));
+      if (!s) continue;
+      seen.add(e.id);
+      let l = this.awareLabels.get(e.id);
+      if (!l) { l = document.createElement('div'); l.className = 'aware'; this.labels.appendChild(l); this.awareLabels.set(e.id, l); }
+      l.textContent = icon;
+      l.classList.toggle('alarm', icon === '!');
+      l.style.left = `${s.x}px`;
+      l.style.top = `${s.y}px`;
+    }
+    for (const [id, l] of this.awareLabels) if (!seen.has(id)) { l.remove(); this.awareLabels.delete(id); }
+  }
+
   // Gallery of Echoes status line (shares the race HUD slot)
   setRush(text) {
     const el = $('race');
@@ -463,6 +492,7 @@ export class HUD {
       l.querySelector('.lock').textContent = e === p.lock ? '▼' : '';
     }
     for (const [id, l] of this.enemyLabels) if (!seen.has(id)) { l.remove(); this.enemyLabels.delete(id); }
+    this._awareness(p, dt);
     // Lock indicator on a boss
     if (p.lock && p.lock.boss) {
       const s = this.project(p.lock.pos.clone().setY(p.lock.pos.y + p.lock.height + 1));
