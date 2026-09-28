@@ -41,4 +41,10 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 24. ✅ **Weather that matters.** Rain makes rock slippery (climbing costs more and you slip now and then), wind helps or fights your glide and flight.
 25. ✅ **Save management.** Continue / New Game on the title menu for solo play, with a confirmation before wiping local progress.
 
+## Wave four
+
+26. ✅ **Shooting stars.** On clear nights a star streaks down somewhere nearby and leaves a glowing Star Fragment worth a pile of Pigment.
+27. **Minimap.** An optional corner minimap (fogged like the map) with markers, rotating with the camera.
+28. **Startup time.** Profile world generation on load and cut the slowest steps.
+
 The work continues through this list until the budget is used up.

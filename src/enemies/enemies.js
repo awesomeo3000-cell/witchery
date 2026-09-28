@@ -7,6 +7,7 @@ import {
   buildShellback, buildGalewing, buildHueless, buildArcher, buildBlotGiant, buildSentinel, VARIANT_TINT,
 } from './models.js';
 import { fmtTime } from '../world/races.js';
+import { STAR_PIGMENT } from '../world/stars.js';
 import { smoothRockGeometry } from '../world/props.js';
 import { CampDecor } from './camps.js';
 import { VILLAGE, TRIALS, CITADEL } from '../world/layout.js';
@@ -546,6 +547,7 @@ export class EnemyManager {
         if (e && G.cine && G.player && e.pos.distanceTo(G.player.pos) < 70) G.cine.bossIntro(e);
         break;
       }
+      case 'star': G.stars?.streak(p); break;
       case 'rushClear': {
         G.audio.play('shard');
         const b = G.flags.rush_best;
@@ -564,7 +566,11 @@ export class EnemyManager {
     let mesh;
     if (kind === 'heart') mesh = new THREE.Mesh(this.heartGeo, new THREE.MeshLambertMaterial({ color: 0xff3a4a, emissive: 0x801020 }));
     else if (kind === 'buff') mesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.5), new THREE.MeshLambertMaterial({ color: 0xffd84a, emissive: 0xa07000 }));
-    else if (kind === 'pigment') mesh = new THREE.Mesh(this.pigmentGeo ||= new THREE.CylinderGeometry(0.28, 0.28, 0.08, 16).rotateX(Math.PI / 2), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffc84a).multiplyScalar(1.6) }));
+    else if (kind === 'star') {
+      mesh = new THREE.Group();
+      mesh.add(new THREE.Mesh(new THREE.OctahedronGeometry(0.45), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xfff0a0).multiplyScalar(2.2) })));
+      mesh.add(new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 70, 8, 1, true).translate(0, 35, 0), new THREE.MeshBasicMaterial({ color: 0xfff0a0, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false, fog: false })));
+    } else if (kind === 'pigment') mesh = new THREE.Mesh(this.pigmentGeo ||= new THREE.CylinderGeometry(0.28, 0.28, 0.08, 16).rotateX(Math.PI / 2), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffc84a).multiplyScalar(1.6) }));
     else {
       const c = Math.floor(Math.random() * 4);
       mesh = new THREE.Mesh(new THREE.IcosahedronGeometry(0.3, 1), new THREE.MeshBasicMaterial({ color: COLORS[c].hex }));
@@ -585,6 +591,10 @@ export class EnemyManager {
         if (player.hp >= player.maxHp) continue;
         player.heal(4);
         G.hud.toast('+2 Hearts', '#ff9aa8', 1);
+      } else if (k.kind === 'star') {
+        player.pigment += STAR_PIGMENT;
+        G.audio.play('sprite');
+        G.hud.banner('Star Fragment', `+${STAR_PIGMENT} Pigment`, '#fff0a0');
       } else if (k.kind === 'pigment') {
         player.pigment += 5;
         G.hud.toast(`+5 Pigment (${player.pigment})`, '#ffc84a', 1.2);
