@@ -27,6 +27,7 @@
     <div id="inks"><div id="ink-name">EMBER</div><div id="ink-row"></div></div>
     <svg id="stamina" viewBox="0 0 60 60"><circle cx="30" cy="30" r="22" class="bg"/><circle cx="30" cy="30" r="22" class="fg" id="stamina-fg"/></svg>
     <div id="race" class="hidden"></div>
+    <canvas id="minimap" width="170" height="170" class="hidden"></canvas>
     <div id="flight" class="hidden"><span class="ic">⛰</span><b id="fl-alt">0</b><small>m</small><span class="dot">◆</span><span class="ic">≋</span><b id="fl-spd">0</b><small>m/s</small><span class="dot">◆</span><span id="fl-wind" title="Wind">➤</span></div>
     <div id="crosshair" class="hidden"><div></div></div>
     <div id="prompt" class="hidden"><kbd>F</kbd><span></span></div>
@@ -91,6 +92,7 @@
         <label class="row"><input type="checkbox" id="set-flash" /> Reduce screen flashes</label>
         <label class="row"><input type="checkbox" id="set-togglesprint" /> Toggle sprint (tap instead of hold)</label>
         <label class="row"><input type="checkbox" id="set-fox" /> Paint Fox companion</label>
+        <label class="row"><input type="checkbox" id="set-minimap" /> Minimap</label>
       </details>
       <details>
         <summary>Key bindings</summary>

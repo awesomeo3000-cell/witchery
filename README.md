@@ -112,7 +112,7 @@ Bring every 4 sprites to Pip in Palette Hollow for a Heart Container or Stamina 
   - **Brazier Rings:** light one brazier with Ember, then the rest before the flames die.
   
   Each one pays Pigment to everyone nearby. Found and solved puzzles show on the map.
-- **Map exploration.** The map starts as blank parchment and fills in wherever you travel. Flying high reveals more, and activating an easel uncovers the land around it.
+- **Map exploration.** The map starts as blank parchment and fills in wherever you travel. Flying high reveals more, and activating an easel uncovers the land around it. A rotating minimap in the corner shows the same fog, plus trials, friends, quest targets, pings and race gates. You can turn it off in Accessibility.
 - **Living water.** The sea has rolling swells that grow in storms, sky reflections, caustics in the shallows, and ripples when you splash, swim or paint it.
 - **Boss intros**, a colour-draining final fight, and a credits roll with your party's names.
 
