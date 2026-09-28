@@ -275,3 +275,5 @@ body.reduce-motion .potion.shake { animation: none; }
 #binds .bind { display: flex; align-items: center; justify-content: space-between; font: 600 13px var(--sans); }
 #binds .bind button { width: 110px; margin: 0; padding: 4px 8px; font-size: 13px; }
 #binds-reset { margin-top: 6px; }
+.mm.mq .dot { border-radius: 3px; transform: rotate(45deg); width: 11px; height: 11px; }
+.mm.mboss .dot { border-radius: 2px; border-color: #ffb0b0; }

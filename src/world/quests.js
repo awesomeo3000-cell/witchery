@@ -69,6 +69,7 @@ export class Quests {
     scene.add(this.root);
     this.npcs = [];
     this.statues = [];
+    this.seenField = new Set();
     this._villagers();
     this._kite();
     this._statues();
@@ -141,7 +142,7 @@ export class Quests {
       q.turnIn?.();
       setFlag(`q_${q.id}_done`);
       setFlag(q.reward);
-      G.audio.play('solve');
+      G.audio.play('quest');
       G.hud.banner('Quest Complete', `${q.title} · ${q.rewardText}`, '#ffd84a');
       G.hud.dialog(q.giver, q.thanks);
       const n = this.npcs.find((v) => v.q === q);
@@ -240,6 +241,23 @@ export class Quests {
     if (k === 'q_kite_got' && G.player && this.kite.pos.distanceTo(G.player.pos) > 20) G.hud.toast("A friend found Tilly's kite!", '#9ee0ff', 3);
   }
 
+  // Villagers with news, active quest targets and field bosses already spotted
+  mapMarkers(add) {
+    const states = this.npcs.map((n) => this.state(n.q));
+    const ready = states.filter((s) => s === 'ready').length, fresh = states.filter((s) => s === 'new').length;
+    if (ready || fresh) {
+      const n = this.npcs[0];
+      add(n.pos.x - 12, n.pos.z + 14, 'mq', '#ffd84a', ready ? `? ${ready} quest${ready > 1 ? 's' : ''} to turn in` : `! ${fresh} villager${fresh > 1 ? 's' : ''} need help`);
+    }
+    if (flag('q_tilly') && !flag('q_kite_got')) add(this.kite.pos.x, this.kite.pos.z, 'mq', '#4aa0e0', "Tilly's kite");
+    for (const s of this.statues) if (flag('q_ochre') && !flag(`q_statue_${s.i}`)) add(s.x, s.z, 'mq', COLORS[s.i].css, 'Grey statue');
+    for (const c of G.enemies.camps) {
+      if (!c.field || !this.seenField.has(c.id)) continue;
+      const alive = c.members.some((m) => m.alive);
+      add(c.x, c.z, 'mboss', alive ? '#8a2a3a' : '#555', `${c.types[0] === 'blotgiant' ? 'Blot Giant' : 'Stone Sentinel'}${alive ? '' : ' (resting)'}`);
+    }
+  }
+
   // Quest log section for the satchel
   renderLog(el) {
     const rows = QUESTS.filter((q) => this.state(q) !== 'new');
@@ -278,6 +296,8 @@ export class Quests {
         }
       }
     }
+    // Remember field bosses once spotted, for the map
+    for (const c of G.enemies.camps) if (c.field && !this.seenField.has(c.id) && Math.hypot(c.x - p.pos.x, c.z - p.pos.z) < 90) this.seenField.add(c.id);
     // Kite flutters until taken
     const k = this.kite;
     k.g.visible = !flag('q_kite_got');

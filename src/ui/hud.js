@@ -240,14 +240,30 @@ export class HUD {
     this.bannerTimer = 4;
   }
 
+  // Dialogue types out with a little voice blip pitched per speaker
   dialog(name, text) {
     const d = $('dialog');
     d.classList.remove('hidden');
     d.querySelector('.name').textContent = name;
-    d.querySelector('.text').textContent = text;
-    this.dialogTimer = 7;
+    const el = d.querySelector('.text');
+    el.textContent = '';
+    this.typing = { el, text, i: 0, said: 0, voice: this._voice(name) };
+    this.dialogTimer = 6 + text.length * 0.03;
     this.choiceCb = null;
     d.querySelector('.hint').textContent = this._continueHint();
+  }
+
+  _voice(name) {
+    let h = 0;
+    for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+    const base = /Tilly/.test(name) ? 520 : 170 + (h % 9) * 28;
+    return base;
+  }
+
+  // F while text is still typing reveals it all; otherwise closes the box
+  skipDialog() {
+    if (this.typing) { this.typing.el.textContent = this.typing.text; this.typing = null; return; }
+    this.dialogTimer = 0;
   }
 
   // Multiple-choice dialog; answered with number keys / D-pad (see Game loop)
@@ -267,6 +283,8 @@ export class HUD {
     });
     d.querySelector('.text').appendChild(list);
     d.querySelector('.hint').textContent = 'Choose an option';
+    this.typing = null;
+    G.audio.voice(this._voice(name));
     this.choiceCb = cb;
     this.choiceN = options.length;
     this.dialogTimer = 1e9;
@@ -468,8 +486,18 @@ export class HUD {
       bb.querySelector('.mech').innerHTML = this._bossMech(boss);
     } else bb.classList.add('hidden');
 
+    const ty = this.typing;
+    if (ty) {
+      ty.i += dt * 48;
+      const n = Math.min(ty.text.length, Math.floor(ty.i));
+      if (n !== ty.el.textContent.length) {
+        ty.el.textContent = ty.text.slice(0, n);
+        if (n - ty.said >= 3 && /\w/.test(ty.text[n - 1])) { ty.said = n; G.audio.voice(ty.voice); }
+      }
+      if (n >= ty.text.length) this.typing = null;
+    }
     this.dialogTimer -= dt;
-    if (this.dialogTimer <= 0) $('dialog').classList.add('hidden');
+    if (this.dialogTimer <= 0) { $('dialog').classList.add('hidden'); this.typing = null; }
     this.bannerTimer -= dt;
     if (this.bannerTimer <= 0) $('banner').classList.add('hidden');
 
@@ -559,6 +587,7 @@ export class HUD {
       add(w.x, w.z, `wp${on ? '' : ' off'}`, '', w.name, on ? () => { G.game.fastTravel(w); } : null);
     }
     if (G.peers) for (const peer of G.peers.values()) add(peer.pos.x, peer.pos.z, 'peer', `#${peer.look.hood.toString(16).padStart(6, '0')}`, peer.name);
+    if (G.quests) G.quests.mapMarkers(add);
     const p = G.player;
     const me = add(p.pos.x, p.pos.z, 'me', '', 'You');
     me.querySelector('.dot').style.transform = `rotate(${-p.camYaw}rad)`;

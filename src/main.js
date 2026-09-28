@@ -619,7 +619,7 @@ class Game {
         this.fpsN = 0; this.fpsT = 0;
       }
     }
-    if (G.input.hit('KeyF') && G.hud.dialogTimer > 0 && !p.interactTarget) G.hud.dialogTimer = 0;
+    if (G.input.hit('KeyF') && G.hud.dialogTimer > 0 && !p.interactTarget) G.hud.skipDialog();
 
     this.saveTimer -= dt;
     if (this.saveTimer <= 0) { this.saveTimer = 5; writeSave(); }

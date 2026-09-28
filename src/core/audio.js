@@ -79,6 +79,14 @@ export class Audio {
     node.gain.exponentialRampToValueAtTime(0.0001, t + a + dec);
   }
 
+  // Wordless speech blip for dialogue (Animal Crossing style babble)
+  voice(pitch) {
+    if (!this.ctx) return;
+    const f = pitch * (0.85 + Math.random() * 0.35);
+    this.tone(f, 0.06, 'triangle', 0.07, 0.8 + Math.random() * 0.5);
+    this.tone(f * 2.01, 0.04, 'sine', 0.025, 1);
+  }
+
   tone(freq, dur = 0.2, type = 'sine', vol = 0.3, slide = 0, delay = 0, dest = null) {
     if (!this.ctx) return;
     const t = this.ctx.currentTime + delay;
@@ -146,6 +154,7 @@ export class Audio {
       case 'thunder': this.noise(2.5, 90, 0.5, 0.55 * vol, 'lowpass', 40); this.noise(0.5, 400, 0.5, 0.25 * vol, 'lowpass', 80); break;
       case 'flurry': this.tone(1200, 0.6, 'sine', 0.15 * vol, 0.4); this.noise(0.6, 3000, 0.5, 0.2 * vol, 'highpass', 800); break;
       case 'chat': this.tone(880, 0.08, 'sine', 0.1 * vol); break;
+      case 'quest': [0, 4, 7, 12].forEach((n, i) => this.tone(523 * Math.pow(2, n / 12), 0.3, 'triangle', 0.14 * vol, 1, i * 0.1)); [7, 12, 16].forEach((n) => this.tone(523 * Math.pow(2, n / 12), 0.9, 'sine', 0.1 * vol, 1, 0.45)); break;
       case 'waypoint': [0, 5, 9, 12].forEach((n, i) => this.tone(440 * Math.pow(2, n / 12), 0.5, 'sine', 0.12 * vol, 1, i * 0.1)); break;
       default: break;
     }
