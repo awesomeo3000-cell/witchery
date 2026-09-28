@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Witchery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/ui/style.css" />
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <div id="hud" class="hidden">
+    <div id="hearts"></div>
+    <div id="compass"><div id="compass-strip"></div><div id="compass-caret"></div></div>
+    <div id="prisms"><div id="prism-icons"></div><div class="label">PRISM TRIALS <span id="prism-count">0 / 4</span></div></div>
+    <div id="net-status"></div>
+    <div id="controls">
+      <div class="title">CONTROLS <span>H to hide</span></div>
+      <div class="grid">
+        <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move</div><div><kbd>Mouse</kbd> Look</div>
+        <div><kbd>Space</kbd> Jump · Glide</div><div><kbd>Shift</kbd> Sprint · Boost</div>
+        <div><kbd>LMB</kbd> Strike · hold to spin</div><div><kbd>RMB</kbd>+<kbd>LMB</kbd> Aim · tap flick · hold paint</div>
+        <div><kbd>Q</kbd>/<kbd>MMB</kbd> Lock on</div><div><kbd>Space</kbd> Dodge (locked on)</div>
+        <div><kbd>1-4</kbd>/<kbd>E</kbd> Colour</div><div><kbd>Tab</kbd> Colour wheel</div>
+        <div><kbd>R</kbd> Ride the brush</div><div><kbd>C</kbd> Descend (riding)</div>
+        <div><kbd>F</kbd> Interact</div><div><kbd>M</kbd> Map · <kbd>Enter</kbd> Chat</div>
+      </div>
+    </div>
+    <div id="inks"><div id="ink-name">EMBER</div><div id="ink-row"></div></div>
+    <svg id="stamina" viewBox="0 0 60 60"><circle cx="30" cy="30" r="22" class="bg"/><circle cx="30" cy="30" r="22" class="fg" id="stamina-fg"/></svg>
+    <div id="crosshair" class="hidden"><div></div></div>
+    <div id="prompt" class="hidden"><kbd>F</kbd><span></span></div>
+    <div id="toasts"></div>
+    <div id="banner" class="hidden"><div class="t"></div><div class="s"></div></div>
+    <div id="dialog" class="hidden"><div class="name"></div><div class="text"></div><div class="hint">F to continue</div></div>
+    <div id="bossbar" class="hidden"><div class="name"></div><div class="bar"><div class="fill"></div><div class="armor"></div></div><div class="mech"></div></div>
+    <div id="labels"></div>
+    <div id="wheel" class="hidden"></div>
+    <div id="chat"><div id="chat-log"></div><input id="chat-input" maxlength="140" placeholder="Say something... (Enter to send, Esc to cancel)" class="hidden" /></div>
+    <div id="flash"></div>
+  </div>
+
+  <div id="map" class="hidden">
+    <div class="map-inner">
+      <canvas id="map-canvas" width="640" height="640"></canvas>
+      <div id="map-markers"></div>
+      <div class="map-help">Click an activated easel to fast-travel · M to close</div>
+    </div>
+  </div>
+
+  <div id="menu">
+    <div class="menu-card">
+      <h1>Witchery</h1>
+      <div class="sub">a painted open-world adventure</div>
+      <label>Your name <input id="in-name" maxlength="16" /></label>
+      <label>Room code <input id="in-room" maxlength="24" placeholder="share with friends" /></label>
+      <div class="looks-label">Hood colour</div>
+      <div id="looks"></div>
+      <button id="btn-play">Play</button>
+      <div id="menu-status"></div>
+      <div class="menu-tips">Friends join by entering the same room code on this server. The four coloured beams mark the Prism Trials.</div>
+    </div>
+  </div>
+
+  <div id="pause" class="hidden">
+    <div class="menu-card">
+      <h2>Paused</h2>
+      <div id="pause-room"></div>
+      <label>Mouse sensitivity <input type="range" id="set-sens" min="0.3" max="2.5" step="0.1" /></label>
+      <label class="row"><input type="checkbox" id="set-invert" /> Invert Y</label>
+      <label>Grass density <input type="range" id="set-grass" min="0" max="2" step="1" /></label>
+      <label class="row"><input type="checkbox" id="set-shadows" /> Shadows</label>
+      <label>Volume <input type="range" id="set-volume" min="0" max="1" step="0.05" /></label>
+      <label class="row"><input type="checkbox" id="set-music" /> Music</label>
+      <button id="btn-resume">Resume</button>
+      <button id="btn-copy" class="secondary">Copy invite link</button>
+    </div>
+  </div>
+
+  <div id="victory" class="hidden">
+    <div class="v-inner">
+      <h1>The World Is Painted Anew</h1>
+      <p>The Hueless King is undone, and colour pours back into the sky.</p>
+      <button id="btn-victory">Keep exploring</button>
+    </div>
+  </div>
+
+  <div id="loading"><div class="spin"></div><div>Painting the world…</div></div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
