@@ -292,3 +292,14 @@ test('save backups are validated before loading', async () => {
   assert.equal(validSave({ v: 1, pos: [1, 'x', 3] }), false);
   assert.equal(validSave(null), false);
 });
+
+test('compendium entries are unique and survive a save round trip', async () => {
+  const { ENTRIES, Compendium } = await import('../src/ui/compendium.js');
+  assert.equal(new Set(ENTRIES.map((e) => e.id)).size, ENTRIES.length);
+  const c = new Compendium();
+  c.got.set('bounder', 'data:x');
+  c.got.set('fox', '');
+  const d = new Compendium();
+  d.load({ ...c.serialize(), bogus: 'x' });
+  assert.deepEqual([...d.got.keys()].sort(), ['bounder', 'fox']);
+});

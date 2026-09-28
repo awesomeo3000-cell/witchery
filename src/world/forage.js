@@ -228,6 +228,9 @@ export class Forage {
     $('inv-jh').classList.toggle('hidden', this.cooking);
     $('inv-jour').classList.toggle('hidden', this.cooking);
     if (!this.cooking && G.tablets) { G.tablets.render($('inv-jour')); $('inv-jc').textContent = `(${G.tablets.read.size}/12 tablets)`; }
+    $('inv-ch').classList.toggle('hidden', this.cooking);
+    $('inv-cmp').classList.toggle('hidden', this.cooking);
+    if (!this.cooking && G.compendium) { G.compendium.render($('inv-cmp')); $('inv-cc').textContent = `(${G.compendium.got.size} registered · take photos with P)`; }
     $('inv-mh').classList.toggle('hidden', this.cooking);
     $('inv-mem').classList.toggle('hidden', this.cooking);
     if (!this.cooking && G.memories) { G.memories.render($('inv-mem')); $('inv-mc').textContent = `(${G.memories.got.size}/${G.memories.spots.length} recovered)`; }

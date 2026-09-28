@@ -43,6 +43,7 @@ import { Steeds } from './world/steeds.js';
 import { Climate } from './world/climate.js';
 import { Memories } from './world/memories.js';
 import { Towers } from './world/towers.js';
+import { Compendium } from './ui/compendium.js';
 import { Merchant } from './world/merchant.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
@@ -249,6 +250,7 @@ class Game {
     G.climate = timed('climate', () => new Climate());
     G.memories = timed('memories', () => new Memories());
     G.towers = timed('towers', () => new Towers(G.scene));
+    G.compendium = timed('compendium', () => new Compendium());
     G.merchant = timed('merchant', () => new Merchant(G.scene));
     G.cine = timed('cine', () => new Cinematic());
     G.guide = timed('guide', () => new Guide());
@@ -346,6 +348,7 @@ class Game {
       if (save.tablets) G.tablets.load(save.tablets);
       if (save.steed) G.steeds.load(save.steed);
       if (save.memories) G.memories.load(save.memories);
+      if (save.compendium) G.compendium.load(save.compendium);
       if (!G.net.connected && typeof save.dayT === 'number') G.sky.setTime(save.dayT);
     }
     this.wardrobe.render(true);

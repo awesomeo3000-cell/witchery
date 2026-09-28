@@ -140,6 +140,7 @@ export class PhotoMode {
   afterRender(canvas) {
     if (!this.capture) return;
     this.capture = false;
+    G.compendium?.onPhoto(canvas);
     const out = this.frame ? this._framed(canvas) : canvas;
     out.toBlob((blob) => {
       if (!blob) return;

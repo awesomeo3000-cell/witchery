@@ -121,7 +121,8 @@ export class Towers {
   }
 
   mapMarkers(add) {
-    for (const t of this.list) add(t.x, t.z, 'mq', this.active(t.i) ? COLORS[t.color].css : '#9a9a9a', `${t.name}${this.active(t.i) ? '' : ' (dormant)'}`);
+    // Active towers are fast-travel points (you arrive at the foot)
+    for (const t of this.list) add(t.x, t.z, `mq${this.active(t.i) ? ' ft' : ''}`, this.active(t.i) ? COLORS[t.color].css : '#9a9a9a', `${t.name}${this.active(t.i) ? ' (travel)' : ' (dormant)'}`, this.active(t.i) ? () => G.game.fastTravel({ x: t.x + 8, z: t.z }) : null);
   }
 
   update(dt) {

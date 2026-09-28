@@ -114,4 +114,10 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 61. ✅ **Save backup.** Export your save to a file and import it again from the pause menu, plus a text size option.
 62. ✅ **Regression and performance.** Full browser and co-op regression; distant NPCs draw as one baked mesh, Brushbuck hooves merge into their legs, and static tower, shrine-arch and stable parts merge by material (spawn view 699 → 571 draw calls).
 
+## Wave sixteen
+
+63. ✅ **More fast travel.** Active Painter's Towers and any Paint Shrine you've entered are fast-travel points on the map.
+64. ✅ **Compendium.** Photograph creatures in photo mode to register them (21 entries), with snapshots cut from your photos, kept in your save and shown in the satchel.
+65. **Regression and docs.**
+
 The work continues through this list until the budget is used up.

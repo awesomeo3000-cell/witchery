@@ -26,6 +26,7 @@ export function adventureStats() {
     const b = f[`race_${c.id}`];
     stats.push({ label: `${c.name} record`, value: b ? `${fmtTime(b.t)} (${b.n})` : 'None yet', done: !!b });
   }
+  if (G.compendium) stats.push({ label: 'Compendium', value: `${G.compendium.got.size} / ${G.compendium.total}`, done: G.compendium.got.size >= G.compendium.total });
   if (G.memories) stats.push({ label: 'Painted Memories', value: `${G.memories.got.size} / ${G.memories.spots.length}`, done: G.memories.got.size >= G.memories.spots.length });
   if (G.tablets) stats.push({ label: 'Painted Tablets read', value: `${G.tablets.read.size} / 12`, done: G.tablets.read.size >= 12 });
   stats.push({ label: 'Target Gallery record', value: f.tg_best ? `${f.tg_best.s} pts (${f.tg_best.n})` : 'None yet', done: !!f.tg_best });

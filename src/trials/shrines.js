@@ -277,6 +277,7 @@ export class Shrines {
 
   // ---------------------------------------------------------------- enter / leave
   enter(s) {
+    if (!G.flags[`shrine_seen_${s.i}`]) G.trials._setFlag(`shrine_seen_${s.i}`);
     const p = G.player;
     p.state = 'air';
     p.pos.copy(s.spawn);
@@ -312,7 +313,11 @@ export class Shrines {
   }
 
   mapMarkers(add) {
-    for (const s of this.list) add(s.site.x, s.site.z, 'mq', this.cleared(s.i) ? '#b8a878' : COLORS[s.def.colors[0]].css, `${s.def.name}${this.cleared(s.i) ? ' (cleared)' : ''}`);
+    // Shrines you've been inside are fast-travel points
+    for (const s of this.list) {
+      const ft = !!G.flags[`shrine_seen_${s.i}`];
+      add(s.site.x, s.site.z, `mq${ft ? ' ft' : ''}`, this.cleared(s.i) ? '#b8a878' : COLORS[s.def.colors[0]].css, `${s.def.name}${this.cleared(s.i) ? ' (cleared)' : ''}`, ft ? () => G.game.fastTravel({ x: s.site.x + 7, z: s.site.z + 4 }) : null);
+    }
   }
 
   update(dt) {

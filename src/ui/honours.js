@@ -27,6 +27,7 @@ export const HONOURS = [
   { id: 'wyrm', name: 'Scale of the Wyrm', desc: 'Catch a Chroma Scale from the Chroma Wyrm', event: 'wyrm' },
   { id: 'targets', name: 'Sharpshooter', desc: 'Set a Target Gallery record', event: 'targets' },
   { id: 'memories', name: 'Keeper of Memories', desc: 'Recover all eight Painted Memories', event: 'memories' },
+  { id: 'compendium', name: 'Naturalist', desc: 'Register 10 creatures in the Compendium', event: 'compendium' },
   { id: 'lore', name: 'Loremaster', desc: 'Read all twelve Painted Tablets', event: 'lore' },
   { id: 'star', name: 'Star Catcher', desc: 'Pick up a Star Fragment', event: 'star' },
   { id: 'bat', name: 'Night Watch', desc: 'Pop an Inkbat', event: 'inkbat' },
