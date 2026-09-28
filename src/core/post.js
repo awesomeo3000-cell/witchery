@@ -157,6 +157,7 @@ export class PostFX {
     r.setRenderTarget(this.sceneRT);
     r.clear();
     r.render(scene, camera);
+    G.stats = { calls: r.info.render.calls, triangles: r.info.render.triangles };
     r.setRenderTarget(this.hazeRT);
     this.hazeQuad.render(r);
     this.bloom.render(r, null, this.hazeRT, 0, false);

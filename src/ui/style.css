@@ -194,3 +194,11 @@ button.secondary { background: rgba(255,255,255,0.15); color: #fff; box-shadow: 
 #credits h3 { font: 700 18px var(--serif); letter-spacing: 4px; opacity: 0.7; margin: 42px 0 8px; }
 #credits p { font: 600 20px var(--sans); margin: 4px 0; }
 @keyframes roll { to { transform: translateY(calc(-100% - 100vh)); } }
+
+#objective { position: absolute; top: 100px; right: 20px; text-align: right; max-width: 300px; }
+#objective .ot { font: 700 15px var(--serif); letter-spacing: 1px; }
+#objective .os { font: 600 12px var(--sans); opacity: 0.8; }
+#tip { position: absolute; left: 50%; bottom: 150px; transform: translateX(-50%); max-width: min(620px, 80vw); background: rgba(10,12,24,0.72); border-left: 4px solid var(--gold); padding: 10px 16px; border-radius: 8px; font: 600 15px/1.5 var(--sans); animation: toastIn 0.3s; }
+#tip .tl { font: 800 11px var(--sans); letter-spacing: 2px; color: var(--gold); margin-right: 6px; }
+#fps { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); font: 700 11px monospace; opacity: 0.75; }
+.menu-card select { display: block; width: 100%; margin-top: 4px; padding: 7px 10px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.25); background: rgba(0,0,0,0.35); color: #fff; font: 700 14px var(--sans); }

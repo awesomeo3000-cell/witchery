@@ -17,6 +17,9 @@
     <div id="compass"><div id="compass-strip"></div><div id="compass-caret"></div></div>
     <div id="prisms"><div id="prism-icons"></div><div class="label">PRISM TRIALS <span id="prism-count">0 / 4</span></div></div>
     <div id="net-status"></div>
+    <div id="objective"></div>
+    <div id="tip" class="hidden"></div>
+    <div id="fps" class="hidden"></div>
     <div id="controls">
       <div class="title">CONTROLS <span>H to hide</span></div>
       <div class="grid">
@@ -72,6 +75,9 @@
     <div class="menu-card">
       <h2>Paused</h2>
       <div id="pause-room"></div>
+      <label>Graphics quality
+        <select id="set-quality"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="custom">Custom</option></select>
+      </label>
       <label>Mouse sensitivity <input type="range" id="set-sens" min="0.3" max="2.5" step="0.1" /></label>
       <label class="row"><input type="checkbox" id="set-invert" /> Invert Y</label>
       <label>Grass density <input type="range" id="set-grass" min="0" max="2" step="1" /></label>
@@ -79,6 +85,8 @@
       <label class="row"><input type="checkbox" id="set-post" /> Atmosphere &amp; bloom (post effects)</label>
       <label>Volume <input type="range" id="set-volume" min="0" max="1" step="0.05" /></label>
       <label class="row"><input type="checkbox" id="set-music" /> Music</label>
+      <label class="row"><input type="checkbox" id="set-fps" /> Show FPS</label>
+      <label class="row"><input type="checkbox" id="set-tips" /> Show tips again</label>
       <button id="btn-resume">Resume</button>
       <button id="btn-copy" class="secondary">Copy invite link</button>
     </div>

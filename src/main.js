@@ -25,6 +25,7 @@ import { HUD } from './ui/hud.js';
 import { Net } from './net/net.js';
 import { PostFX } from './core/post.js';
 import { Cinematic } from './ui/cinematic.js';
+import { Guide } from './ui/guide.js';
 import { loadSave, writeSave } from './core/save.js';
 import { applyStats, spriteCount } from './core/progress.js';
 import { damp, dampAngle } from './core/math.js';
@@ -175,6 +176,7 @@ class Game {
     G.weather = new Weather(G.scene);
     G.hud = new HUD();
     G.cine = new Cinematic();
+    G.guide = new Guide();
     // Menu backdrop camera
     G.camera.position.set(60, 60, 200);
     G.camera.lookAt(0, 40, -100);
@@ -307,6 +309,35 @@ class Game {
     bind('set-post', 'post', null, (v) => { G.post.enabled = v; });
     bind('set-volume', 'volume', parseFloat, (v) => G.audio.setVolume(v));
     bind('set-music', 'music');
+    bind('set-fps', 'fps', null, (v) => $('fps').classList.toggle('hidden', !v));
+    $('fps').classList.toggle('hidden', !G.settings.fps);
+    $('set-tips').addEventListener('change', (e) => {
+      if (e.target.checked) { G.guide.seen.clear(); G.guide._save(); e.target.checked = false; G.hud.toast('Tips will show again', '#ffe08a'); }
+    });
+    const q = $('set-quality');
+    q.value = G.settings.quality || 'high';
+    q.addEventListener('change', () => { this.applyQuality(q.value); saveSettings(); });
+    // Changing an individual option switches the preset to "custom"
+    for (const id of ['set-grass', 'set-shadows', 'set-post']) $(id).addEventListener('input', () => { G.settings.quality = 'custom'; q.value = 'custom'; saveSettings(); });
+  }
+
+  applyQuality(level) {
+    G.settings.quality = level;
+    if (level === 'custom') return;
+    const presets = {
+      low: { grass: 0, shadows: false, post: false, pr: 0.75, shadowMap: 1024 },
+      medium: { grass: 1, shadows: true, post: true, pr: 1, shadowMap: 1024 },
+      high: { grass: 2, shadows: true, post: true, pr: Math.min(window.devicePixelRatio, 1.5), shadowMap: 2048 },
+    };
+    const c = presets[level];
+    G.settings.grass = c.grass; G.settings.shadows = c.shadows; G.settings.post = c.post;
+    G.grass.build(c.grass);
+    G.post.enabled = c.post;
+    G.renderer.setPixelRatio(c.pr);
+    const sh = G.sky.sun.shadow;
+    if (sh.mapSize.x !== c.shadowMap) { sh.mapSize.set(c.shadowMap, c.shadowMap); if (sh.map) { sh.map.dispose(); sh.map = null; } }
+    this._resize();
+    $('set-grass').value = c.grass; $('set-shadows').checked = c.shadows; $('set-post').checked = c.post;
   }
 
   _showPause(v) {
@@ -502,7 +533,8 @@ class Game {
 
   _frame() {
     this.clock.update();
-    let dt = Math.min(this.clock.getDelta(), 0.05);
+    const rawDt = this.clock.getDelta();
+    let dt = Math.min(rawDt, 0.05);
     G.input.pollGamepad(dt);
     G.time += dt;
     WIND.value = G.time;
@@ -557,7 +589,17 @@ class Game {
     for (const e of G.enemies.list) if (pushers.length < 4 && e.pos.distanceTo(p.pos) < 30) pushers.push(e.pos);
     G.grass.update(dt, G.sky, pushers);
     G.hud.update(dt);
+    G.guide.update(dt);
     G.audio.update(dt);
+    if (G.settings.fps) {
+      this.fpsN = (this.fpsN || 0) + 1;
+      this.fpsT = (this.fpsT || 0) + rawDt;
+      if (this.fpsT >= 1) {
+        const info = G.stats || { calls: 0, triangles: 0 };
+        $('fps').textContent = `${Math.round(this.fpsN / this.fpsT)} fps · ${info.calls} calls · ${(info.triangles / 1000).toFixed(0)}k tris`;
+        this.fpsN = 0; this.fpsT = 0;
+      }
+    }
     if (G.input.hit('KeyF') && G.hud.dialogTimer > 0 && !p.interactTarget) G.hud.dialogTimer = 0;
 
     this.saveTimer -= dt;
@@ -589,7 +631,10 @@ class Game {
 
   _render(fx) {
     if (G.post.enabled) G.post.render(G.scene, G.camera, G.sky, fx);
-    else G.renderer.render(G.scene, G.camera);
+    else {
+      G.renderer.render(G.scene, G.camera);
+      G.stats = { calls: G.renderer.info.render.calls, triangles: G.renderer.info.render.triangles };
+    }
   }
 }
 

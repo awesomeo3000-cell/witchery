@@ -27,6 +27,8 @@ export const G = {
     grass: 1,
     shadows: true,
     post: true,
+    quality: 'high',
+    fps: false,
     volume: 0.7,
     music: true,
   },
