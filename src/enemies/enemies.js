@@ -4,8 +4,9 @@ import { G, COLORS, COUNTER, inDungeonY } from '../core/ctx.js';
 import { damp, dampAngle, mulberry32 } from '../core/math.js';
 import {
   buildBounder, buildInkling, buildSpitter, buildWisp, buildFrostmaw, buildMagmaw,
-  buildShellback, buildGalewing, buildHueless, buildArcher, VARIANT_TINT,
+  buildShellback, buildGalewing, buildHueless, buildArcher, buildBlotGiant, buildSentinel, VARIANT_TINT,
 } from './models.js';
+import { smoothRockGeometry } from '../world/props.js';
 import { CampDecor } from './camps.js';
 import { VILLAGE, TRIALS, CITADEL } from '../world/layout.js';
 
@@ -20,10 +21,12 @@ export const TYPES = {
   shellback: { name: 'Shellback', hp: 220, speed: 3.4, aggro: 60, build: buildShellback, boss: true },
   galewing: { name: 'Galewing', hp: 200, speed: 6, aggro: 60, build: buildGalewing, boss: true, fly: true },
   hueless: { name: 'The Hueless King', hp: 700, speed: 2.5, aggro: 90, build: buildHueless, boss: true },
+  blotgiant: { name: 'Blot Giant', hp: 360, speed: 2.6, aggro: 45, build: buildBlotGiant, boss: true, field: true },
+  sentinel: { name: 'Stone Sentinel', hp: 300, speed: 1.8, aggro: 40, build: () => buildSentinel(smoothRockGeometry), boss: true, field: true },
 };
 const TYPE_KEYS = Object.keys(TYPES);
 const VARIANTS = ['none', 'fire', 'ice'];
-const STATES = ['idle', 'chase', 'windup', 'attack', 'recover', 'stun', 'dead', 'fly', 'slam', 'shoot', 'roll', 'dive', 'summon'];
+const STATES = ['idle', 'chase', 'windup', 'attack', 'recover', 'stun', 'dead', 'fly', 'slam', 'shoot', 'roll', 'dive', 'summon', 'sleep', 'dormant', 'wake'];
 const ELEMENTS = ['fire', 'ice', 'bounce', 'vine'];
 
 const tmpV = new THREE.Vector3();
@@ -190,6 +193,13 @@ export class EnemyManager {
       if (tower) types = [...types, 'archer'];
       camps.push({ id: camps.length, x, z, variant, types, active: false, members: [], respawn: 0, tower, towerPos, elite: rand() < 0.35 });
     }
+    // Field bosses in fixed, open spots
+    const fieldSpots = [['blotgiant', -120, 250], ['blotgiant', 230, -150], ['sentinel', 250, 330], ['sentinel', 60, -330]];
+    for (const [type, fx, fz] of fieldSpots) {
+      let bx = fx, bz = fz;
+      for (let k = 0; k < 40 && G.terrain.heightAt(bx, bz) < 4; k++) { bx *= 0.95; bz *= 0.95; }
+      camps.push({ id: camps.length, x: bx, z: bz, variant: 'none', types: [type], active: false, members: [], respawn: 0, field: true });
+    }
     // Wisps guarding the sky around the citadel
     camps.push({ id: camps.length, x: CITADEL.x + 120, z: CITADEL.z, y: 150, variant: 'none', types: ['wisp', 'wisp', 'wisp'], active: false, members: [], respawn: 0, sky: true });
     camps.push({ id: camps.length, x: CITADEL.x - 120, z: CITADEL.z + 60, y: 170, variant: 'none', types: ['wisp', 'wisp'], active: false, members: [], respawn: 0, sky: true });
@@ -212,14 +222,17 @@ export class EnemyManager {
     if (opts.elite) e.makeElite();
     this.list.push(e);
     this.byId.set(e.id, e);
-    if (e.boss) {
+    if (e.boss && !e.def.field) {
       e.introT = 3.4; // host holds the boss still during its intro
       if (G.player && e.pos.distanceTo(G.player.pos) < 80 && G.cine) G.cine.bossIntro(e);
     }
+    if (e.def.field) { e.state = e.type === 'blotgiant' ? 'sleep' : 'dormant'; e.weakCd = 0; }
+    if (e.type === 'sentinel') e.collider = G.collision.addCylinder(pos.x, pos.z, 2.6, pos.y, pos.y + 6.2, { dynamic: true, tags: ['sentinel'] });
     return e;
   }
 
   remove(e) {
+    if (e.collider) G.collision.removeDynamic(e.collider);
     e.dispose();
     this.byId.delete(e.id);
     const i = this.list.indexOf(e);
@@ -309,6 +322,19 @@ export class EnemyManager {
           if (!res.hint) res.hint = 'Galewing is too swift in the air! Tangle it with Bloom (green).';
         }
         break;
+      case 'blotgiant': {
+        // The eye is the weak spot: hits up high deal big damage and can topple it
+        const high = hit.hy !== undefined && hit.hy > e.pos.y + e.height * 0.72;
+        if (high) { dmg *= 2.5; res.crit = true; res.weak = true; }
+        if (e.state === 'sleep') { dmg *= 1.5; res.crit = true; }
+        break;
+      }
+      case 'sentinel': {
+        const onTop = hit.hy !== undefined && hit.hy > e.pos.y + e.height * 0.7;
+        if (!onTop && e.status.stun <= 0) { res.blocked = true; res.hint = 'Solid stone! Strike the glowing crystal on its back (bounce or glide on top).'; return res; }
+        dmg *= 1.6; res.crit = true;
+        break;
+      }
       case 'hueless': {
         if (e.shieldHp > 0) {
           const need = COUNTER[ELEMENTS[e.shield]];
@@ -332,7 +358,7 @@ export class EnemyManager {
     const res = this.computeHit(e, hit);
     this._hitFeedback(e, res, hit);
     if (this.isHost) this.applyHit(e, hit);
-    else G.net.send({ t: 'hit', id: e.id, d: hit.dmg, el: hit.element, dir: [hit.dir.x, hit.dir.z], src: hit.source });
+    else G.net.send({ t: 'hit', id: e.id, d: hit.dmg, el: hit.element, dir: [hit.dir.x, hit.dir.z], src: hit.source, hy: hit.hy });
   }
 
   _hitFeedback(e, res, hit) {
@@ -364,7 +390,14 @@ export class EnemyManager {
     const res = this.computeHit(e, hit);
     e.lastHit = G.time;
     e.hitFlash = 0.15;
+    if (e.state === 'sleep' || e.state === 'dormant') this._wake(e);
     if (res.blocked) return;
+    if (res.weak && e.weakCd <= 0) {
+      e.weakCd = 12;
+      e.status.stun = 5;
+      e.state = 'stun';
+      this.fx('topple', e.pos);
+    }
     const el = hit.element;
     const dir = hit.dir ? tmpV.set(hit.dir.x, 0, hit.dir.z) : tmpV.set(0, 0, 0);
     if (res.armor) {
@@ -416,6 +449,14 @@ export class EnemyManager {
     if (e.hp <= 0) this.kill(e);
   }
 
+  _wake(e) {
+    if (e.state !== 'sleep' && e.state !== 'dormant') return;
+    e.state = 'wake';
+    e.stateT = 0;
+    this.fx('wake', e.pos);
+    G.net?.send({ t: 'efx', k: 'wake', p: [e.pos.x, e.pos.y, e.pos.z], id: e.id });
+  }
+
   kill(e) {
     if (!e.alive) return;
     e.alive = false;
@@ -430,8 +471,9 @@ export class EnemyManager {
       if (e.camp !== undefined) {
         const c = this.camps[e.camp];
         c.members = c.members.filter((m) => m !== e);
-        if (!c.members.length) c.respawn = 180;
+        if (!c.members.length) c.respawn = c.field ? 900 : 180;
       }
+      if (e.def.field) this.spawnPickup('buff', e.pos.clone().add(new THREE.Vector3(0, 1.2, 0)));
       if (e.trial) G.trials.onBossDefeated(e.trial);
       if (e.type === 'hueless') G.trials.onFinalDefeated();
     }
@@ -461,6 +503,13 @@ export class EnemyManager {
       case 'shieldBreak': G.audio.play('break'); G.particles.burst(p.setY(p.y + 7), { count: 100, color: 0xffffff, speed: 15, life: 1.2, size: 0.7, pool: 'glow' }); G.hud.toast('The shield shatters! Paint it back into colour!', '#ffffff', 2.5); break;
       case 'slam': G.audio.play('slam'); G.particles.burst(p.setY(p.y + 0.5), { count: 40, color: 0xd8d0c0, speed: 10, life: 0.8, size: 0.9, gravity: 6 }); if (G.player && G.player.pos.distanceTo(pos) < 30) G.player.cameraShake = 0.4; break;
       case 'roar': G.audio.play('bossRoar'); if (G.player) G.player.cameraShake = 0.6; break;
+      case 'wake': {
+        G.audio.play('bossRoar');
+        const e = this.list.find((q) => q.def.field && q.pos.distanceTo(p) < 3);
+        if (e && G.cine && G.player && e.pos.distanceTo(G.player.pos) < 70) G.cine.bossIntro(e);
+        break;
+      }
+      case 'topple': G.audio.play('slam'); G.hud.toast('It staggers! Attack now!', '#fff09a', 2); G.particles.burst(p.setY(p.y + 1), { count: 40, color: 0xd8d0c0, speed: 8, life: 0.8, size: 0.9, gravity: 6 }); break;
       case 'summon': G.particles.burst(p.setY(p.y + 1), { count: 30, color: 0x2a2433, speed: 5, life: 1, size: 0.8 }); break;
       default: break;
     }
@@ -471,6 +520,7 @@ export class EnemyManager {
     const pid = id ?? this.nextId++;
     let mesh;
     if (kind === 'heart') mesh = new THREE.Mesh(this.heartGeo, new THREE.MeshLambertMaterial({ color: 0xff3a4a, emissive: 0x801020 }));
+    else if (kind === 'buff') mesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.5), new THREE.MeshLambertMaterial({ color: 0xffd84a, emissive: 0xa07000 }));
     else {
       const c = Math.floor(Math.random() * 4);
       mesh = new THREE.Mesh(new THREE.IcosahedronGeometry(0.3, 1), new THREE.MeshBasicMaterial({ color: COLORS[c].hex }));
@@ -491,6 +541,11 @@ export class EnemyManager {
         if (player.hp >= player.maxHp) continue;
         player.heal(4);
         G.hud.toast('+2 Hearts', '#ff9aa8', 1);
+      } else if (k.kind === 'buff') {
+        const keys = ['tonic', 'power', 'ink', 'swift'];
+        const b = keys[Math.floor(Math.random() * keys.length)];
+        player.applyBuff(b);
+        G.hud.toast({ tonic: 'Prism Tonic: +3 golden hearts', power: 'Bold Pigment: stronger strikes', ink: 'Bottomless Ink', swift: 'Featherfoot: faster movement' }[b], '#ffd84a', 2.5);
       } else {
         for (let c = 0; c < 4; c++) player.ink[c] = Math.min(100, player.ink[c] + 35);
         G.hud.toast('Ink restored', '#ffffff', 1);
@@ -700,6 +755,7 @@ export class EnemyManager {
   }
 
   _physics(e, dt) {
+    if (e.collider) e.collider.active = false; // don't collide with our own back
     const fly = e.def.fly && !(e.type === 'galewing' && e.status.rooted > 0);
     if (!fly) e.vel.y -= 26 * dt;
     const slow = e.status.chill > 0 ? 0.5 : 1;
@@ -733,11 +789,18 @@ export class EnemyManager {
       e.pos.z = damp(e.pos.z, e.home.z, 2, dt);
     }
     if (e.pos.y < -2000 || (!inDungeonY(e.home.y) && e.pos.y < -60)) this.kill(e);
+    if (e.collider) e.collider.active = e.alive;
   }
 
   // ------------------------------------------------------------ rendering
   _render(e, dt) {
     const g = e.group;
+    if (e.collider) {
+      const c = e.collider;
+      c.x = e.pos.x; c.z = e.pos.z;
+      c.min.set(e.pos.x - c.r, e.pos.y, e.pos.z - c.r);
+      c.max.set(e.pos.x + c.r, e.pos.y + 6.2, e.pos.z + c.r);
+    }
     g.position.copy(e.pos);
     g.rotation.y = e.yaw;
     e.anim += dt;
@@ -854,7 +917,7 @@ export class EnemyManager {
   onNetHit(m) {
     const e = this.byId.get(m.id);
     if (!e) return;
-    this.applyHit(e, { dmg: m.d, element: m.el, dir: { x: m.dir[0], z: m.dir[1] }, source: m.src, from: m.from });
+    this.applyHit(e, { dmg: m.d, element: m.el, dir: { x: m.dir[0], z: m.dir[1] }, source: m.src, from: m.from, hy: m.hy });
   }
 
   onNetPickup(m) {
@@ -893,7 +956,7 @@ export class EnemyManager {
         e.yaw = dampAngle(e.yaw, e.netYaw, 10, dt);
         if (e.pos.distanceTo(e.netPos) > 12) e.pos.copy(e.netPos);
       }
-      if (e.boss && e.pos.distanceTo(G.player.pos) < 90) this.bossActive = e;
+      if (e.boss && e.state !== 'sleep' && e.state !== 'dormant' && e.pos.distanceTo(G.player.pos) < (e.def.field ? 60 : 90)) this.bossActive = e;
       this._render(e, dt);
     }
     this.decor.update(dt);
@@ -1048,6 +1111,116 @@ const AI = {
     else if (e.cool <= 0 && e.state === 'idle') {
       e.cool = 2.6 + Math.random();
       setState(e, 'windup');
+    }
+  },
+  blotgiant(e, dt, t, mgr) {
+    e.stateT += dt;
+    e.weakCd = Math.max(0, e.weakCd - dt);
+    if (e.state === 'sleep') {
+      // Sprinting or fighting nearby wakes it
+      for (const p of mgr.players()) {
+        const d = p.pos.distanceTo(e.pos);
+        if (p.alive && (d < 9 || (d < 18 && p.state !== 'ground'))) { mgr._wake(e); break; }
+      }
+      return;
+    }
+    if (e.state === 'wake') { if (e.stateT > 2.4) setState(e, 'chase'); return; }
+    if (!t) { if (e.stateT > 20) { setState(e, 'sleep'); } return; }
+    const d = t.pos.distanceTo(e.pos);
+    switch (e.state) {
+      case 'chase': case 'recover': case 'idle':
+        if (e.state === 'recover' && e.stateT < 0.8) break;
+        e.state = 'chase';
+        moveToward(e, t.pos, e.def.speed, dt);
+        e.cool -= dt;
+        if (e.cool <= 0) {
+          e.cool = 2.4;
+          e.hitSet = new Set();
+          setState(e, d < 8 ? (Math.random() < 0.5 ? 'slam' : 'attack') : 'shoot');
+        }
+        break;
+      case 'slam':
+        e.vel.x = damp(e.vel.x, 0, 8, dt); e.vel.z = damp(e.vel.z, 0, 8, dt);
+        if (e.stateT > 1.0 && !e.did) {
+          e.did = true;
+          mgr.fx('slam', e.pos);
+          mgr.wave(e.pos, { color: 0x3a3246, speed: 13, maxR: 18, dmg: 3 });
+          for (const p of mgr.players()) if (p.alive && p.pos.distanceTo(e.pos) < 6) mgr.damagePlayer(p, 4, e.pos, null);
+        }
+        if (e.stateT > 1.7) { e.did = false; setState(e, 'recover'); }
+        break;
+      case 'attack': // wide arm sweep in front
+        faceTo(e, t.pos, dt, 3);
+        if (e.stateT > 0.7 && e.stateT < 1.1) {
+          for (const p of mgr.players()) {
+            if (!p.alive || e.hitSet.has(p.id)) continue;
+            const v = p.pos.clone().sub(e.pos); v.y = 0;
+            if (v.length() < 7.5 && v.normalize().dot(fwdOf(e)) > 0.1 && p.pos.y < e.pos.y + 4) { e.hitSet.add(p.id); mgr.damagePlayer(p, 4, e.pos, null); }
+          }
+        }
+        if (e.stateT > 1.5) setState(e, 'recover');
+        break;
+      case 'shoot': // hurls a boulder
+        faceTo(e, t.pos, dt, 6);
+        if (e.stateT > 0.9 && !e.did) {
+          e.did = true;
+          const from = e.pos.clone().setY(e.pos.y + 7);
+          const tt = 1.2;
+          const v = t.pos.clone().sub(from).divideScalar(tt);
+          v.y += 0.5 * 14 * tt;
+          mgr.shoot('rock', from, v, { dmg: 3, radius: 1.3 });
+        }
+        if (e.stateT > 1.5) { e.did = false; setState(e, 'recover'); }
+        break;
+      default: setState(e, 'chase');
+    }
+  },
+  sentinel(e, dt, t, mgr) {
+    e.stateT += dt;
+    if (e.state === 'dormant') {
+      for (const p of mgr.players()) if (p.alive && p.pos.distanceTo(e.pos) < 13) { mgr._wake(e); break; }
+      return;
+    }
+    if (e.state === 'wake') { if (e.stateT > 2) setState(e, 'chase'); return; }
+    if (!t) { if (e.stateT > 20) setState(e, 'dormant'); return; }
+    const d = t.pos.distanceTo(e.pos);
+    // Players riding on its back get shaken off now and then
+    const rider = mgr.players().find((p) => p.alive && Math.hypot(p.pos.x - e.pos.x, p.pos.z - e.pos.z) < 3 && p.pos.y > e.pos.y + 5);
+    switch (e.state) {
+      case 'chase': case 'recover': case 'idle':
+        if (e.state === 'recover' && e.stateT < 0.9) break;
+        e.state = 'chase';
+        if (!rider) moveToward(e, t.pos, e.def.speed, dt);
+        e.cool -= dt;
+        if (e.cool <= 0) {
+          e.cool = rider ? 4.5 : 2.8;
+          setState(e, rider || d < 7 ? 'slam' : 'shoot');
+        }
+        break;
+      case 'slam':
+        if (e.stateT > 1.1 && !e.did) {
+          e.did = true;
+          mgr.fx('slam', e.pos);
+          mgr.wave(e.pos, { color: 0x9a8c7a, speed: 12, maxR: 16, dmg: 3 });
+        }
+        if (e.stateT > 1.8) { e.did = false; setState(e, 'recover'); }
+        break;
+      case 'shoot':
+        faceTo(e, t.pos, dt, 5);
+        if (e.stateT > 1.0 && !e.did) {
+          e.did = true;
+          for (let i = 0; i < 2; i++) {
+            const from = e.pos.clone().setY(e.pos.y + 5);
+            const tt = 1.3 + i * 0.25;
+            const to = t.pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * 4, 0, (Math.random() - 0.5) * 4));
+            const v = to.sub(from).divideScalar(tt);
+            v.y += 0.5 * 14 * tt;
+            mgr.shoot('rock', from, v, { dmg: 3, radius: 1.2 });
+          }
+        }
+        if (e.stateT > 1.6) { e.did = false; setState(e, 'recover'); }
+        break;
+      default: setState(e, 'chase');
     }
   },
   archer(e, dt, t, mgr) {
@@ -1429,6 +1602,30 @@ const RENDER = {
     m.head.scale.setScalar(e.state === 'windup' ? 1.2 + Math.sin(e.anim * 30) * 0.05 : 1);
     m.head.rotation.x = e.state === 'shoot' ? -0.4 : Math.sin(e.anim) * 0.1;
     m.body.rotation.z = Math.sin(e.anim * 1.3) * 0.05;
+  },
+  blotgiant(e) {
+    const m = e.model;
+    const asleep = e.state === 'sleep';
+    m.body.rotation.x = asleep ? -0.25 : e.state === 'stun' ? 0.5 : 0;
+    m.body.position.y = asleep ? -1.2 + Math.sin(e.anim * 1.2) * 0.1 : e.state === 'stun' ? -2 : 0;
+    m.lid.visible = asleep || e.state === 'stun';
+    m.iris.visible = !m.lid.visible;
+    const walk = e.state === 'chase' ? Math.sin(e.anim * 3) : 0;
+    m.arms[0].rotation.x = e.state === 'slam' ? -2.8 * Math.min(1, e.stateT) : e.state === 'shoot' ? -2.4 : walk * 0.4;
+    m.arms[1].rotation.x = e.state === 'slam' ? -2.8 * Math.min(1, e.stateT) : e.state === 'attack' ? -1.2 : -walk * 0.4;
+    m.arms[1].rotation.z = e.state === 'attack' ? 1.6 - e.stateT * 2.5 : 0;
+    if (asleep && Math.random() < 0.02) G.particles.burst(e.pos.clone().setY(e.pos.y + 8), { count: 1, color: 0xffffff, speed: 0.5, up: 1.5, life: 2, size: 0.6, gravity: -0.4, alpha: 0.7 });
+  },
+  sentinel(e) {
+    const m = e.model;
+    const dormant = e.state === 'dormant';
+    m.body.position.y = dormant ? -1.8 : e.state === 'wake' ? -1.8 + Math.min(1.8, e.stateT * 1.2) : 0;
+    m.eyes.visible = !dormant;
+    m.crystal.rotation.y += 0.02;
+    m.crystal.material.emissiveIntensity = dormant ? 0.3 : 0.9 + Math.sin(e.anim * 5) * 0.2;
+    const k = e.state === 'slam' ? Math.min(1, e.stateT) : 0;
+    m.arms.forEach((a, i) => { a.position.y = 2.2 + (e.state === 'slam' ? (k < 0.9 ? k * 3 : -0.5) : Math.sin(e.anim * 2 + i) * 0.2); });
+    m.body.rotation.z = e.state === 'chase' ? Math.sin(e.anim * 2) * 0.05 : 0;
   },
   archer(e) {
     const m = e.model;

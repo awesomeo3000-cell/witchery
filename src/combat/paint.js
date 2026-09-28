@@ -365,7 +365,7 @@ export class PaintSystem {
       return;
     }
     if (hit.enemy) {
-      G.enemies.localHit(hit.enemy, { dmg: g.small ? 3 : 7, element: el, dir: g.vel.clone().setY(0).normalize(), source: 'glob' });
+      G.enemies.localHit(hit.enemy, { dmg: g.small ? 3 : 7, element: el, dir: g.vel.clone().setY(0).normalize(), source: 'glob', hy: g.pos.y });
       G.particles.burst(g.pos, { count: 14, color: COLORS[g.color].hex, speed: 5, life: 0.5, size: 0.45, gravity: 10 });
       // Leave a splat under the enemy too
       const gp = hit.enemy.pos.clone();

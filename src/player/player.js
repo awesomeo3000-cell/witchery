@@ -752,7 +752,7 @@ export class Player {
       a.hit.add(e.id);
       any = true;
       const bonus = (G.flurry > 0 ? 1.5 : 1) * (this.buffs.power > 0 ? 1.5 : 1);
-      G.enemies.localHit(e, { dmg: Math.round(dmg * bonus), element: el, dir: d.clone().normalize(), source: 'melee' });
+      G.enemies.localHit(e, { dmg: Math.round(dmg * bonus), element: el, dir: d.clone().normalize(), source: 'melee', hy: this.pos.y + 1.3 });
       // Ink splatter flies off in the direction of the blow
       const hp = e.pos.clone().setY(e.pos.y + e.height * 0.5);
       G.particles.burst(hp, { count: 16, color: COLORS[this.color].hex, speed: 9, life: 0.45, size: 0.35, dir: d.clone().normalize().multiplyScalar(6), gravity: 12 });

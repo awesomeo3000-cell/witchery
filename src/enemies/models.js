@@ -347,3 +347,89 @@ export function buildHueless() {
   body.traverse((m) => { if (m.isMesh && m !== shield) m.castShadow = true; });
   return { group: g, body, tendrils, shield, shieldMat, eye, height: 12, radius: 4.5 };
 }
+
+// ------------------------------------------------------------------ field bosses
+export function buildBlotGiant() {
+  const g = new THREE.Group();
+  const body = new THREE.Group();
+  g.add(body);
+  const ink = lam(0x3a3246);
+  const belly = lam(0x6a5a78);
+  const torso = new THREE.Mesh(new THREE.SphereGeometry(2.6, 28, 20), ink);
+  torso.scale.set(1, 1.15, 0.85);
+  torso.position.y = 5.2;
+  const bellyM = new THREE.Mesh(new THREE.SphereGeometry(2.1, 24, 16), belly);
+  bellyM.scale.set(1, 1.05, 0.6);
+  bellyM.position.set(0, 4.8, 1.0);
+  const head = new THREE.Group();
+  head.position.y = 8.2;
+  const skull = new THREE.Mesh(new THREE.SphereGeometry(1.5, 24, 18), ink);
+  const sclera = new THREE.Mesh(new THREE.SphereGeometry(0.72, 20, 16), lam(0xf4f0e8, { emissive: 0x303030 }));
+  sclera.position.set(0, 0.15, 1.12);
+  const iris = new THREE.Mesh(new THREE.SphereGeometry(0.36, 16, 12), new THREE.MeshBasicMaterial({ color: 0xe8442e }));
+  iris.position.set(0, 0.15, 1.72);
+  const lid = new THREE.Mesh(new THREE.SphereGeometry(0.78, 20, 12, 0, Math.PI * 2, 0, Math.PI * 0.5), ink);
+  lid.position.set(0, 0.15, 1.1);
+  lid.rotation.x = Math.PI / 2 + 0.2;
+  for (const s of [-1, 1]) {
+    const horn = new THREE.Mesh(new THREE.ConeGeometry(0.35, 1.6, 12), lam(0xd8c8a0));
+    horn.position.set(s * 0.95, 1.1, 0);
+    horn.rotation.z = -s * 0.5;
+    head.add(horn);
+  }
+  head.add(skull, sclera, iris, lid);
+  const arms = [];
+  for (const s of [-1, 1]) {
+    const arm = new THREE.Group();
+    arm.position.set(s * 2.7, 6.6, 0);
+    const up = new THREE.Mesh(new THREE.CapsuleGeometry(0.65, 2.2, 8, 14), ink);
+    up.position.y = -1.6;
+    const fist = new THREE.Mesh(new THREE.SphereGeometry(0.95, 18, 14), ink);
+    fist.position.y = -3.4;
+    arm.add(up, fist);
+    body.add(arm);
+    arms.push(arm);
+  }
+  for (const s of [-1, 1]) {
+    const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.8, 1.8, 8, 14), ink);
+    leg.position.set(s * 1.3, 1.6, 0);
+    body.add(leg);
+  }
+  const cloth = new THREE.Mesh(new THREE.CylinderGeometry(2.3, 2.6, 1.4, 20, 1, true), lam(0x8a5a36, { side: THREE.DoubleSide }));
+  cloth.position.y = 3.2;
+  body.add(torso, bellyM, head, cloth);
+  body.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+  return { group: g, body, head, arms, lid, iris, height: 9.5, radius: 3 };
+}
+
+export function buildSentinel(rockGeoFn) {
+  const g = new THREE.Group();
+  const body = new THREE.Group();
+  g.add(body);
+  const stone = lam(0x9a8c7a);
+  const mk = (s, x, y, z, seed) => {
+    const m = new THREE.Mesh(rockGeoFn(seed), stone);
+    m.scale.set(s * 1.2, s, s);
+    m.position.set(x, y, z);
+    m.castShadow = true;
+    body.add(m);
+    return m;
+  };
+  mk(2.6, 0, 2.4, 0, 1);
+  mk(1.8, 0, 4.6, -0.2, 2);
+  const arms = [mk(1.2, -3, 2.2, 0.4, 3), mk(1.2, 3, 2.2, 0.4, 4)];
+  mk(1, -1.5, 0.8, 1.2, 5);
+  mk(1, 1.5, 0.8, 1.2, 6);
+  const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(0.9, 0), new THREE.MeshLambertMaterial({ color: 0xffd84a, emissive: 0xffa000, emissiveIntensity: 0.9, flatShading: true }));
+  crystal.scale.y = 1.6;
+  crystal.position.set(0, 6.6, -0.2);
+  body.add(crystal);
+  const eyes = new THREE.Group();
+  for (const s of [-1, 1]) {
+    const e = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffd84a }));
+    e.position.set(s * 0.6, 4.8, 1.55);
+    eyes.add(e);
+  }
+  body.add(eyes);
+  return { group: g, body, arms, crystal, eyes, height: 7, radius: 3.2 };
+}

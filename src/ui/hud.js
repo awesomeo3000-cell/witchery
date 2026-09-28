@@ -476,6 +476,8 @@ export class HUD {
       case 'magmaw': return b.status.frozen > 0 ? '<span style="color:#9ee0ff">Frozen solid - attack!</span>' : `White-hot · cool it with ${col(1)} (${Math.round(b.meter)}%)`;
       case 'shellback': return b.status.stun > 0 ? '<span style="color:#fff38a">Flipped - hit its belly!</span>' : `Armoured shell · flip it with ${col(2)} (or lure it onto a bounce pad)`;
       case 'galewing': return b.status.rooted > 0 ? '<span style="color:#a8f08c">Grounded - attack!</span>' : `Airborne · tangle it with ${col(3)}`;
+      case 'blotgiant': return b.status.stun > 0 ? '<span style="color:#fff38a">Toppled - attack!</span>' : 'Aim for its eye (flick paint or strike from above)';
+      case 'sentinel': return 'Strike the glowing crystal on its back: bounce, glide or climb on top';
       case 'hueless': {
         if (b.shieldHp <= 0) return '<span style="color:#fff">Shield shattered - paint it back!</span>';
         const need = ELEMENTS.indexOf(COUNTER[ELEMENTS[b.shield]]);

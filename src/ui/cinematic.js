@@ -10,6 +10,8 @@ export const BOSS_TITLES = {
   shellback: ['Shellback', 'Armoured Roller'],
   galewing: ['Galewing', 'Tempest Sovereign'],
   hueless: ['The Hueless King', 'Devourer of Colour'],
+  blotgiant: ['Blot Giant', 'Slumbering Brute of the Fields'],
+  sentinel: ['Stone Sentinel', 'Wandering Cairn'],
 };
 
 export class Cinematic {
