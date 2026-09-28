@@ -105,6 +105,13 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 
 56. ✅ **Painted Memories.** The journal's sketchbook holds eight sketches of places around the island, drawn in-engine from the real spots. Stand where a sketch was drawn to recover the memory: a short scene from the Painters' past, kept in the journal.
 57. ✅ **Audio polish.** A whistle melody, hoofbeats that follow the gait, splashes and chimes for fishing and critters, and a soft hum inside the shrines.
-58. **Regression and docs.**
+58. ✅ **Regression and docs.**
+
+## Wave fifteen
+
+59. ✅ **More villager quests.** Old Finn wants Glimmerfish (more stamina), Wren wants Glowbugs for a lantern (quieter sneaking), and Dell the Courier wants a sub-1:40 Meadow Dash on a Brushbuck (faster, cheaper gallops).
+60. **Painter's Towers.** Four tall painted towers, one per region. Climb them (vines, bounce pads, ledges) and activate the top to reveal the map around it, then glide off.
+61. **Save backup.** Export your save to a file and import it again from the pause menu, plus a text size option.
+62. **Regression and docs.**
 
 The work continues through this list until the budget is used up.

@@ -337,8 +337,9 @@ export class Player {
     const mount = this.mounted;
     if (mount) {
       this.sneakOn = this.sneaking = false;
-      speed = mount.taming > 0 ? 0 : sprint && moving && !this.exhausted ? GALLOP : TROT;
-      if (speed === GALLOP) this.useStamina(6 * dt);
+      const spurs = G.flags.charm_gallop;
+      speed = mount.taming > 0 ? 0 : sprint && moving && !this.exhausted ? GALLOP * (spurs ? 1.12 : 1) : TROT;
+      if (speed > TROT) this.useStamina((spurs ? 4 : 6) * dt);
       if (this.exhausted) speed *= 0.6;
     }
 

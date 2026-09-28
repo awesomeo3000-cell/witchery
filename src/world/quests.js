@@ -14,6 +14,9 @@ const setFlag = (k, v = true) => G.trials._setFlag(k, v);
 // Grey statues for Ochre's quest, one per colour, beside four of the old ruins
 const STATUES = [0, 1, 2, 3].map((i) => ({ i, x: RUINS[i].x + 7, z: RUINS[i].z - 5 }));
 const MIRA_NEEDS = { pepper: 3, lily: 2 };
+const FINN_NEEDS = { fish: 3 };
+const WREN_NEEDS = { glowbug: 3 };
+export const DASH_TARGET = 100; // seconds, for Dell's Meadow Dash challenge
 
 // Ambient lines villagers call out when you wander past
 const BARKS = {
@@ -21,6 +24,9 @@ const BARKS = {
   tilly: ['Wanna race? Oh wait, you can FLY.', 'I saw a sky whale once. Probably.', 'Grandpa Umber says the sky used to be even bluer!'],
   bram: ['Keep your brush up and your eyes open.', 'Those Inkbats come out after dark. Nasty.', 'A good hunter watches before striking.'],
   ochre: ['Every grey thing is just a painting waiting to happen.', 'Hold still... no, never mind, keep moving.', 'Have you seen the light over the mesas at dusk?'],
+  finn: ['The fish only bite when the water goes still.', 'In my day we froze the whole lake to fish it!', 'Watch for the leapers, that is where the schools are.'],
+  wren: ['Glowbugs are shy. You have to tiptoe.', 'I am going to build the biggest lantern ever.', 'Do fireflies dream? I think they do.'],
+  dell: ['Letters, parcels, gossip, all delivered!', 'A good buck beats any brush on a windy day.', 'The meadow gates are the best shortcut on the island.'],
 };
 const NIGHT_BARKS = ['Warm pot, good company.', "Can't sleep with the ink creatures about.", 'Stay by the fire a while.'];
 // At night the villagers gather to sit around the cooking pot
@@ -70,6 +76,41 @@ export const QUESTS = [
     ready: () => STATUES.every((s) => flag(`q_statue_${s.i}`)),
     waiting: 'Look for the grey figures near the ruins. The faint gem on each one tells you its colour.',
     thanks: 'They shine again! Take my palette: the pigment in it never quite runs dry.',
+  },
+  {
+    id: 'finn', giver: 'Old Finn', title: 'Supper for Finn',
+    look: { hood: 0x3a5a7a, scarf: 0xe8e2d4, skin: 0xd8b090, tunic: 0x4a5a6a }, at: [-30, -12],
+    intro: 'My old arms can not hold a rod any more. Bring me 3 Glimmerfish and I will teach you a trick for staying out on long cold journeys.',
+    reward: 'upg_stamina_finn', rewardText: 'Stamina wheel extended',
+    steps: () => Object.entries(FINN_NEEDS).map(([k, n]) => ({ text: `${INGREDIENTS[k].name} ${Math.min(n, G.forage.inv[k] || 0)}/${n}`, done: (G.forage.inv[k] || 0) >= n })),
+    ready: () => Object.entries(FINN_NEEDS).every(([k, n]) => (G.forage.inv[k] || 0) >= n),
+    turnIn: () => { for (const [k, n] of Object.entries(FINN_NEEDS)) G.forage.inv[k] -= n; },
+    waiting: 'Schools swim in the lake and the shallows. Freeze them in a Frost floe, then walk over to pick them up.',
+    thanks: 'Ah, fresh Glimmerfish! Breathe slow and deep out there, like this. You will last longer.',
+  },
+  {
+    id: 'wren', giver: 'Wren', title: "Wren's Lantern", child: true,
+    look: { hood: 0x6a4aa8, scarf: 0xd8ff7a, skin: 0xf2d0b0, tunic: 0x3a3a5a }, at: [14, -30],
+    intro: 'I want to make a lantern out of fireflies! Can you catch me 3 Glowbugs? They only come out at night, and you have to sneak up really quietly.',
+    reward: 'charm_hush', rewardText: "Wren's Feather: sneaking is even quieter",
+    steps: () => Object.entries(WREN_NEEDS).map(([k, n]) => ({ text: `${INGREDIENTS[k].name} ${Math.min(n, G.forage.inv[k] || 0)}/${n}`, done: (G.forage.inv[k] || 0) >= n })),
+    ready: () => Object.entries(WREN_NEEDS).every(([k, n]) => (G.forage.inv[k] || 0) >= n),
+    turnIn: () => { for (const [k, n] of Object.entries(WREN_NEEDS)) G.forage.inv[k] -= n; },
+    waiting: 'Glowbugs float over the grass at night. Crouch (C) and creep up so they do not fly away!',
+    thanks: 'It glows! Here, take my lucky feather. It makes your feet as quiet as a moth.',
+  },
+  {
+    id: 'dell', giver: 'Dell the Courier', title: 'The Courier Run',
+    look: { hood: 0xd8a040, scarf: 0x3a9ae8, skin: 0xc89a78, tunic: 0x5a4a3a }, at: [30, 16],
+    intro: 'I need a rider fast enough to carry the mail! Tame a Brushbuck and finish the Meadow Dash in under 1:40, and I will share my riding secrets.',
+    reward: 'charm_gallop', rewardText: "Courier's Spurs: your Brushbuck gallops faster for less stamina",
+    steps: () => [
+      { text: 'Tame a Brushbuck', done: !!G.steeds?.mine },
+      { text: `Meadow Dash under ${Math.floor(DASH_TARGET / 60)}:${String(DASH_TARGET % 60).padStart(2, '0')}`, done: !!(G.flags.race_meadow && G.flags.race_meadow.t < DASH_TARGET) },
+    ],
+    ready: () => !!(G.steeds?.mine && G.flags.race_meadow && G.flags.race_meadow.t < DASH_TARGET),
+    waiting: 'Brushbucks graze in the meadows. The Meadow Dash starts at the golden gate near the first herd.',
+    thanks: 'Now THAT is riding! Here, my spurs. Lean forward and let the buck do the work.',
   },
 ];
 

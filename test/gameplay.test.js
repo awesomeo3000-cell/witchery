@@ -170,7 +170,7 @@ test('adventure log summarises progress', async () => {
   G.player = { pigment: 12, upg: { bristle: 1 } };
   const s = Object.fromEntries(adventureStats().map((x) => [x.label, x.value]));
   assert.equal(s['Prism Shards'], '2 / 4');
-  assert.equal(s['Villager quests'], '1 / 4');
+  assert.equal(s['Villager quests'], '1 / 7');
   assert.equal(s['Field giants felled'], '1 / 3');
   assert.equal(s.Pigment, '12');
   assert.equal(s['Brush (bristle · ink · wind)'], '1 · 0 · 0');
