@@ -388,6 +388,7 @@ export class EnemyManager {
   // Called by the local player when it hits an enemy.
   localHit(e, hit) {
     const res = this.computeHit(e, hit);
+    if (e.type === 'inkbat' && res.dmg >= e.hp) G.honours?.event('inkbat');
     this._hitFeedback(e, res, hit);
     if (this.isHost) this.applyHit(e, hit);
     else G.net.send({ t: 'hit', id: e.id, d: hit.dmg, el: hit.element, dir: [hit.dir.x, hit.dir.z], src: hit.source, hy: hit.hy });
@@ -593,6 +594,7 @@ export class EnemyManager {
         G.hud.toast('+2 Hearts', '#ff9aa8', 1);
       } else if (k.kind === 'star') {
         player.pigment += STAR_PIGMENT;
+        G.honours?.event('star');
         G.audio.play('sprite');
         G.hud.banner('Star Fragment', `+${STAR_PIGMENT} Pigment`, '#fff0a0');
       } else if (k.kind === 'pigment') {

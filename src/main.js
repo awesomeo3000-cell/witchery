@@ -30,6 +30,7 @@ import { Gallery } from './trials/gallery.js';
 import { Stars } from './world/stars.js';
 import { Minimap } from './ui/minimap.js';
 import { Revive } from './ui/revive.js';
+import { Honours } from './ui/honours.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
 import { Player } from './player/player.js';
@@ -207,6 +208,7 @@ class Game {
     G.stars = timed('stars', () => new Stars());
     G.minimap = timed('minimap', () => new Minimap());
     G.revive = timed('revive', () => new Revive());
+    G.honours = timed('honours', () => new Honours());
     G.cine = timed('cine', () => new Cinematic());
     G.guide = timed('guide', () => new Guide());
     G.photo = timed('photo', () => new PhotoMode());
@@ -299,6 +301,7 @@ class Game {
       if (typeof save.pigment === 'number') G.player.pigment = save.pigment;
       if (save.upg) Object.assign(G.player.upg, save.upg);
       if (save.fog) G.fog.load(save.fog);
+      if (save.honours) G.honours.load(save.honours);
       if (!G.net.connected && typeof save.dayT === 'number') G.sky.setTime(save.dayT);
     }
     G.flags.wp_village = true;
@@ -656,6 +659,7 @@ class Game {
     G.stars.update(dt);
     G.minimap.update(dt);
     G.revive.update(dt);
+    G.honours.update(dt);
     G.greyMoon.update(dt);
     G.enemies.update(wdt);
     G.paint.update(wdt);

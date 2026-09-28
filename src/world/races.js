@@ -103,7 +103,7 @@ export class Races {
     const { c, t } = this.active;
     const b = this.best(c);
     const record = !b || t < b.t;
-    if (record) G.trials._setFlag(`race_${c.id}`, { t: Math.round(t * 10) / 10, n: G.player.name || 'You' });
+    if (record) { G.trials._setFlag(`race_${c.id}`, { t: Math.round(t * 10) / 10, n: G.player.name || 'You' }); G.honours?.event('raceRecord'); }
     G.audio.play(record ? 'shard' : 'solve');
     G.hud.banner(record ? 'New Record!' : 'Course Complete', `${c.name} · ${fmtTime(t)}${!record ? ` (record ${fmtTime(b.t)})` : ''}`, record ? '#ffd84a' : '#ffffff');
     this._end();

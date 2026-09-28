@@ -151,6 +151,7 @@ export class Player {
     this.invuln = Math.max(this.invuln, 0.8);
     G.audio.play('flurry');
     G.hud.toast('Flurry Rush!', '#bfe8ff', 1.5);
+    G.honours?.event('flurry');
     G.particles.burst(this.pos.clone().setY(this.pos.y + 1), { count: 40, color: 0xbfe8ff, speed: 8, life: 0.6, size: 0.5, pool: 'glow', gravity: 0 });
   }
 
@@ -794,7 +795,7 @@ export class Player {
       const sneak = this.sneaking && ['idle', 'sleep', 'dormant'].includes(e.state);
       const bonus = (sneak ? 2 : 1) * (G.flurry > 0 ? 1.5 : 1) * (this.buffs.power > 0 ? 1.5 : 1) * (G.flags.charm_power ? 1.15 : 1) * brushStats(this.upg).damage;
       G.enemies.localHit(e, { dmg: Math.round(dmg * bonus), element: el, dir: d.clone().normalize(), source: 'melee', hy: this.pos.y + 1.3 });
-      if (sneak) { G.hud.toast('Sneak strike!', '#c8d8ff', 1); G.audio.play('crit'); }
+      if (sneak) { G.hud.toast('Sneak strike!', '#c8d8ff', 1); G.audio.play('crit'); G.honours?.event('sneakStrike'); }
       // Ink splatter flies off in the direction of the blow
       const hp = e.pos.clone().setY(e.pos.y + e.height * 0.5);
       G.particles.burst(hp, { count: 16, color: COLORS[this.color].hex, speed: 9, life: 0.45, size: 0.35, dir: d.clone().normalize().multiplyScalar(6), gravity: 12 });

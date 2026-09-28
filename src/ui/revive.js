@@ -55,6 +55,7 @@ export class Revive {
       G.net?.send({ t: 'revive', to: best.id });
       G.audio.play('pickup');
       G.hud.toast(`You picked up ${best.name}!`, '#a8f08c', 2);
+      G.honours?.event('revive');
       best.state = 'idle';
       this.hold = 0;
       this.target = null;

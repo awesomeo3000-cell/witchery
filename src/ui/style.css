@@ -307,3 +307,10 @@ body.touch #minimap { display: none; }
 .revive { position: absolute; transform: translate(-50%, -100%); text-align: center; pointer-events: none; font: 800 14px var(--sans); text-shadow: 0 1px 3px #000; }
 .revive .bar { width: 120px; height: 7px; margin: 4px auto 0; border-radius: 4px; background: rgba(0,0,0,0.5); overflow: hidden; }
 .revive .bar div { height: 100%; width: 0; background: #a8f08c; }
+#inv-hon { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; }
+.honour { display: grid; grid-template-columns: 26px 1fr; column-gap: 6px; align-items: center; padding: 5px 8px; border-radius: 8px; background: rgba(255,255,255,0.04); opacity: 0.5; }
+.honour.got { opacity: 1; background: rgba(255,216,74,0.1); }
+.honour .m { grid-row: span 2; font-size: 20px; text-align: center; }
+.honour b { font: 700 13px var(--serif); }
+.honour small { font: 600 11px var(--sans); opacity: 0.8; }
+#inv-hc { font: 700 12px var(--sans); letter-spacing: 0; }

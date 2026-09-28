@@ -20,6 +20,7 @@ export function writeSave() {
     pigment: p.pigment,
     upg: p.upg,
     fog: G.fog ? G.fog.serialize() : undefined,
+    honours: G.honours ? G.honours.serialize() : undefined,
     // Online, progress lives on the server; solo keeps it here
     flags: G.net && G.net.connected ? undefined : G.flags,
     t: Date.now(),

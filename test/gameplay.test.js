@@ -175,3 +175,23 @@ test('adventure log summarises progress', async () => {
   assert.equal(s.Pigment, '12');
   assert.equal(s['Brush (bristle · ink · wind)'], '1 · 0 · 0');
 });
+
+test('honours unlock from checks and counted events, and round-trip a save', async () => {
+  const { Honours, HONOURS } = await import('../src/ui/honours.js');
+  G.flags = { trial_ember: true };
+  G.player = { state: 'ground', pigment: 0, upg: {} };
+  G.puzzles = null; G.fog = null;
+  G.audio = { play() {} }; G.hud = { toast() {} };
+  const h = new Honours();
+  h.update(1);
+  assert.ok(h.got.has('shard'));
+  assert.ok(!h.got.has('shards'));
+  for (let i = 0; i < 4; i++) h.event('flurry');
+  assert.ok(!h.got.has('flurry'));
+  h.event('flurry');
+  assert.ok(h.got.has('flurry'));
+  const g = new Honours();
+  g.load(h.serialize());
+  assert.deepEqual([...g.got].sort(), [...h.got].sort());
+  assert.equal(new Set(HONOURS.map((x) => x.id)).size, HONOURS.length, 'ids are unique');
+});

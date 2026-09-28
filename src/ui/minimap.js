@@ -31,7 +31,7 @@ export class Minimap {
 
   update(dt) {
     const p = G.player;
-    const show = G.settings.minimap !== false && p && !p.inDungeon && !G.game?.mapOpen && !(G.photo && G.photo.active);
+    const show = G.settings.minimap !== false && p && !p.inDungeon && !G.game?.mapOpen && !(G.photo && G.photo.active) && !G.forage?.open;
     this.cv.classList.toggle('hidden', !show);
     if (!show) return;
     this.t -= dt;
