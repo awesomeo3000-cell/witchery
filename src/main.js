@@ -24,6 +24,7 @@ import { Ribbon } from './combat/trails.js';
 import { HUD } from './ui/hud.js';
 import { Net } from './net/net.js';
 import { PostFX } from './core/post.js';
+import { Cinematic } from './ui/cinematic.js';
 import { loadSave, writeSave } from './core/save.js';
 import { applyStats, spriteCount } from './core/progress.js';
 import { damp, dampAngle } from './core/math.js';
@@ -173,6 +174,7 @@ class Game {
     G.sprites = new Sprites(G.scene);
     G.weather = new Weather(G.scene);
     G.hud = new HUD();
+    G.cine = new Cinematic();
     // Menu backdrop camera
     G.camera.position.set(60, 60, 200);
     G.camera.lookAt(0, 40, -100);
@@ -287,6 +289,8 @@ class Game {
       navigator.clipboard?.writeText(url).then(() => G.hud.toast('Invite link copied!', '#ffe08a')).catch(() => G.hud.toast(url, '#ffe08a', 6));
     };
     $('btn-victory').onclick = () => { $('victory').classList.add('hidden'); G.input.lock(); };
+    $('btn-credits').onclick = () => this._credits();
+    $('credits').onclick = () => { $('credits').classList.add('hidden'); G.input.lock(); };
     const bind = (id, key, parse, apply) => {
       const el = $(id);
       if (el.type === 'checkbox') el.checked = !!G.settings[key]; else el.value = G.settings[key];
@@ -383,6 +387,25 @@ class Game {
     this.toggleMap();
   }
 
+  _credits() {
+    $('victory').classList.add('hidden');
+    const names = [G.player.name, ...[...G.peers.values()].map((q) => q.name)];
+    const esc = (t) => String(t).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+    $('credits').querySelector('.roll').innerHTML = `
+      <h1>Witchery</h1>
+      <h3>THE PAINTERS</h3>${names.map((n) => `<p>${esc(n)}</p>`).join('')}
+      <h3>CHAMPIONS OF THE PRISM TRIALS</h3><p>Frostmaw · Magmaw · Shellback · Galewing</p>
+      <h3>WITH</h3><p>Elder Umber</p><p>Pip the Palette Keeper</p><p>${G.sprites ? `${Object.keys(G.flags).filter((k) => k.startsWith('sprite_')).length} Paint Sprites` : ''}</p>
+      <h3>BUILT WITH</h3><p>Three.js · WebAudio · a lot of paint</p>
+      <h3>&nbsp;</h3><p>Thank you for playing!</p>`;
+    const c = $('credits');
+    c.classList.remove('hidden');
+    const roll = c.querySelector('.roll');
+    roll.style.animation = 'none';
+    void roll.offsetWidth;
+    roll.style.animation = '';
+  }
+
   // ------------------------------------------------------------ networking
   _addPeer(id, name, look) {
     if (G.peers.has(id)) return G.peers.get(id);
@@ -433,7 +456,11 @@ class Game {
     net.on('efx', (m) => {
       if (m.k === 'pimp') G.enemies._impactFx(m.kind, new THREE.Vector3(...m.p));
       else if (m.k === 'spit') G.audio.play('shoot', 0.5);
-      else if (m.k === 'phase2') G.hud.toast('The Hueless King is enraged!', '#e0c8ff', 3);
+      else if (m.k === 'phase2') {
+        G.hud.toast('The Hueless King is enraged!', '#e0c8ff', 3);
+        const b = G.enemies.list.find((e) => e.type === 'hueless');
+        if (b) G.cine.focus(b, 'The Hueless King', 'rises in fury', 2.4);
+      }
       else G.enemies._fx(m.k, new THREE.Vector3(...m.p));
     });
     net.on('fx', (m) => {
@@ -509,7 +536,8 @@ class Game {
       }
       if (G.hud.choiceCb && G.input.hit('Escape')) G.hud.answerChoice(G.hud.choiceN - 1);
     }
-    if (!this.mapOpen) p.update(dt);
+    if (!this.mapOpen && !G.cine.frozen) p.update(dt);
+    else if (G.cine.frozen) { p.vel.x = p.vel.z = 0; p._animate(dt); }
     G.trials.update(wdt);
     G.sprites.update(dt);
     G.enemies.update(wdt);
@@ -519,6 +547,7 @@ class Game {
     for (const peer of G.peers.values()) peer.update(dt);
     this._checkWaypoints();
     p.updateCamera(dt);
+    G.cine.update(dt);
     G.weather.update(dt, G.sky);
     WET.value = Math.min(1, G.weather.w * 1.2) * (G.weather.snow.visible ? 0.3 : 1);
     G.sky.update(dt, p.pos);
@@ -544,7 +573,18 @@ class Game {
       speed: Math.max(0, Math.min(1, (speed - 24) / 14)),
       flurry: Math.min(1, (G.flurry || 0) * 3),
       hurt: p.hurtFlash > 0 ? p.hurtFlash * 2 : (p.hp <= 2 && p.alive ? 0.25 + Math.sin(G.time * 6) * 0.15 : 0),
+      sat: this._saturation(dt),
     });
+  }
+
+  // The Hueless King drains colour from the world while it lives; beating it floods colour back
+  _saturation(dt) {
+    const b = G.enemies.bossActive;
+    let target = 1.12;
+    if (b && b.type === 'hueless' && b.alive) target = b.status.stun > 0 ? 0.85 : 0.5;
+    if (G.victoryGlow > 0) { G.victoryGlow -= dt; target = 1.12 + Math.min(0.5, G.victoryGlow * 0.12); }
+    this.sat = this.sat === undefined ? 1.12 : this.sat + (target - this.sat) * Math.min(1, dt * 1.5);
+    return this.sat;
   }
 
   _render(fx) {

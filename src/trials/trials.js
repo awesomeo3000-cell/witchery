@@ -99,7 +99,10 @@ export class Trials {
     if (k === 'final' && v && !this._finalShown) {
       this._finalShown = true;
       G.audio.mood = 'victory';
-      G.hud.victory();
+      G.victoryGlow = 6;
+      G.hud.banner('Colour Returns', 'The Hueless King is undone', '#ffe08a');
+      for (let i = 0; i < 4; i++) setTimeout(() => G.particles && G.player && G.particles.burst(G.player.pos.clone().setY(G.player.pos.y + 8), { count: 120, color: [0xe8442e, 0x3a9ae8, 0xf2c229, 0x3fb54a][i], speed: 18, life: 2.5, size: 0.6, pool: 'glow', gravity: 6 }), i * 450);
+      setTimeout(() => G.hud.victory(), 4500);
     }
   }
 

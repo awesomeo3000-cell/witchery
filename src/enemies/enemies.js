@@ -212,6 +212,10 @@ export class EnemyManager {
     if (opts.elite) e.makeElite();
     this.list.push(e);
     this.byId.set(e.id, e);
+    if (e.boss) {
+      e.introT = 3.4; // host holds the boss still during its intro
+      if (G.player && e.pos.distanceTo(G.player.pos) < 80 && G.cine) G.cine.bossIntro(e);
+    }
     return e;
   }
 
@@ -673,6 +677,7 @@ export class EnemyManager {
       }
     }
 
+    if (e.introT > 0) { e.introT -= dt; this._physics(e, dt); return; }
     const target = this._nearestPlayer(e, e.def.aggro);
     e.target = target;
     const ai = AI[e.type];
@@ -1333,6 +1338,8 @@ const AI = {
       mgr.fx('roar', e.pos);
       G.net?.send({ t: 'efx', k: 'phase2', p: [e.pos.x, e.pos.y, e.pos.z] });
       G.hud.toast('The Hueless King is enraged!', '#e0c8ff', 3);
+      if (G.cine) G.cine.focus(e, 'The Hueless King', 'rises in fury', 2.4);
+      e.introT = 2.4;
     }
     const p2 = e.phase === 2;
     // Periodic shield colour shift if not broken

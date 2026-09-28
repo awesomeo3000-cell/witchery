@@ -178,3 +178,19 @@ button.secondary { background: rgba(255,255,255,0.15); color: #fff; box-shadow: 
 
 #buffs { position: absolute; top: 58px; left: 20px; display: flex; gap: 10px; font: 800 14px var(--sans); }
 #buffs span { background: rgba(10,12,24,0.45); padding: 2px 9px; border-radius: 10px; }
+
+#letterbox .bar { position: absolute; left: 0; right: 0; height: 0; background: #000; transition: height 0.5s ease; }
+#letterbox .top { top: 0; }
+#letterbox .bottom { bottom: 0; }
+#letterbox.on .bar { height: 11vh; }
+#bosscard { position: absolute; left: 7vw; bottom: 16vh; text-align: left; animation: cardIn 3.6s ease forwards; }
+#bosscard .t { font: 900 58px var(--serif); letter-spacing: 3px; text-shadow: 0 3px 12px rgba(0,0,0,0.7); }
+#bosscard .rule { width: 340px; height: 2px; background: linear-gradient(90deg, #fff, transparent); margin: 4px 0 6px; }
+#bosscard .s { font: 600 italic 22px var(--serif); opacity: 0.9; letter-spacing: 2px; }
+@keyframes cardIn { 0% { opacity: 0; transform: translateX(-30px); } 15% { opacity: 1; transform: none; } 80% { opacity: 1; } 100% { opacity: 0; } }
+#credits { position: fixed; inset: 0; z-index: 11; background: rgba(5,6,14,0.92); overflow: hidden; pointer-events: auto; cursor: pointer; }
+#credits .roll { position: absolute; left: 0; right: 0; top: 100%; text-align: center; animation: roll 38s linear forwards; }
+#credits h1 { font: 900 64px var(--serif); background: linear-gradient(90deg, #e8442e, #f2c229, #3fb54a, #3a9ae8); -webkit-background-clip: text; background-clip: text; color: transparent; margin: 0 0 40px; }
+#credits h3 { font: 700 18px var(--serif); letter-spacing: 4px; opacity: 0.7; margin: 42px 0 8px; }
+#credits p { font: 600 20px var(--sans); margin: 4px 0; }
+@keyframes roll { to { transform: translateY(calc(-100% - 100vh)); } }

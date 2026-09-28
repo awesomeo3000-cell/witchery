@@ -165,6 +165,7 @@ export class PostFX {
     g.uSpeed.value = fx.speed || 0;
     g.uFlurry.value = fx.flurry || 0;
     g.uHurt.value = fx.hurt || 0;
+    g.uSat.value = fx.sat ?? 1.12;
     r.setRenderTarget(null);
     this.gradeQuad.render(r);
   }
