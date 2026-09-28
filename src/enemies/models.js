@@ -642,3 +642,32 @@ export function buildSentry() {
   body.traverse((m) => { if (m.isMesh) m.castShadow = true; });
   return { group: g, body, head, eye, eyeMat, beam, height: 2.6, radius: 1.4 };
 }
+
+// Inkspout: a round, snouted blot that lurks under shallow water, pops up and spits ink.
+export function buildInkspout(tint) {
+  const g = new THREE.Group();
+  const body = new THREE.Group();
+  g.add(body);
+  const skin = lam(tint || 0x4a3a6a, { map: paintTex('cloth') });
+  const pale = lam(0xb8a8d8);
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(0.8, 18, 14), skin);
+  ball.scale.set(1, 0.9, 1);
+  ball.position.y = 0.7;
+  const snout = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.36, 0.7, 12).rotateX(Math.PI / 2), skin);
+  snout.position.set(0, 0.62, 0.85);
+  const lip = new THREE.Mesh(new THREE.TorusGeometry(0.27, 0.07, 6, 14), pale);
+  lip.position.set(0, 0.62, 1.2);
+  body.add(ball, snout, lip);
+  for (const s of [-1, 1]) {
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 8), new THREE.MeshBasicMaterial({ color: 0xfff4c0 }));
+    eye.position.set(s * 0.35, 1.05, 0.6);
+    const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 6), new THREE.MeshBasicMaterial({ color: 0x111111 }));
+    pupil.position.set(s * 0.37, 1.07, 0.74);
+    const fin = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.6, 4), pale);
+    fin.position.set(s * 0.75, 0.9, -0.1);
+    fin.rotation.z = -s * 0.9;
+    body.add(eye, pupil, fin);
+  }
+  body.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+  return { group: g, body, snout, height: 1.4, radius: 0.9 };
+}

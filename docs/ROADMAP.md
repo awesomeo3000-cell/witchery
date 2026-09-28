@@ -144,4 +144,7 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 
 75. ✅ **The Colour Festival.** After Mira's quest, nightly fireworks and a ring of coloured lanterns over the village square; quick chat on touch screens.
 
+76. ✅ **Galloping music.** A bouncing lope with a hoofbeat rhythm while riding a Brushbuck.
+77. ✅ **Inkspouts.** Octorok-like water enemies at coastal fishing spots: they surface to spit ink and duck under (immune) between volleys; Frost pins them at the surface.
+
 The work continues through this list until the budget is used up.

@@ -12,6 +12,7 @@ export const ENTRIES = [
   { id: 'inkbat', name: 'Inkbat', text: 'Flutters out at night in twitchy swarms. One stroke pops it.' },
   { id: 'blotgiant', name: 'Blot Giant', text: 'Sleeps in the meadows. Its single eye is its weak spot.' },
   { id: 'sentinel', name: 'Stone Sentinel', text: 'Looks like a boulder until you come close. Strike the crystal on its back.' },
+  { id: 'inkspout', name: 'Inkspout', text: 'Lurks under the shallows and pops up to spit ink. Freeze it before it ducks.' },
   { id: 'sentry', name: 'Ruin Sentry', text: 'An old turret by the ruins. Strike its bolt just as it arrives to send it back.' },
   { id: 'rainmane', name: 'Rainmane', text: 'Lord of the Painted Plains. Only the colour that undoes its mane bites deep.' },
   { id: 'frostmaw', name: 'Frostmaw', text: 'Guardian of the Ember Trial, armoured in ice.' },

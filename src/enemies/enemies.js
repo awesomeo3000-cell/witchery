@@ -4,11 +4,12 @@ import { G, COLORS, COUNTER, inDungeonY } from '../core/ctx.js';
 import { damp, dampAngle, mulberry32 } from '../core/math.js';
 import {
   buildBounder, buildInkling, buildSpitter, buildWisp, buildInkbat, buildDummy, buildFrostmaw, buildMagmaw,
-  buildShellback, buildGalewing, buildHueless, buildArcher, buildBlotGiant, buildSentinel, buildRainmane, buildSentry, VARIANT_TINT,
+  buildShellback, buildGalewing, buildHueless, buildArcher, buildBlotGiant, buildSentinel, buildRainmane, buildSentry, buildInkspout, VARIANT_TINT,
 } from './models.js';
 import { fmtTime } from '../world/races.js';
 import { STAR_PIGMENT } from '../world/stars.js';
 import { SCALE_PIGMENT } from '../world/wyrm.js';
+import { fishSites } from '../world/fishing.js';
 import { smoothRockGeometry } from '../world/props.js';
 import { CampDecor } from './camps.js';
 import { VILLAGE, TRIALS, CITADEL, RUINS } from '../world/layout.js';
@@ -30,6 +31,8 @@ export const TYPES = {
   inkbat: { name: 'Inkbat', hp: 7, speed: 13, aggro: 60, build: buildInkbat, fly: true },
   rainmane: { name: 'Rainmane', hp: 420, speed: 6, aggro: 50, build: buildRainmane, boss: true, field: true },
   sentry: { name: 'Ruin Sentry', hp: 90, speed: 0, aggro: 48, build: buildSentry, static: true },
+  // Floats at the surface (fly: no gravity), so it can bob up and duck under the water
+  inkspout: { name: 'Inkspout', hp: 30, speed: 0, aggro: 26, build: buildInkspout, static: true, fly: true },
 };
 const TYPE_KEYS = Object.keys(TYPES);
 const VARIANTS = ['none', 'fire', 'ice'];
@@ -212,6 +215,8 @@ export class EnemyManager {
       for (let k = 0; k < 40 && G.terrain.heightAt(bx, bz) < 4; k++) { bx *= 0.95; bz *= 0.95; }
       camps.push({ id: camps.length, x: bx, z: bz, variant: 'none', types: [type], active: false, members: [], respawn: 0, field: true });
     }
+    // Inkspouts lurk at a few of the coastal fishing spots
+    fishSites(G.terrain).filter((f) => !f.lake).filter((_, i) => i % 3 === 0).forEach((f) => camps.push({ id: camps.length, x: f.x, z: f.z, variant: 'none', types: ['inkspout', 'inkspout'], active: false, members: [], respawn: 0, water: true, ruin: true }));
     // Ruin Sentries at the four outer ruins (the inner four hold Ochre's statues)
     for (const r of RUINS.slice(4)) camps.push({ id: camps.length, x: r.x - 5, z: r.z, variant: 'none', types: ['sentry'], active: false, members: [], respawn: 0, ruin: true });
     // Wisps guarding the sky around the citadel
@@ -400,6 +405,10 @@ export class EnemyManager {
         if (e.state === 'dormant') { dmg *= 1.5; res.crit = true; }
         break;
       }
+      case 'inkspout':
+        if (e.pos.y < -0.9 && e.status.frozen <= 0) { res.blocked = true; res.hint = 'It ducked under the water! Strike when it surfaces, or freeze it with Frost.'; return res; }
+        if (e.status.frozen > 0 && hit.source === 'melee') { dmg *= 2; res.crit = true; res.shatter = true; }
+        break;
       case 'hueless': {
         if (e.shieldHp > 0) {
           const need = COUNTER[ELEMENTS[e.shield]];
@@ -835,9 +844,10 @@ export class EnemyManager {
         c.active = true;
         c.members = c.types.map((t, i) => {
           const a = (i / c.types.length) * Math.PI * 2;
-          const x = c.x + Math.cos(a) * 5, z = c.z + Math.sin(a) * 5;
+          const ring = c.water ? 2.5 : 5;
+          const x = c.x + Math.cos(a) * ring, z = c.z + Math.sin(a) * ring;
           if (t === 'archer') return this.spawn(t, c.towerPos.clone().setY(c.towerPos.y + 0.2), { variant: c.variant, camp: c.id });
-          const y = c.sky ? c.y + i * 3 : G.terrain.heightAt(x, z);
+          const y = c.sky ? c.y + i * 3 : c.water ? -1.6 : G.terrain.heightAt(x, z);
           return this.spawn(t, new THREE.Vector3(x, y, z), { variant: c.variant, camp: c.id, elite: c.elite && i === 0 });
         });
       } else if (c.active && near > 180) {
@@ -1433,6 +1443,43 @@ const AI = {
       default: setState(e, 'chase');
     }
   },
+  inkspout(e, dt, t, mgr) {
+    e.stateT += dt;
+    e.vel.set(0, 0, 0);
+    const up = -0.15, down = -1.6;
+    // Bob just below the surface until someone comes near, pop up, spit twice, then duck again
+    const surfaced = ['windup', 'shoot', 'recover'].includes(e.state);
+    const want = surfaced ? up : down;
+    e.pos.y += (want - e.pos.y) * Math.min(1, dt * 5);
+    if (!t) { if (e.state !== 'idle') setState(e, 'idle'); return; }
+    faceTo(e, t.pos, dt, 5);
+    switch (e.state) {
+      case 'idle': case 'chase':
+        e.state = 'idle';
+        e.cool -= dt;
+        if (e.cool <= 0) { setState(e, 'windup'); e.shots = 0; }
+        break;
+      case 'windup':
+        if (e.stateT > 0.8) {
+          const from = e.pos.clone().setY(e.pos.y + 0.7).addScaledVector(fwdOf(e), 1.2);
+          const to = t.pos.clone().setY(t.pos.y + 0.8);
+          const tt = Math.max(0.5, from.distanceTo(to) / 16);
+          const v = to.sub(from).divideScalar(tt);
+          v.y += 0.5 * 14 * tt;
+          mgr.shoot('ink', from, v, { dmg: 2 });
+          G.net?.send({ t: 'efx', k: 'spit', p: [from.x, from.y, from.z] });
+          G.audio.play('shoot', 0.5);
+          e.shots++;
+          setState(e, e.shots >= 2 ? 'recover' : 'windup');
+          if (e.shots < 2) e.stateT = 0.2;
+        }
+        break;
+      case 'recover':
+        if (e.stateT > 1.2) { setState(e, 'idle'); e.cool = 2.5 + Math.random() * 2; }
+        break;
+      default: setState(e, 'idle');
+    }
+  },
   sentry(e, dt, t, mgr) {
     e.stateT += dt;
     e.vel.x = e.vel.z = 0;
@@ -1951,6 +1998,12 @@ const RENDER = {
     m.arms[1].rotation.x = st === 'attack' ? (k < 0.5 ? -2.2 * (k / 0.5) : -2.2 + (k - 0.5) * 5) : st === 'roll' ? -1.4 : st === 'shoot' ? -1.8 : -0.3;
     m.arms[1].rotation.z = st === 'attack' && k > 0.5 ? -1.2 : 0;
     m.arms[0].rotation.x = st === 'shoot' ? -2.6 : st === 'wake' ? -2.8 : -0.2;
+  },
+  inkspout(e) {
+    const m = e.model;
+    m.body.rotation.x = e.state === 'windup' ? -0.25 + Math.sin(e.anim * 20) * 0.05 : Math.sin(e.anim * 2) * 0.05;
+    m.snout.scale.set(1, 1, e.state === 'windup' ? 1.25 : 1);
+    if (e.pos.y > -1 && Math.random() < 0.05) G.water?.ripple(e.pos.x, e.pos.z, 0.3);
   },
   sentry(e) {
     const m = e.model;
