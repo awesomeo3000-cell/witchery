@@ -292,8 +292,7 @@ export class Steeds {
   whistle() {
     const p = G.player;
     if (!p || p.inDungeon) return;
-    G.audio.play('glint');
-    G.hud.caption?.('You whistle', p.pos);
+    G.audio.play('whistle');
     const b = this.mine;
     if (!b) { G.hud.toast('You have no Brushbuck yet. Tame one in the meadows!', '#dddddd', 2); return; }
     if (p.mounted) return;
@@ -321,7 +320,10 @@ export class Steeds {
   }
 
   _legs(b, dt, speed, airborne) {
-    b.phase = (b.phase || 0) + dt * (2 + speed * 0.9);
+    const before = b.phase || 0;
+    b.phase = before + dt * (2 + speed * 0.9);
+    // Hoofbeats for your own mount, two per stride
+    if (b.rider && speed > 1 && !airborne && Math.floor(b.phase / Math.PI) !== Math.floor(before / Math.PI)) G.audio.play('hoof', Math.min(1, 0.4 + speed * 0.05));
     const amp = airborne ? 0 : Math.min(0.75, speed * 0.07);
     b.legs.forEach((l, i) => {
       const off = [0, Math.PI, Math.PI * 0.5, Math.PI * 1.5][i];

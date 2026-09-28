@@ -99,7 +99,7 @@ export class Memories {
     const first = !this.got.has(i);
     this.got.add(i);
     if (first) {
-      G.audio.play('shard');
+      G.audio.play('memory');
       G.hud.banner('Memory Recovered', `${s.title} (${this.got.size}/${MEMORIES.length})`, '#e8dcc0');
       if (G.cine && !G.settings.reduceMotion) G.cine.focus({ pos: s.target.clone().setY(s.target.y - 4), radius: 6, height: 8, alive: true }, null, null, 3);
       if (this.got.size === MEMORIES.length) G.honours?.event('memories');

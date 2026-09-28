@@ -104,7 +104,7 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 ## Wave fourteen
 
 56. ✅ **Painted Memories.** The journal's sketchbook holds eight sketches of places around the island, drawn in-engine from the real spots. Stand where a sketch was drawn to recover the memory: a short scene from the Painters' past, kept in the journal.
-57. **Audio polish.** A whistle melody, hoofbeats that follow the gait, splashes and chimes for fishing and critters, and a soft hum inside the shrines.
+57. ✅ **Audio polish.** A whistle melody, hoofbeats that follow the gait, splashes and chimes for fishing and critters, and a soft hum inside the shrines.
 58. **Regression and docs.**
 
 The work continues through this list until the budget is used up.

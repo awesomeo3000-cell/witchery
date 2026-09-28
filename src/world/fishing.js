@@ -139,7 +139,7 @@ export class Fishing {
             f.jump = 6 + Math.random() * 12;
             G.water?.ripple(x, z, 0.5);
           } else {
-            if (k < dt / 0.7 + 0.001) { G.water?.ripple(x, z, 0.4); if (Math.hypot(x - p.pos.x, z - p.pos.z) < 40) G.audio.play('splat', 0.25); }
+            if (k < dt / 0.7 + 0.001) { G.water?.ripple(x, z, 0.4); if (Math.hypot(x - p.pos.x, z - p.pos.z) < 40) G.audio.play('fishSplash', 0.6); }
             f.pos.y = Math.sin(k * Math.PI) * 0.9 - 0.1;
             pitch = (k - 0.5) * 1.6;
           }

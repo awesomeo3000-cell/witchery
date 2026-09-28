@@ -6,6 +6,7 @@ const CAPTIONS = {
   bossRoar: 'A deep roar', thunder: 'Thunder rumbles', hurt: 'You take a hit', shard: 'A Prism Shard rings out',
   sprite: 'A bright chime', waypoint: 'An easel hums awake', break: 'Something shatters', shield: 'Your strike is blocked',
   quest: 'A cheerful fanfare', flurry: 'Time slows', solve: 'A satisfying chime',
+  whistle: 'A whistled tune', memory: 'A distant melody',
 };
 
 export class Audio {
@@ -162,6 +163,12 @@ export class Audio {
       case 'thunder': this.noise(2.5, 90, 0.5, 0.55 * vol, 'lowpass', 40); this.noise(0.5, 400, 0.5, 0.25 * vol, 'lowpass', 80); break;
       case 'flurry': this.tone(1200, 0.6, 'sine', 0.15 * vol, 0.4); this.noise(0.6, 3000, 0.5, 0.2 * vol, 'highpass', 800); break;
       case 'chat': this.tone(880, 0.08, 'sine', 0.1 * vol); break;
+      // Two-note call and a rising trill, like calling a horse
+      case 'whistle': [[0, 0.16, 0], [7, 0.3, 0.2], [12, 0.12, 0.55], [14, 0.12, 0.64], [12, 0.35, 0.73]].forEach(([n, d, t]) => this.tone(1320 * Math.pow(2, n / 12), d, 'sine', 0.12 * vol, 1.02, t)); break;
+      case 'hoof': this.noise(0.05, 420 + Math.random() * 120, 1.2, 0.12 * vol, 'lowpass'); this.tone(95, 0.06, 'sine', 0.1 * vol, 0.7); break;
+      case 'fishSplash': this.noise(0.25, 1400, 0.6, 0.12 * vol, 'bandpass', 500); this.tone(700, 0.08, 'sine', 0.04 * vol, 2.2, 0.03); break;
+      case 'critter': [0, 7, 12].forEach((n, i) => this.tone(1760 * Math.pow(2, n / 12), 0.1, 'sine', 0.06 * vol, 1, i * 0.05)); break;
+      case 'memory': [0, 3, 7, 10, 7, 3].forEach((n, i) => this.tone(392 * Math.pow(2, n / 12), 0.9, 'sine', 0.08 * vol, 1, i * 0.28)); break;
       case 'quest': [0, 4, 7, 12].forEach((n, i) => this.tone(523 * Math.pow(2, n / 12), 0.3, 'triangle', 0.14 * vol, 1, i * 0.1)); [7, 12, 16].forEach((n) => this.tone(523 * Math.pow(2, n / 12), 0.9, 'sine', 0.1 * vol, 1, 0.45)); break;
       case 'waypoint': [0, 5, 9, 12].forEach((n, i) => this.tone(440 * Math.pow(2, n / 12), 0.5, 'sine', 0.12 * vol, 1, i * 0.1)); break;
       default: break;
@@ -351,6 +358,10 @@ export class Audio {
     const wl = under ? 0.01 : 0.025 + Math.min(0.09, Math.max(0, p.pos.y - 40) * 0.0006) + (p.state === 'ride' || p.state === 'glide' ? Math.min(0.12, speed * 0.004) : 0);
     wind.g.gain.setTargetAtTime(wl, now, 0.5);
     wind.f.frequency.setTargetAtTime(400 + speed * 25, now, 0.5);
+    // A low, breathing hum inside the Paint Shrines
+    const hum = this._loopNoise('hum', 'bandpass', 180, 6);
+    const inShrine = under && G.shrines && G.shrines.list.some((s) => Math.abs(p.pos.y - s.origin.y) < 30 && Math.hypot(p.pos.x - s.origin.x, p.pos.z - s.origin.z) < 40);
+    hum.g.gain.setTargetAtTime(inShrine ? 0.05 + Math.sin(now * 0.8) * 0.02 : 0, now, 1.2);
     const surf = this._loopNoise('surf', 'lowpass', 700, 0.5);
     const coast = !under && G.terrain ? G.terrain.heightAt(p.pos.x, p.pos.z) < 4 && p.pos.y < 20 : false;
     surf.g.gain.setTargetAtTime(coast ? 0.05 + Math.sin(now * 0.6) * 0.03 : 0, now, 0.8);

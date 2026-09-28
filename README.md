@@ -148,7 +148,7 @@ Bring every 4 sprites to Pip in Palette Hollow for a Heart Container or Stamina 
 
 ## Music
 
-The score is generated live and changes with what you're doing: gentle piano for exploring, slower at night, sparse plucks over a heartbeat while sneaking, airy pads when soaring on the brush, drums for skirmishes, driving beats for Sky Races, and full battle themes for bosses. Changes land on the bar line, so they stay musical.
+The score is generated live and changes with what you're doing: gentle piano for exploring, slower at night, sparse plucks over a heartbeat while sneaking, airy pads when soaring on the brush, drums for skirmishes, driving beats for Sky Races, and full battle themes for bosses. Changes land on the bar line, so they stay musical. Sound effects are synthesised too: your Brushbuck's hoofbeats follow its gait, your whistle is a little two-note call, fish splash as they leap, caught critters chime, recovered memories play a slow melody, and the Paint Shrines hum softly.
 
 ## After the credits
 
