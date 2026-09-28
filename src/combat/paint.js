@@ -5,6 +5,7 @@
 //   bloom  -> vines (roots enemies; on walls: climbable vine ladder)
 import * as THREE from 'three';
 import { G, COLORS } from '../core/ctx.js';
+import { VILLAGE } from '../world/layout.js';
 import { makeElementSplat } from '../world/props.js';
 import { brushStats } from '../world/shop.js';
 
@@ -13,6 +14,9 @@ const UP = new THREE.Vector3(0, 1, 0);
 const GRAVITY = 16;
 const MAX_SPLATS = 160;
 const SPLAT_LIFE = { fire: 7, ice: 22, bounce: 25, vine: 40 };
+export const WILDFIRE_HUE = 0.6; // grass this golden is dry enough to catch
+export const WILDFIRE_GEN = 5; // how many hops a fire can creep from where it was painted
+export const WILDFIRE_MAX = 24;
 
 export class PaintSystem {
   constructor(scene) {
@@ -91,6 +95,30 @@ export class PaintSystem {
     }
   }
 
+  // Wildfire: Ember on dry, golden grass creeps outward a few metres at a time (not in rain, not in
+  // the village). Only the painter's own fires spread, and each new patch is shared like any paint.
+  _dry(x, z) {
+    const t = G.terrain;
+    if (!t || Math.hypot(x - VILLAGE.x, z - VILLAGE.z) < VILLAGE.r + 10) return false;
+    return t.heightAt(x, z) > 1.5 && t.hueAt(x, z) > WILDFIRE_HUE && t.grassAt(x, z) > 0.3;
+  }
+
+  _spread(s, dt) {
+    if (s.gen >= WILDFIRE_GEN || (s.spreads || 0) >= 2 || s.life < 1.5) return;
+    s.spreadT = (s.spreadT ?? 0.9 + Math.random() * 0.8) - dt;
+    if (s.spreadT > 0) return;
+    s.spreadT = 1.2 + Math.random() * 0.8;
+    if (G.weather?.raining || !this._dry(s.pos.x, s.pos.z)) return;
+    if (this.splats.filter((q) => q.gen > 0 && q.life > 0 && q.element === 'fire').length >= WILDFIRE_MAX) return;
+    const a = Math.random() * Math.PI * 2, d = 2.4 + Math.random() * 1.2;
+    const x = s.pos.x + Math.cos(a) * d, z = s.pos.z + Math.sin(a) * d;
+    if (!this._dry(x, z)) return;
+    if (this.splats.some((q) => q.element === 'fire' && q.life > 1 && Math.hypot(q.pos.x - x, q.pos.z - z) < 1.8)) return;
+    s.spreads = (s.spreads || 0) + 1;
+    const p = new THREE.Vector3(x, G.terrain.heightAt(x, z), z);
+    this.paintAt(p, G.terrain.normalAt ? G.terrain.normalAt(x, z, new THREE.Vector3()) : new THREE.Vector3(0, 1, 0), s.color, 'terrain', { radius: 1.3, gen: s.gen + 1 });
+  }
+
   // Launch a glob. owner: 'local' | peerId. cosmetic globs never create splats.
   throwGlob(origin, vel, colorIdx, owner = 'local', opts = {}) {
     const mesh = new THREE.Mesh(this.globGeo, this.globMats[colorIdx]);
@@ -136,7 +164,7 @@ export class PaintSystem {
     const radius = opts.radius || 1.6;
     const vertical = Math.abs(n.y) < 0.5;
     const onWater = kind === 'water';
-    const splat = { pos: point.clone(), normal: n, color: colorIdx, element: el, life: SPLAT_LIFE[el], max: SPLAT_LIFE[el], objs: [], radius, vertical, onWater, kind, hostile: !!opts.hostile };
+    const splat = { pos: point.clone(), normal: n, color: colorIdx, element: el, life: SPLAT_LIFE[el], max: SPLAT_LIFE[el], objs: [], radius, vertical, onWater, kind, hostile: !!opts.hostile, local: !opts.net, gen: opts.gen || 0 };
     if (opts.hostile) splat.life = splat.max = el === 'fire' ? 5 : 8;
 
     if (onWater) {
@@ -398,6 +426,7 @@ export class PaintSystem {
         if (Math.random() < dt * 8) G.particles.flames(s.pos, s.radius * 0.7, 1, 0.6); // sparks; the tongues are cel flames
         // Shimmering motes rising in the heat show where the updraft is
         if (!s.onWater && Math.random() < dt * 6) G.particles.burst(s.pos.clone().setY(s.pos.y + 1 + Math.random() * 3), { count: 1, color: 0xffd0a0, speed: 0.3, up: 6, life: 1.6, size: 0.25, pool: 'glow', gravity: -2, alpha: 0.6 });
+        if (s.local && s.kind === 'terrain') this._spread(s, dt);
       }
       if (s.vines) {
         const g = Math.min(1, age * 2.5);
@@ -459,7 +488,7 @@ export class PaintSystem {
   // Local paint action: create + broadcast
   paintAt(point, normal, colorIdx, kind, opts = {}) {
     const s = this.createSplat(point, normal, colorIdx, kind, opts);
-    if (G.net) G.net.send({ t: 'paint', p: [point.x, point.y, point.z].map((v) => +v.toFixed(2)), n: [normal.x, normal.y, normal.z].map((v) => +v.toFixed(2)), c: colorIdx, k: kind, o: { radius: opts.radius, wallTop: opts.wallTop, wallBottom: opts.wallBottom, loud: opts.loud, noClimb: opts.noClimb, hostile: opts.hostile } });
+    if (G.net) G.net.send({ t: 'paint', p: [point.x, point.y, point.z].map((v) => +v.toFixed(2)), n: [normal.x, normal.y, normal.z].map((v) => +v.toFixed(2)), c: colorIdx, k: kind, o: { radius: opts.radius, wallTop: opts.wallTop, wallBottom: opts.wallBottom, loud: opts.loud, noClimb: opts.noClimb, hostile: opts.hostile, gen: opts.gen } });
     return s;
   }
 

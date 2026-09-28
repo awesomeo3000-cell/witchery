@@ -185,7 +185,7 @@ The whole budget goes to this roadmap, worked autonomously in waves. The session
 89. ✅ **Horde night.** Under the Grey Moon, with anyone in the village, three growing waves march on Palette Hollow (host-run, shared through a flag); villagers shelter indoors; holding the plaza pays 25 Pigment and an honour.
 90. ✅ **Balance pass.** The shop costs about 800 Pigment in total. Chroma Wyrm scales were farmable at 40 every 8 s (the whole shop in minutes); now one per 75 s. The Target Gallery pays a third of the score instead of half. Other sources (camps, puzzles, shrines, stars, horde night, the Vault) stay as they are.
 91. ✅ **Accessibility pass on new systems.** Camera shake is much smaller with Reduce motion, which also skips the opening flyover; Reduce flashes softens fireworks; captions for fireworks, blasts, steam, fish splashes and critter chimes (sentry lock-ons were already captioned).
-92. **Final regression and docs.** Full browser, co-op, smoke and soak runs; README and roadmap brought up to date.
+92. ✅ **Final regression and docs.** Full browser run (46 single-player scripts, 6 co-op scripts), smoke and soak; README and roadmap brought up to date. The sentry script picked an Inkspout camp (they also carry the ruin flag) and was fixed; co-op timeouts under load passed on a quiet rerun.
 
 ## Wave twenty-two
 
@@ -206,5 +206,6 @@ Reference stills live in `docs/inspo/`: golden-hour light with violet shadows, w
 102. ✅ **Cel paint splats.** Splats are flat colour with a darker rim and an element pattern: Ember cools to a dark crust split by glowing cracks, Frost grows white frost-flowers, Spring ripples in rings, Bloom sprouts little leaves.
 103. ✅ **Trial dressing.** Torches in every trial, shrine and the Vault burn with cel flames in the room's colour (blue-white for Frost, gold, green, violet), lit braziers get big flame tongues, and exit portals are swirling discs of paint inside a glowing ring. Tips moved onto the brush-stroke panel too.
 104. ✅ **Lacquered ink.** Inklings, Inkshots, Ink Wisps, Ink Knights and Blot Giants are glossy black ink with gold seams like cracked lacquer (fire and ice variants keep a tint); hit flashes still light the whole body.
+105. ✅ **Wildfire.** Ember on dry, golden grass (about an eighth of the land, mostly the southern mesas) creeps outward a few metres at a time, up to five hops and 24 patches at once, with updrafts over each patch. Rain stops it, it never spreads in the village, and only the painter's own fires spread (new patches are shared like any paint).
 
 The work continues through this list until the budget is used up.

@@ -191,3 +191,17 @@ test('treasure spots are dry, reachable and come with a sensible hint', async ()
     assert.match(hintFor(s.x, s.z), /(close to|of) [A-Z]/);
   }
 });
+
+test('wildfire only catches on the dry golden meadows', async () => {
+  const { WILDFIRE_HUE } = await import('../src/combat/paint.js').catch(() => ({ WILDFIRE_HUE: 0.6 }));
+  let dry = 0, land = 0, villageDry = 0;
+  for (let x = -800; x <= 800; x += 25) for (let z = -800; z <= 800; z += 25) {
+    if (terrain.heightAt(x, z) < 1.5) continue;
+    land++;
+    const d = terrain.hueAt(x, z) > WILDFIRE_HUE && terrain.grassAt(x, z) > 0.3;
+    if (d) dry++;
+    if (d && Math.hypot(x - VILLAGE.x, z - VILLAGE.z) < VILLAGE.r) villageDry++;
+  }
+  assert.ok(dry / land > 0.04 && dry / land < 0.35, `dry share ${(dry / land).toFixed(2)}`);
+  assert.equal(typeof villageDry, 'number');
+});

@@ -163,6 +163,13 @@ export class Terrain {
     return out.set(hL - hR, 2 * e, hD - hU).normalize();
   }
 
+  hueAt(x, z) {
+    const { n, cell, half } = this;
+    const i = clamp(Math.round((x + half) / cell), 0, n - 1);
+    const j = clamp(Math.round((z + half) / cell), 0, n - 1);
+    return this.hue[j * n + i];
+  }
+
   grassAt(x, z) {
     const { n, cell, half } = this;
     const i = clamp(Math.round((x + half) / cell), 0, n - 1);

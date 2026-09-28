@@ -80,6 +80,7 @@ Each colour has its own ink bottle, which refills slowly over time. Ink flowers 
 Heat rises: glide over burning Ember paint on the ground and the updraft carries you up, like a campfire.
 
 Colours react with each other:
+- **Ember on dry grass** spreads: on the golden meadows and mesas a fire creeps outward a few metres at a time (never in the village, and not in the rain), lifting you on its updrafts.
 - **Ember on a Spring pad** sets it off in a blast that burns and knocks back ink creatures nearby.
 - **Frost on burning Ember paint** boils into a cloud of steam. While you stand in it, enemies that haven't spotted you yet can't see you.
 - **Bloom on water** grows a lily pad you can stand on. It's smaller than a Frost floe but lasts longer, and Ember burns it.
