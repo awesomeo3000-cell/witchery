@@ -278,3 +278,10 @@ body.reduce-motion .potion.shake { animation: none; }
 .mm.mq .dot { border-radius: 3px; transform: rotate(45deg); width: 11px; height: 11px; }
 .mm.mboss .dot { border-radius: 2px; border-color: #ffb0b0; }
 .cmp .ic.ping { border-radius: 50%; font: 900 11px var(--sans); color: #fff; box-shadow: 0 0 8px #fff; }
+#race { position: absolute; top: 118px; left: 50%; transform: translateX(-50%); display: flex; gap: 14px; align-items: baseline; background: rgba(10,12,24,0.55); padding: 6px 18px; border-radius: 14px; font: 700 13px var(--sans); zoom: var(--hud-scale, 1); }
+#race b { font: 700 14px var(--serif); color: var(--gold); letter-spacing: 1px; }
+#race .t { font: 800 24px var(--sans); font-variant-numeric: tabular-nums; min-width: 84px; text-align: center; }
+#race .b { opacity: 0.75; }
+.cmp .ic.race { border-radius: 50%; font: 900 12px var(--sans); color: #fff; }
+.cmp .ic.race.next { background: #ffd84a; color: #3a2a00; box-shadow: 0 0 10px #ffd84a; }
+.mm.mrace .dot { border-radius: 50%; box-shadow: 0 0 0 2px #ffd84a; }

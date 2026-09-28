@@ -99,6 +99,8 @@ Bring every 4 sprites to Pip in Palette Hollow for a Heart Container or Stamina 
 - **The Grey Moon.** Some nights a violet moon rises at midnight. Every camp and chest refreshes, enemies hit harder, and ink creatures roam until dawn.
 - **Field bosses.** Blot Giants sleep in the meadows: sneak up for bonus damage and hit the eye up top to topple them. Stone Sentinels pose as boulders until you get close, and only take damage on the crystal on their back, so bounce or glide onto them. Both drop a buff tonic and return after a while.
 - **Villager quests.** Four villagers in Palette Hollow have errands, marked with **!** (and **?** when you can turn one in). Gather dyes for Mira, fetch Tilly's kite from a sky islet, bring down both field bosses for Bram, and repaint Painter Ochre's four grey statues out by the ruins. Rewards are permanent: more stamina, a heart container, stronger strikes and faster ink. Active quests are listed in the satchel (I), and their targets appear on the compass.
+- **Sky Races.** Three ring courses for brush flight: Lakeside Loop by the village, Canyon Run through the southern mesas, and Islet Hop around the Sky Citadel. Fly through a golden start gate while riding to begin. Each ring tops up your stamina, and room records are saved and shown on the map.
+- **Pings.** Press V to mark the spot you're looking at. Friends see a beacon and a compass marker.
 - **Living water.** The sea has rolling swells that grow in storms, sky reflections, caustics in the shallows, and ripples when you splash, swim or paint it.
 - **Boss intros**, a colour-draining final fight, and a credits roll with your party's names.
 

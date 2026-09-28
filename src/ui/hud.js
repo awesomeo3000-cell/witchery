@@ -595,6 +595,7 @@ export class HUD {
     }
     if (G.peers) for (const peer of G.peers.values()) add(peer.pos.x, peer.pos.z, 'peer', `#${peer.look.hood.toString(16).padStart(6, '0')}`, peer.name);
     if (G.quests) G.quests.mapMarkers(add);
+    if (G.races) G.races.mapMarkers(add);
     const p = G.player;
     const me = add(p.pos.x, p.pos.z, 'me', '', 'You');
     me.querySelector('.dot').style.transform = `rotate(${-p.camYaw}rad)`;

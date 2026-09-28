@@ -123,3 +123,10 @@ test('key rebinding swaps conflicting keys and unbinds freed defaults', () => {
   assert.equal(keyLabel('ShiftLeft'), 'Shift');
   assert.equal(keyLabel('Digit3'), '3');
 });
+
+test('race times format as m:ss.s', async () => {
+  const { fmtTime } = await import('../src/world/races.js');
+  assert.equal(fmtTime(0), '0:00.0');
+  assert.equal(fmtTime(9.46), '0:09.5');
+  assert.equal(fmtTime(83.2), '1:23.2');
+});

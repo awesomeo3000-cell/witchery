@@ -21,6 +21,7 @@ import { Forage } from './world/forage.js';
 import { Quests } from './world/quests.js';
 import { AccessUI } from './ui/access.js';
 import { Pings } from './ui/ping.js';
+import { Races } from './world/races.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
 import { Player } from './player/player.js';
@@ -186,6 +187,7 @@ class Game {
     G.hud = new HUD();
     G.quests = new Quests(G.scene);
     G.pings = new Pings(G.scene);
+    G.races = new Races(G.scene);
     G.cine = new Cinematic();
     G.guide = new Guide();
     G.photo = new PhotoMode();
@@ -593,6 +595,7 @@ class Game {
     G.forage.update(dt);
     G.quests.update(dt);
     G.pings.update(dt);
+    G.races.update(dt);
     G.greyMoon.update(dt);
     G.enemies.update(wdt);
     G.paint.update(wdt);
