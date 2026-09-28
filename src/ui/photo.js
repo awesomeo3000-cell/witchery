@@ -15,7 +15,7 @@ export class PhotoMode {
     this.fov = 60;
     this.capture = false;
     window.addEventListener('keydown', (e) => {
-      if (e.code === 'KeyP' && G.game && G.game.running && !G.game.chatOpen && !(G.forage && G.forage.open)) this.toggle();
+      if (G.input.logical(e.code) === 'KeyP' && G.game && G.game.running && !G.game.chatOpen && !(G.forage && G.forage.open)) this.toggle();
     });
   }
 

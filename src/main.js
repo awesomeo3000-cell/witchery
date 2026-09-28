@@ -19,6 +19,7 @@ import { Sprites } from './world/sprites.js';
 import { Weather } from './world/weather.js';
 import { Forage } from './world/forage.js';
 import { Quests } from './world/quests.js';
+import { AccessUI } from './ui/access.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
 import { Player } from './player/player.js';
@@ -325,6 +326,7 @@ class Game {
     $('set-tips').addEventListener('change', (e) => {
       if (e.target.checked) { G.guide.seen.clear(); G.guide._save(); e.target.checked = false; G.hud.toast('Tips will show again', '#ffe08a'); }
     });
+    this.access = new AccessUI(saveSettings);
     const q = $('set-quality');
     q.value = G.settings.quality || 'high';
     q.addEventListener('change', () => { this.applyQuality(q.value); saveSettings(); });
@@ -372,7 +374,7 @@ class Game {
         G.input.unlock();
         setTimeout(() => input.focus(), 0);
         e.preventDefault();
-      } else if (e.code === 'KeyM' && G.input.enabled && !this.chatOpen) {
+      } else if (G.input.logical(e.code) === 'KeyM' && G.input.enabled && !this.chatOpen) {
         this.toggleMap();
       }
     });

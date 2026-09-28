@@ -255,3 +255,23 @@ body.touch #controls { display: none; }
 .tbtn small { font: 700 8px var(--sans); opacity: 0.8; }
 .tbtn.down, .tbtn.on { background: rgba(255,224,138,0.45); }
 .tbtn.t-jump, .tbtn.t-atk { width: 66px; height: 66px; }
+
+/* Accessibility */
+#hearts, #buffs, #compass, #prisms, #net-status, #objective, #tip, #controls, #inks, #stamina, #flight, #prompt, #toasts, #dialog, #bossbar, #chat, #wheel { zoom: var(--hud-scale, 1); }
+.sym { display: none; }
+body.symbols .sym { display: inline; }
+.potion .flask { position: relative; }
+.potion .sym { position: absolute; inset: 0; display: none; place-items: center; font: 900 18px var(--sans); color: #fff; text-shadow: 0 0 3px #000, 0 0 6px #000; }
+body.symbols .potion .sym { display: grid; }
+#wheel .seg .sym { display: none; font-size: 22px; }
+body.symbols #wheel .seg .sym { display: inline; }
+.cmp .ic.diamond .sym { font: 900 9px var(--sans); color: #fff; transform: rotate(-45deg); text-shadow: 0 0 2px #000; }
+body.symbols .cmp .ic.diamond { display: grid; place-items: center; }
+body.reduce-motion .potion.shake { animation: none; }
+#pause .menu-card { max-height: 92vh; overflow-y: auto; }
+#pause details { margin: 10px 0; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 6px 12px; }
+#pause summary { cursor: pointer; font: 700 14px var(--serif); letter-spacing: 2px; color: var(--gold); padding: 4px 0; }
+#binds { display: grid; gap: 4px; margin: 6px 0; }
+#binds .bind { display: flex; align-items: center; justify-content: space-between; font: 600 13px var(--sans); }
+#binds .bind button { width: 110px; margin: 0; padding: 4px 8px; font-size: 13px; }
+#binds-reset { margin-top: 6px; }

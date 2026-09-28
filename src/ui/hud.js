@@ -1,5 +1,6 @@
 // DOM overlay HUD: hearts, compass, prism trials, ink potions, stamina wheel, labels, map, chat.
 import * as THREE from 'three';
+import { keyFor, SYMBOLS } from './access.js';
 import { G, COLORS, COUNTER } from '../core/ctx.js';
 import { angleDiff } from '../core/math.js';
 import { TRIALS, CITADEL, WAYPOINTS, WORLD_SIZE } from '../world/layout.js';
@@ -33,20 +34,39 @@ export class HUD {
     this._buildPrisms();
     this._buildCompass();
     this._buildWheel();
+    this.renderControls();
     this.v = new THREE.Vector3();
     window.addEventListener('keydown', (e) => {
-      if (e.code === 'KeyH' && G.input?.enabled && G.input.locked) $('controls').classList.toggle('hidden');
+      if (G.input && G.input.logical(e.code) === 'KeyH' && G.input.enabled && G.input.locked) $('controls').classList.toggle('hidden');
     });
   }
 
   show(v) { this.el.classList.toggle('hidden', !v); }
+
+  // Keyboard legend, rebuilt when bindings change
+  renderControls() {
+    const k = (c) => `<kbd>${keyFor(c)}</kbd>`;
+    $('controls-hide').textContent = `${keyFor('KeyH')} to hide`;
+    $('controls-grid').innerHTML = [
+      `${k('KeyW')}${k('KeyA')}${k('KeyS')}${k('KeyD')} Move`, '<kbd>Mouse</kbd> Look',
+      `${k('Space')} Jump · Glide`, `${k('ShiftLeft')} Sprint · Boost${G.settings.toggleSprint ? ' (toggle)' : ''}`,
+      '<kbd>LMB</kbd> Strike · hold to spin', '<kbd>RMB</kbd>+<kbd>LMB</kbd> Aim · tap flick · hold paint',
+      `${k('KeyQ')}/<kbd>MMB</kbd> Lock on`, `${k('Space')} Dodge (locked on)`,
+      `<kbd>1-4</kbd>/${k('KeyE')} Colour`, `${k('Tab')} Colour wheel`,
+      `${k('KeyR')} Ride the brush`, `${k('KeyC')} Descend (riding)`,
+      `${k('KeyF')} Interact`, `${k('KeyM')} Map · <kbd>Enter</kbd> Chat`,
+      `${k('KeyI')} Satchel`, `${k('KeyG')} Quick eat · ${k('KeyP')} Photo`,
+    ].map((h) => `<div>${h}</div>`).join('');
+  }
+
+  _continueHint() { return G.input && G.input.usingPad ? 'A to continue' : `${keyFor('KeyF')} to continue`; }
 
   _buildInks() {
     const row = $('ink-row');
     this.potions = COLORS.map((c, i) => {
       const p = document.createElement('div');
       p.className = 'potion';
-      p.innerHTML = `<div class="cork"></div><div class="neck"></div><div class="flask"><div class="fill" style="background:linear-gradient(${c.light}, ${c.css})"></div></div><div class="key">${i + 1}</div>`;
+      p.innerHTML = `<div class="cork"></div><div class="neck"></div><div class="flask"><div class="fill" style="background:linear-gradient(${c.light}, ${c.css})"></div><div class="sym">${SYMBOLS[i]}</div></div><div class="key">${i + 1}</div>`;
       row.appendChild(p);
       return { el: p, fill: p.querySelector('.fill') };
     });
@@ -56,7 +76,7 @@ export class HUD {
   setColor(i) {
     this.potions.forEach((p, k) => p.el.classList.toggle('active', k === i));
     const n = $('ink-name');
-    n.textContent = COLORS[i].name.toUpperCase();
+    n.innerHTML = `<span class="sym">${SYMBOLS[i]} </span>${COLORS[i].name.toUpperCase()}`;
     n.style.background = `linear-gradient(90deg, ${COLORS[i].css}, ${COLORS[i].light})`;
   }
 
@@ -100,7 +120,7 @@ export class HUD {
       const c = COLORS[t.color];
       const d = document.createElement('div');
       d.className = 'cmp marker';
-      d.innerHTML = `<div class="ic diamond" style="background:${c.css}"></div><div class="dist"></div>`;
+      d.innerHTML = `<div class="ic diamond" style="background:${c.css}"><span class="sym">${SYMBOLS[t.color]}</span></div><div class="dist"></div>`;
       this.compass.appendChild(d);
       this.markers.push({ el: d, dist: d.querySelector('.dist'), pos: () => ({ x: t.x, z: t.z }), show: () => true, done: () => G.flags[`trial_${t.key}`] });
     }
@@ -148,7 +168,7 @@ export class HUD {
       s.style.left = `${150 + Math.cos(a) * 95 - 45}px`;
       s.style.top = `${150 + Math.sin(a) * 95 - 45}px`;
       s.style.background = c.css;
-      s.textContent = c.name;
+      s.innerHTML = `<span class="sym">${SYMBOLS[i]}</span>${c.name}`;
       w.appendChild(s);
       return s;
     });
@@ -192,7 +212,7 @@ export class HUD {
     if (!text) { p.classList.add('hidden'); return; }
     p.classList.remove('hidden');
     p.querySelector('span').textContent = text;
-    p.querySelector('kbd').textContent = G.input && G.input.usingPad ? 'A' : 'F';
+    p.querySelector('kbd').textContent = G.input && G.input.usingPad ? 'A' : keyFor('KeyF');
   }
 
   toast(text, color = '#fff', dur = 2.2) {
@@ -227,7 +247,7 @@ export class HUD {
     d.querySelector('.text').textContent = text;
     this.dialogTimer = 7;
     this.choiceCb = null;
-    d.querySelector('.hint').textContent = 'F to continue';
+    d.querySelector('.hint').textContent = this._continueHint();
   }
 
   // Multiple-choice dialog; answered with number keys / D-pad (see Game loop)
@@ -257,11 +277,12 @@ export class HUD {
     const cb = this.choiceCb;
     this.choiceCb = null;
     this.dialogTimer = 0;
-    $('dialog').querySelector('.hint').textContent = 'F to continue';
+    $('dialog').querySelector('.hint').textContent = this._continueHint();
     cb(i);
   }
 
   flash(color) {
+    if (G.settings.reduceFlash) color = color.replace(/[\d.]+\)$/, (a) => `${Math.min(0.12, parseFloat(a))})`);
     const f = $('flash');
     f.style.transition = 'none';
     f.style.background = color;

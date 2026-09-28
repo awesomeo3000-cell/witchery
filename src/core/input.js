@@ -18,16 +18,29 @@ export class Input {
     this.onPadBack = null;
     window.addEventListener('gamepadconnected', () => { this.usingPad = true; });
 
+    // Key remapping: physical code -> logical code the game reads ('' = unbound)
+    this.map = {};
+    // Logical codes that toggle on press instead of being held (e.g. toggle sprint)
+    this.toggleCodes = new Set();
     window.addEventListener('keydown', (e) => {
       this.usingPad = false;
       if (!this.enabled) return;
       if (e.code === 'Tab' || e.code === 'Space') e.preventDefault();
-      if (!this.keys.has(e.code)) this.pressed.add(e.code);
-      this.keys.add(e.code);
+      const code = this.logical(e.code);
+      if (!code) return;
+      if (this.toggleCodes.has(code)) {
+        if (e.repeat) return;
+        if (this.keys.has(code)) { this.keys.delete(code); this.released.add(code); } else { this.keys.add(code); this.pressed.add(code); }
+        return;
+      }
+      if (!this.keys.has(code)) this.pressed.add(code);
+      this.keys.add(code);
     });
     window.addEventListener('keyup', (e) => {
-      this.keys.delete(e.code);
-      this.released.add(e.code);
+      const code = this.logical(e.code);
+      if (!code || this.toggleCodes.has(code)) return;
+      this.keys.delete(code);
+      this.released.add(code);
     });
     window.addEventListener('blur', () => {
       this.keys.clear();
@@ -66,6 +79,8 @@ export class Input {
       if (this.onLockChange) this.onLockChange(this.locked);
     });
   }
+
+  logical(code) { return code in this.map ? this.map[code] : code; }
 
   lock() {
     try {

@@ -127,7 +127,7 @@ export class Forage {
     $('inv-clear').onclick = () => { for (const k of this.pot) this.inv[k]++; this.pot = []; this.render(); };
     window.addEventListener('keydown', (e) => {
       if (!this.open) return;
-      if (e.code === 'Escape' || e.code === 'KeyI') { e.preventDefault(); this.closeUI(); }
+      if (e.code === 'Escape' || G.input.logical(e.code) === 'KeyI') { e.preventDefault(); this.closeUI(); }
     });
   }
 

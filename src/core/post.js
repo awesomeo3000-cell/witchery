@@ -77,6 +77,7 @@ export class PostFX {
         uFlurry: { value: 0 },
         uHurt: { value: 0 },
         uUnder: { value: 0 },
+        uMotion: { value: 1 },
         uAspect: { value: 1 },
         uSat: { value: 1.12 },
         uFilter: { value: 0 },
@@ -84,7 +85,7 @@ export class PostFX {
       vertexShader: VERT,
       fragmentShader: /* glsl */`
         uniform sampler2D tColor;
-        uniform float uTime, uSpeed, uFlurry, uHurt, uUnder, uAspect, uSat;
+        uniform float uTime, uSpeed, uFlurry, uHurt, uUnder, uMotion, uAspect, uSat;
         uniform int uFilter;
         varying vec2 vUv;
         float hh(float n){ return fract(sin(n) * 43758.5453); }
@@ -92,7 +93,7 @@ export class PostFX {
         void main(){
           vec2 suv = vUv;
           // Underwater: wobble the image and wash it teal
-          if (uUnder > 0.0) suv += vec2(sin(vUv.y * 24.0 + uTime * 2.1), cos(vUv.x * 19.0 + uTime * 1.7)) * 0.004 * uUnder;
+          if (uUnder > 0.0) suv += vec2(sin(vUv.y * 24.0 + uTime * 2.1), cos(vUv.x * 19.0 + uTime * 1.7)) * 0.004 * uUnder * uMotion;
           vec3 c = texture2D(tColor, suv).rgb;
           if (uUnder > 0.0) {
             float lu = dot(c, vec3(0.3, 0.59, 0.11));
@@ -181,9 +182,11 @@ export class PostFX {
     this.bloom.render(r, null, this.hazeRT, 0, false);
     const g = this.gradeMat.uniforms;
     g.uTime.value = G.time;
-    g.uSpeed.value = fx.speed || 0;
+    const calm = G.settings.reduceMotion;
+    g.uSpeed.value = calm ? 0 : fx.speed || 0;
+    g.uMotion.value = calm ? 0 : 1;
     g.uFlurry.value = fx.flurry || 0;
-    g.uHurt.value = fx.hurt || 0;
+    g.uHurt.value = (fx.hurt || 0) * (G.settings.reduceFlash ? 0.35 : 1);
     g.uUnder.value += ((fx.under || 0) - g.uUnder.value) * 0.3;
     g.uSat.value = fx.sat ?? 1.12;
     g.uFilter.value = G.photo && G.photo.active ? G.photo.filter : 0;

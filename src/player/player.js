@@ -984,7 +984,8 @@ export class Player {
     }
     const look = anchor.clone().addScaledVector(back, -10);
     cam.lookAt(look);
-    const fovT = this.state === 'ride' ? (Math.hypot(this.vel.x, this.vel.y, this.vel.z) > 26 ? 82 : 74) : this.aiming ? 55 : 65;
+    let fovT = this.state === 'ride' ? (Math.hypot(this.vel.x, this.vel.y, this.vel.z) > 26 ? 82 : 74) : this.aiming ? 55 : 65;
+    if (G.settings.reduceMotion) fovT = this.aiming ? 58 : 68;
     cam.fov = lerp(cam.fov, fovT, 1 - Math.exp(-4 * dt));
     cam.updateProjectionMatrix();
   }

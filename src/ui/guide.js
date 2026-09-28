@@ -1,11 +1,16 @@
 // Contextual one-time tips and the current-objective tracker.
 import { G } from '../core/ctx.js';
+import { keyFor } from './access.js';
 import { TRIALS, CITADEL } from '../world/layout.js';
 import { shardCount, spriteCount } from '../core/progress.js';
 
 const $ = (id) => document.getElementById(id);
 
-const KB = { attack: 'LMB', aim: 'RMB', lock: 'Q', jump: 'Space', ride: 'R', interact: 'F', colour: '1-4', map: 'M', sprint: 'Shift', descend: 'C' };
+const KB = {
+  attack: 'LMB', aim: 'RMB', colour: '1-4',
+  get lock() { return keyFor('KeyQ'); }, get jump() { return keyFor('Space'); }, get ride() { return keyFor('KeyR'); },
+  get interact() { return keyFor('KeyF'); }, get map() { return keyFor('KeyM'); }, get sprint() { return keyFor('ShiftLeft'); }, get descend() { return keyFor('KeyC'); },
+};
 const PAD = { attack: 'X', aim: 'LT', lock: 'LB', jump: 'A', ride: 'Y', interact: 'A', colour: 'D-pad', map: 'View', sprint: 'B', descend: 'L3' };
 const k = (a) => `<kbd>${(G.input && G.input.usingPad ? PAD : KB)[a]}</kbd>`;
 
