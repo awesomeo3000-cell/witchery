@@ -522,6 +522,7 @@ export class EnemyManager {
   }
 
   damagePlayer(pl, dmg, from, element) {
+    if (G.greyMoon && G.greyMoon.active) dmg = Math.ceil(dmg * 1.25);
     if (pl.local) G.player.takeDamage(dmg, from, { element });
     else G.net?.send({ t: 'pdmg', to: pl.id, d: dmg, f: [from.x, from.y, from.z], e: element });
   }
@@ -784,6 +785,7 @@ export class EnemyManager {
       k: this.pickups.map((k) => [k.id, k.kind, r(k.pos.x), r(k.pos.y), r(k.pos.z)]),
       d: G.sky ? r(G.sky.dayT * 1000) / 1000 : 0,
       wx: G.weather ? G.weather.code() : 0,
+      gm: G.greyMoon && G.greyMoon.active ? 1 : 0,
     };
   }
 
@@ -845,6 +847,7 @@ export class EnemyManager {
       if (!kseen.has(this.pickups[i].id)) { this.scene.remove(this.pickups[i].mesh); this.pickups.splice(i, 1); }
     }
     if (G.weather && typeof m.wx === 'number') G.weather.sync(m.wx);
+    if (G.greyMoon && typeof m.gm === 'number') G.greyMoon.sync(m.gm);
     if (G.sky && typeof m.d === 'number' && Math.abs(G.sky.dayT - m.d) > 0.01) G.sky.setTime(m.d);
   }
 

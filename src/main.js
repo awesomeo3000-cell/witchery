@@ -18,6 +18,7 @@ import { Trials } from './trials/trials.js';
 import { Sprites } from './world/sprites.js';
 import { Weather } from './world/weather.js';
 import { Forage } from './world/forage.js';
+import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
 import { Player } from './player/player.js';
 import { makeCharacter } from './player/character.js';
@@ -176,6 +177,7 @@ class Game {
     G.sprites = new Sprites(G.scene);
     G.weather = new Weather(G.scene);
     G.forage = new Forage(G.scene);
+    G.greyMoon = new GreyMoon();
     G.hud = new HUD();
     G.cine = new Cinematic();
     G.guide = new Guide();
@@ -388,9 +390,10 @@ class Game {
     const [cmd, arg] = text.slice(1).split(/\s+/);
     if (G.net.connected && !G.net.isHost) { G.hud.chat('', 'Only the host can use commands.', '#ffb0b0'); return; }
     if (cmd === 'weather' && ['clear', 'cloudy', 'rain', 'storm'].includes(arg)) { G.weather.set(arg); G.hud.chat('', `Weather: ${arg}`, '#dddddd'); return; }
+    if (cmd === 'greymoon') { G.greyMoon.force(); G.hud.chat('', 'The Grey Moon will rise at midnight...', '#c8a8ff'); return; }
     const times = { dawn: 0.26, day: 0.4, noon: 0.5, dusk: 0.72, night: 0.95 };
     if (cmd === 'time' && arg in times) { G.sky.setTime(times[arg]); G.hud.chat('', `Time: ${arg}`, '#dddddd'); return; }
-    G.hud.chat('', 'Commands: /weather clear|cloudy|rain|storm · /time dawn|day|noon|dusk|night', '#dddddd');
+    G.hud.chat('', 'Commands: /weather clear|cloudy|rain|storm · /time dawn|day|noon|dusk|night · /greymoon', '#dddddd');
   }
 
   _closeChat() {
@@ -576,6 +579,7 @@ class Game {
     G.trials.update(wdt);
     G.sprites.update(dt);
     G.forage.update(dt);
+    G.greyMoon.update(dt);
     G.enemies.update(wdt);
     G.paint.update(wdt);
     G.particles.update(wdt);

@@ -172,7 +172,8 @@ export class Grass {
     const sunUp = Math.max(0.2, env.lightDir ? env.lightDir.y : 1);
     u.uLight.value.copy(env.sun.color).multiplyScalar(env.sun.intensity * 0.25 * sunUp)
       .add(env.hemi.color.clone().multiplyScalar(env.hemi.intensity * 0.42));
-    u.uTip.value.copy(env.sun.color);
+    u.uLight.value.multiplyScalar(1 - (env.night || 0) * 0.5);
+    u.uTip.value.copy(env.sun.color).multiplyScalar(1 - (env.night || 0) * 0.8);
     this.mesh.visible = !inDungeonY(G.camera.position.y);
   }
 }

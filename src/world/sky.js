@@ -42,6 +42,8 @@ export class Environment {
         uNight: { value: 0 },
         uDungeon: { value: 0 },
         uFogC: { value: new THREE.Color() },
+        uMoon: { value: new THREE.Color(0.9, 0.95, 1) },
+        uMoonSize: { value: 0 },
       },
       vertexShader: /* glsl */`
         varying vec3 vDir;
@@ -51,7 +53,8 @@ export class Environment {
           gl_Position = p.xyww;
         }`,
       fragmentShader: /* glsl */`
-        uniform vec3 uTop, uHor, uSunDir, uSunCol, uFogC;
+        uniform vec3 uTop, uHor, uSunDir, uSunCol, uFogC, uMoon;
+        uniform float uMoonSize;
         uniform float uNight, uDungeon;
         varying vec3 vDir;
         float h(vec3 p){ return fract(sin(dot(p, vec3(127.1,311.7,74.7))) * 43758.5453); }
@@ -70,7 +73,8 @@ export class Environment {
           col += vec3(0.06) * smoothstep(0.55, 1.0, ci) * smoothstep(0.05, 0.4, d.y) * (1.0 - uNight);
           // Moon
           float md = max(dot(d, -uSunDir), 0.0);
-          col += vec3(0.9,0.95,1.0) * (smoothstep(0.9993, 0.9996, md) * 1.2 + pow(md, 40.0) * 0.15) * uNight;
+          float mEdge = 0.9993 - uMoonSize * 0.0035;
+          col += uMoon * (smoothstep(mEdge, mEdge + 0.0003, md) * 1.2 + pow(md, 40.0 - uMoonSize * 30.0) * (0.15 + uMoonSize * 0.35)) * uNight;
           // Stars
           vec3 q = floor(d * 380.0);
           float s = h(q);
@@ -121,7 +125,10 @@ export class Environment {
     else if (e < 0.1) k = mixKey(KEYS.night, KEYS.dusk, smoothstep(-0.12, 0.1, e));
     else k = mixKey(KEYS.dusk, KEYS.day, smoothstep(0.1, 0.4, e));
     if (dungeon) k = mixKey(KEYS.dungeon, KEYS.dungeon, 0);
-    else if (G.weather) k = G.weather.tint(k);
+    else {
+      if (G.greyMoon) k = G.greyMoon.tint(k);
+      if (G.weather) k = G.weather.tint(k);
+    }
     this.cur = k;
     const night = dungeon ? 0 : 1 - smoothstep(-0.2, 0.05, e);
     this.night = night;
@@ -133,6 +140,9 @@ export class Environment {
     this.skyMat.uniforms.uNight.value = night;
     this.skyMat.uniforms.uDungeon.value = dungeon ? 1 : 0;
     this.skyMat.uniforms.uFogC.value.copy(k.fog);
+    const gm = G.greyMoon ? G.greyMoon.w : 0;
+    this.skyMat.uniforms.uMoonSize.value = gm;
+    this.skyMat.uniforms.uMoon.value.setRGB(0.9, 0.95, 1).lerp(new THREE.Color(0.75, 0.55, 1), gm);
     this.sky.position.copy(G.camera.position);
 
     // Light comes from the moon at night
