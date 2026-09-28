@@ -11,8 +11,8 @@ export const STAY_MS = 4 * 60 * 1000;
 export const stopIndex = (now = Date.now()) => Math.floor(now / STAY_MS) % WAYPOINTS.length;
 
 export const WARES = [
-  { id: 'petals', name: '3 Goldpetals', cost: 15, give: () => { G.forage.inv.goldpetal += 3; } },
-  { id: 'lilies', name: '2 Frostlilies + 2 Emberpeppers', cost: 14, give: () => { G.forage.inv.lily += 2; G.forage.inv.pepper += 2; } },
+  { id: 'bundle', name: '2 Goldpetals, 2 Frostlilies + 2 Emberpeppers', cost: 22, give: () => { G.forage.inv.goldpetal += 2; G.forage.inv.lily += 2; G.forage.inv.pepper += 2; } },
+  { id: 'map', name: 'Treasure map', cost: 18, give: () => G.treasure.buy() },
   { id: 'feast', name: 'Hearty Traveller\'s Feast', cost: 20, give: () => { G.forage.meals.push({ name: "Traveller's Feast", heal: 12, stamina: 60, tonic: 2, dur: 0 }); } },
   { id: 'tonic', name: 'Stamina Tonic (drink now)', cost: 12, give: (p) => { p.stamina = p.maxStamina; p.exhausted = false; p.buffs.swift = Math.max(p.buffs.swift, 120); } },
 ];
@@ -74,11 +74,11 @@ export class Merchant {
       if (i >= WARES.length) { G.hud.dialog('Tinker the Merchant', 'Safe travels! Look for my cart by the easels.'); return; }
       const w = WARES[i];
       if (p.pigment < w.cost) { G.hud.dialog('Tinker the Merchant', `Ah, that one's ${w.cost} Pigment. Come back when your pockets are heavier!`); return; }
+      if (w.give(p) === false) { this.open(); return; }
       p.pigment -= w.cost;
-      w.give(p);
       G.audio.play('pickup');
       G.hud.toast(`Bought ${w.name}`, '#ffd84a', 2);
-      this.open();
+      if (w.id !== 'map') this.open();
     });
   }
 

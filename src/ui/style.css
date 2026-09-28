@@ -356,6 +356,10 @@ body.touch #minimap { display: none; }
 #inv-mem .mem img, #inv-mem .mem .blank { display: block; width: 100%; aspect-ratio: 8 / 5; border-radius: 4px; margin-bottom: 4px; background: #e8dcc0; box-shadow: inset 0 0 12px rgba(80,60,30,0.5); }
 #inv-mem .mem.got { opacity: 1; cursor: pointer; }
 #inv-mem .mem.got b { color: #ffe08a; }
+#inv-mem .tcard { outline: 2px solid rgba(216,50,46,0.6); }
+#inv-mem .tcard small { display: block; font: 400 11px var(--sans, sans-serif); opacity: 0.8; }
+.tmap img { display: block; width: min(420px, 80vw); border-radius: 6px; box-shadow: inset 0 0 12px rgba(80,60,30,0.5); margin: 6px 0; }
+.tmap p { margin: 4px 0 8px; }
 #inv-mem .mem.got:hover { background: rgba(232,220,192,0.2); }
 #inv-jour { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px; }
 #inv-jour .tab { padding: 6px 10px; border-radius: 8px; background: rgba(255,255,255,0.04); font: 700 13px var(--serif); opacity: 0.45; }

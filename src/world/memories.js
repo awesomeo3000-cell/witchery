@@ -17,6 +17,61 @@ export const MEMORIES = [
   { title: 'The Grey Morning', at: [240, 200], look: [VOLCANO.x, 80, VOLCANO.z], text: 'The morning the colour went, the Painters stood here and watched the volcano turn to ash, then the forest, then the sky. The first Painter was the only one who did not cry. She picked up her brush.' },
 ];
 
+// Render the world from a point with a pencil-on-paper look. Returns { canvas, cam } or null.
+export function drawSketch(camPos, target, W = 240, H = 150) {
+  try {
+    const r = G.renderer;
+    const rt = new THREE.WebGLRenderTarget(W, H);
+    const cam = new THREE.PerspectiveCamera(55, W / H, 0.5, 3000);
+    cam.position.copy(camPos);
+    cam.lookAt(target);
+    cam.updateMatrixWorld();
+    // Leave game markers (race gates, shrine beams, the Wyrm) out of the drawing
+    const hide = [G.races?.root, G.shrines?.surface, G.wyrm?.group, G.player?.char?.group, G.rainbow?.mesh, G.world?.barrier?.mesh, G.treasure?.mound].filter((o) => o && o.visible);
+    hide.forEach((o) => { o.visible = false; });
+    // The sky dome follows the main camera; centre it on the sketch camera for the drawing
+    const skyAt = G.sky?.sky ? G.sky.sky.position.clone() : null;
+    if (skyAt) G.sky.sky.position.copy(cam.position);
+    const cu = G.sky?.clouds?.mat?.uniforms?.uCam;
+    const cloudAt = cu ? cu.value.clone() : null;
+    if (cu) cu.value.copy(cam.position);
+    const waterAt = G.water?.mesh ? G.water.mesh.position.clone() : null;
+    if (waterAt) { G.water.mesh.position.x = Math.round(cam.position.x / 4) * 4; G.water.mesh.position.z = Math.round(cam.position.z / 4) * 4; }
+    const prev = r.getRenderTarget();
+    r.setRenderTarget(rt);
+    r.render(G.scene, cam);
+    hide.forEach((o) => { o.visible = true; });
+    if (skyAt) G.sky.sky.position.copy(skyAt);
+    if (cloudAt) cu.value.copy(cloudAt);
+    if (waterAt) G.water.mesh.position.copy(waterAt);
+    const px = new Uint8Array(W * H * 4);
+    r.readRenderTargetPixels(rt, 0, 0, W, H, px);
+    r.setRenderTarget(prev);
+    rt.dispose();
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+    const img = ctx.createImageData(W, H);
+    // Flip vertically, turn to warm graphite on cream paper, and darken edges between tones
+    const lum = new Float32Array(W * H);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const i = ((H - 1 - y) * W + x) * 4;
+      lum[y * W + x] = (px[i] * 0.3 + px[i + 1] * 0.59 + px[i + 2] * 0.11) / 255;
+    }
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const l = lum[y * W + x];
+      const e = x > 0 && y > 0 ? Math.min(1, (Math.abs(l - lum[y * W + x - 1]) + Math.abs(l - lum[(y - 1) * W + x])) * 4) : 0;
+      const tone = Math.min(1, 0.35 + l * 0.8) * (1 - e * 0.7);
+      const o = (y * W + x) * 4;
+      img.data[o] = 238 * tone + 20; img.data[o + 1] = 226 * tone + 16; img.data[o + 2] = 200 * tone + 10; img.data[o + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+    return { canvas: c, cam };
+  } catch (_) {
+    return null;
+  }
+}
+
 export class Memories {
   constructor() {
     this.got = new Set();
@@ -34,63 +89,15 @@ export class Memories {
   serialize() { return [...this.got]; }
   load(list) { for (const i of list || []) if (i >= 0 && i < MEMORIES.length) this.got.add(i); }
 
-  // Draw the sketch for a memory from its real spot, with a pencil-on-paper look
+  // Draw the sketch for a memory from its real spot, a little above head height and stepped back
+  // so nearby bushes don't fill the frame
   _sketch(s) {
     if (s.sketch) return s.sketch;
-    const W = 240, H = 150;
-    try {
-      const r = G.renderer;
-      const rt = new THREE.WebGLRenderTarget(W, H);
-      const cam = new THREE.PerspectiveCamera(55, W / H, 0.5, 3000);
-      // A little above head height, stepped back from the spot, so nearby bushes don't fill the frame
-      const dir = s.target.clone().sub(s.pos).setY(0).normalize();
-      cam.position.copy(s.pos).addScaledVector(dir, -4);
-      cam.position.y = Math.max(G.terrain.heightAt(cam.position.x, cam.position.z), s.pos.y) + 6;
-      cam.lookAt(s.target);
-      // Leave game markers (race gates, shrine beams, the Wyrm) out of the drawing
-      const hide = [G.races?.root, G.shrines?.surface, G.wyrm?.group, G.player?.char?.group, G.rainbow?.mesh, G.world?.barrier?.mesh].filter((o) => o && o.visible);
-      hide.forEach((o) => { o.visible = false; });
-      // The sky dome follows the main camera; centre it on the sketch camera for the drawing
-      const skyAt = G.sky?.sky ? G.sky.sky.position.clone() : null;
-      if (skyAt) G.sky.sky.position.copy(cam.position);
-      const cu = G.sky?.clouds?.mat?.uniforms?.uCam;
-      const cloudAt = cu ? cu.value.clone() : null;
-      if (cu) cu.value.copy(cam.position);
-      const waterAt = G.water?.mesh ? G.water.mesh.position.clone() : null;
-      if (waterAt) { G.water.mesh.position.x = Math.round(cam.position.x / 4) * 4; G.water.mesh.position.z = Math.round(cam.position.z / 4) * 4; }
-      const prev = r.getRenderTarget();
-      r.setRenderTarget(rt);
-      r.render(G.scene, cam);
-      hide.forEach((o) => { o.visible = true; });
-      if (skyAt) G.sky.sky.position.copy(skyAt);
-      if (cloudAt) cu.value.copy(cloudAt);
-      if (waterAt) G.water.mesh.position.copy(waterAt);
-      const px = new Uint8Array(W * H * 4);
-      r.readRenderTargetPixels(rt, 0, 0, W, H, px);
-      r.setRenderTarget(prev);
-      rt.dispose();
-      const c = document.createElement('canvas');
-      c.width = W; c.height = H;
-      const ctx = c.getContext('2d');
-      const img = ctx.createImageData(W, H);
-      // Flip vertically, turn to warm graphite on cream paper, and darken edges between tones
-      const lum = new Float32Array(W * H);
-      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-        const i = ((H - 1 - y) * W + x) * 4;
-        lum[y * W + x] = (px[i] * 0.3 + px[i + 1] * 0.59 + px[i + 2] * 0.11) / 255;
-      }
-      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-        const l = lum[y * W + x];
-        const e = x > 0 && y > 0 ? Math.min(1, (Math.abs(l - lum[y * W + x - 1]) + Math.abs(l - lum[(y - 1) * W + x])) * 4) : 0;
-        const tone = Math.min(1, 0.35 + l * 0.8) * (1 - e * 0.7);
-        const o = (y * W + x) * 4;
-        img.data[o] = 238 * tone + 20; img.data[o + 1] = 226 * tone + 16; img.data[o + 2] = 200 * tone + 10; img.data[o + 3] = 255;
-      }
-      ctx.putImageData(img, 0, 0);
-      s.sketch = c.toDataURL('image/jpeg', 0.8);
-    } catch (_) {
-      s.sketch = '';
-    }
+    const dir = s.target.clone().sub(s.pos).setY(0).normalize();
+    const at = s.pos.clone().addScaledVector(dir, -4);
+    at.y = Math.max(G.terrain.heightAt(at.x, at.z), s.pos.y) + 6;
+    const out = drawSketch(at, s.target);
+    s.sketch = out ? out.canvas.toDataURL('image/jpeg', 0.8) : '';
     return s.sketch;
   }
 

@@ -177,3 +177,17 @@ test('the cottage plot sits on flat village ground with room for its trophy gard
   assert.equal(new Set(TROPHIES.map((t) => t.flag)).size, TROPHIES.length);
   for (const r of REST) assert.ok(r.t >= 0 && r.t < 1);
 });
+
+test('treasure spots are dry, reachable and come with a sensible hint', async () => {
+  const { treasureSpot, hintFor, dirWord } = await import('../src/world/treasure.js');
+  assert.equal(dirWord(0, -10), 'north');
+  assert.equal(dirWord(10, 0), 'east');
+  assert.equal(dirWord(-7, 7), 'south-west');
+  for (let seed = 1; seed < 40; seed++) {
+    const s = treasureSpot(terrain, seed);
+    const h = terrain.heightAt(s.x, s.z);
+    assert.ok(h >= 3, 'dry');
+    assert.ok(Math.hypot(s.x - VILLAGE.x, s.z - VILLAGE.z) > VILLAGE.r, 'outside the village');
+    assert.match(hintFor(s.x, s.z), /(close to|of) [A-Z]/);
+  }
+});

@@ -31,6 +31,7 @@ export function writeSave() {
     tally: G.tally ? G.tally.serialize() : undefined,
     bounties: G.bounties ? G.bounties.serialize() : undefined,
     home: G.home ? G.home.serialize() : undefined,
+    treasure: G.treasure ? G.treasure.serialize() : undefined,
     // Online, progress lives on the server; solo keeps it here
     flags: G.net && G.net.connected ? undefined : G.flags,
     t: Date.now(),

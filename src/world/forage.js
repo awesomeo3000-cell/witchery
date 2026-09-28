@@ -233,7 +233,7 @@ export class Forage {
     if (!this.cooking && G.compendium) { G.compendium.render($('inv-cmp')); $('inv-cc').textContent = `(${G.compendium.got.size} registered · take photos with P)`; }
     $('inv-mh').classList.toggle('hidden', this.cooking);
     $('inv-mem').classList.toggle('hidden', this.cooking);
-    if (!this.cooking && G.memories) { G.memories.render($('inv-mem')); $('inv-mc').textContent = `(${G.memories.got.size}/${G.memories.spots.length} recovered)`; }
+    if (!this.cooking && G.memories) { G.memories.render($('inv-mem')); G.treasure?.renderCard($('inv-mem')); $('inv-mc').textContent = `(${G.memories.got.size}/${G.memories.spots.length} recovered)`; }
     $('inv-hh').classList.toggle('hidden', this.cooking);
     $('inv-hon').classList.toggle('hidden', this.cooking);
     if (!this.cooking && G.honours) { G.honours.render($('inv-hon')); $('inv-hc').textContent = `(${G.honours.got.size})`; }
