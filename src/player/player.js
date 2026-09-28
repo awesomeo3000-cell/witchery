@@ -880,6 +880,23 @@ export class Player {
     G.enemies.collectPickups(this);
   }
 
+  _surface() {
+    const o = this.groundObj;
+    if (o) {
+      if (o.tags.has('floe')) return 'snow';
+      if (o.tags.has('bridge') || o.tags.has('mossy')) return 'wood';
+      return 'stone';
+    }
+    if (this.inDungeon) return 'stone';
+    const h = this.pos.y;
+    if (h < 3.3) return 'sand';
+    const w = G.terrain.biome(this.pos.x, this.pos.z);
+    if (w.frost > 0.5 && h > 18) return 'snow';
+    if (w.ember > 0.5) return 'stone';
+    if (w.spring > 0.5) return 'sand';
+    return 'grass';
+  }
+
   _animate(dt) {
     const g = this.char.group;
     g.position.copy(this.pos);
@@ -892,6 +909,18 @@ export class Player {
     if (st === 'air') st = this.vel.y > 0 ? 'jump' : 'fall';
     if (this.dodgeT > 0) st = 'dodge';
     this.animState = st;
+    // Footsteps
+    if (this.state === 'ground' && hv > 0.8) {
+      this.stride = (this.stride || 0) + hv * dt;
+      const len = hv > 8 ? 1.7 : 1.25;
+      if (this.stride > len) {
+        this.stride = 0;
+        G.audio.footstep(this._surface());
+      }
+    } else if (this.state === 'swim' && hv > 0.5) {
+      this.stride = (this.stride || 0) + hv * dt;
+      if (this.stride > 1.6) { this.stride = 0; G.audio.footstep('water'); }
+    }
     this.char.animate({
       state: st, speed: hv, attack: this.attack, aim: this.aiming, aimPitch: -this.camPitch * 0.6,
       paintHold: this.painting, pitch: this.ridePitch, roll: this.rideRoll,
