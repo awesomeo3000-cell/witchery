@@ -227,3 +227,13 @@ test('the merchant visits every easel in turn on a shared clock', async () => {
   assert.equal(stopIndex(1000), stopIndex(STAY_MS - 1));
   for (const w of WARES) assert.ok(w.cost > 0 && typeof w.give === 'function');
 });
+
+test('the haste shrine opens only while every brazier burns at once', async () => {
+  const { allLit, BRAZIER_WINDOW, SHRINES } = await import('../src/trials/shrines.js');
+  const now = 1e9;
+  assert.equal(allLit([now - 100, now - 5000, now - BRAZIER_WINDOW + 1], now), true);
+  assert.equal(allLit([now - 100, now - BRAZIER_WINDOW - 1, now], now), false);
+  assert.equal(allLit([now, true, now], now), false);
+  assert.equal(allLit([], now), false);
+  assert.equal(SHRINES.length, 3);
+});

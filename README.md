@@ -84,13 +84,14 @@ Each Prism Shard adds a heart container. With all four shards, the barrier aroun
 
 ## Paint Sprites
 
-46 Paint Sprites are hidden around the island and inside the trials:
+49 Paint Sprites are hidden around the island and inside the trials:
 - under odd lavender rocks (strike them)
 - in rings of grey flowers (paint the centre stone the colour its gem shows)
 - in withered saplings (paint them with Bloom)
 - in rainbow sky hoops (fly or glide through)
 - on lonely peaks and floating islets (touch the sparkle)
 - in each trial's optional side chamber, behind a small colour challenge
+- in the chest at the end of each Paint Shrine
 
 Bring every 4 sprites to Pip in Palette Hollow for a Heart Container or Stamina Vessel. Upgrades are shared by the whole party.
 
@@ -108,6 +109,12 @@ Bring every 4 sprites to Pip in Palette Hollow for a Heart Container or Stamina 
   - **Brazier Rings:** light one brazier with Ember, then the rest before the flames die.
   
   Each one pays Pigment to everyone nearby. Found and solved puzzles show on the map.
+- **Paint Shrines.** Three stone arches with swirling paint lead down to small one-room puzzles, each mixing colours:
+  - **Shrine of Crossing:** freeze floes across a cold pool, then melt the ice wall with Ember.
+  - **Shrine of Heights:** bounce onto a smooth ledge with Spring, then grow vines up the mossy cliff.
+  - **Shrine of Haste:** keep three braziers burning at the same time to raise the gate.
+
+  Each chest holds a Paint Sprite and 15 Pigment. Shrines show on the map and compass, and friends can solve them together.
 - **Sky Races.** Three ring courses for brush flight: Lakeside Loop by the village, Canyon Run through the southern mesas, and Islet Hop around the Sky Citadel. Fly through a golden start gate while riding to begin. Each ring tops up your stamina, and room records are saved and shown on the map.
 
 ### Creatures and bosses
@@ -153,7 +160,7 @@ All art is generated in code: painted canvas textures (bark, leaves, stone, shin
 
 ## Painter's Honours
 
-There are twenty-three achievements, such as First Flight, Soft Bristles (a sneak strike), Record Breaker, Cartographer, Good Samaritan (reviving a friend) and Echo Breaker. Each one pops a toast when earned, is listed with its progress in the satchel, and is saved per player.
+There are twenty-four achievements, such as First Flight, Soft Bristles (a sneak strike), Record Breaker, Cartographer, Good Samaritan (reviving a friend) and Echo Breaker. Each one pops a toast when earned, is listed with its progress in the satchel, and is saved per player.
 
 ### Wardrobe
 
@@ -194,7 +201,7 @@ src/world/            terrain & biomes, sky/day-night, weather, rainbows, Grey M
 src/player/           character model/animation and the player controller (walk, glide, climb, swim, ride, combat)
 src/combat/           paint globs/splats/elemental effects, particles, brush-stroke trails
 src/enemies/          enemy & boss models, AI, camps & chests, projectiles, shockwaves, loot, network snapshots
-src/trials/           the four dungeons, their puzzles and boss arenas, the final boss trigger, the Gallery of Echoes
+src/trials/           the four dungeons, their puzzles and boss arenas, the final boss trigger, the Gallery of Echoes, the Paint Shrines
 src/ui/               HUD, minimap, map fog, tips & objectives, boss cinematics, photo mode, touch controls, pings, revives,
                       honours, adventure log, accessibility & key bindings, styles
 test/                 node:test unit and server tests; test/smoke/ has the headless browser check

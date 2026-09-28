@@ -36,6 +36,7 @@ import { Wyrm } from './world/wyrm.js';
 import { Rainbow } from './world/rainbow.js';
 import { TargetGallery } from './world/targets.js';
 import { Tablets } from './world/tablets.js';
+import { Shrines } from './trials/shrines.js';
 import { Merchant } from './world/merchant.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
@@ -222,6 +223,7 @@ class Game {
     G.rainbow = timed('rainbow', () => new Rainbow(G.scene));
     G.targets = timed('targets', () => new TargetGallery(G.scene));
     G.tablets = timed('tablets', () => new Tablets(G.scene));
+    G.shrines = timed('shrines', () => new Shrines(G.trials.root));
     G.merchant = timed('merchant', () => new Merchant(G.scene));
     G.cine = timed('cine', () => new Cinematic());
     G.guide = timed('guide', () => new Guide());
@@ -517,7 +519,7 @@ class Game {
       <h3>THE PAINTERS</h3>${names.map((n) => `<p>${esc(n)}</p>`).join('')}
       <h3>CHAMPIONS OF THE PRISM TRIALS</h3><p>Frostmaw · Magmaw · Shellback · Galewing</p>
       <h3>WITH</h3><p>Elder Umber</p><p>Pip the Palette Keeper</p><p>Mira the Dyer · Tilly · Bram the Hunter</p><p>Painter Ochre · Sable the Brushwright</p><p>${G.sprites ? `${Object.keys(G.flags).filter((k) => k.startsWith('sprite_')).length} Paint Sprites` : ''}</p>
-      <h3>YOUR JOURNEY</h3><p>${G.fog ? Math.round(G.fog.explored() * 100) : 0}% of the island mapped</p><p>${G.puzzles ? `${G.puzzles.solvedCount()} / ${G.puzzles.total}` : 0} island puzzles solved</p><p>${Object.keys(G.flags).filter((k) => /^q_\w+_done$/.test(k) && G.flags[k]).length} / 4 villager quests</p>
+      <h3>YOUR JOURNEY</h3><p>${G.fog ? Math.round(G.fog.explored() * 100) : 0}% of the island mapped</p><p>${G.puzzles ? `${G.puzzles.solvedCount()} / ${G.puzzles.total}` : 0} island puzzles solved</p><p>${G.shrines ? `${G.shrines.clearedCount()} / ${G.shrines.list.length}` : 0} Paint Shrines cleared</p><p>${Object.keys(G.flags).filter((k) => /^q_\w+_done$/.test(k) && G.flags[k]).length} / 4 villager quests</p>
       <h3>BUILT WITH</h3><p>Three.js · WebAudio · a lot of paint</p>
       <h3>&nbsp;</h3><p>Thank you for playing!</p>`;
     const c = $('credits');
@@ -685,6 +687,7 @@ class Game {
     G.rainbow.update(dt);
     G.targets.update(dt);
     G.tablets.update(dt);
+    G.shrines.update(dt);
     G.merchant.update(dt);
     G.greyMoon.update(dt);
     G.enemies.update(wdt);

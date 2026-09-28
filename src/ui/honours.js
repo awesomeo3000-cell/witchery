@@ -28,6 +28,7 @@ export const HONOURS = [
   { id: 'star', name: 'Star Catcher', desc: 'Pick up a Star Fragment', event: 'star' },
   { id: 'bat', name: 'Night Watch', desc: 'Pop an Inkbat', event: 'inkbat' },
   { id: 'revive', name: 'Good Samaritan', desc: 'Pick up a fainted friend', event: 'revive' },
+  { id: 'shrines', name: 'Shrine Seeker', desc: 'Clear all three Paint Shrines', check: () => G.shrines && G.shrines.clearedCount() >= G.shrines.list.length },
   { id: 'echoes', name: 'Echo Breaker', desc: 'Clear the Gallery of Echoes', check: () => !!G.flags.rush_best },
 ];
 

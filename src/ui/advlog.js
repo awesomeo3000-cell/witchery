@@ -14,6 +14,7 @@ export function adventureStats() {
     { label: 'Paint Sprites', value: `${spriteCount()} / ${G.sprites ? G.sprites.total : '?'}`, done: G.sprites && spriteCount() >= G.sprites.total },
     { label: 'Villager quests', value: `${QUESTS.filter((q) => f[`q_${q.id}_done`]).length} / ${QUESTS.length}`, done: QUESTS.every((q) => f[`q_${q.id}_done`]) },
     { label: 'Island puzzles', value: G.puzzles ? `${G.puzzles.solvedCount()} / ${G.puzzles.total}` : '-', done: G.puzzles && G.puzzles.solvedCount() >= G.puzzles.total },
+    { label: 'Paint Shrines', value: G.shrines ? `${G.shrines.clearedCount()} / ${G.shrines.list.length}` : '-', done: G.shrines && G.shrines.clearedCount() >= G.shrines.list.length },
     { label: 'Field giants felled', value: `${['blotgiant', 'sentinel'].filter((t) => f[`slain_${t}`]).length} / 2`, done: f.slain_blotgiant && f.slain_sentinel },
     { label: 'Map explored', value: G.fog ? `${Math.round(G.fog.explored() * 100)}%` : '-', done: G.fog && G.fog.explored() > 0.9 },
     { label: 'Hearts · stamina found', value: `${upgradeCount('heart')} · ${upgradeCount('stamina')}` },

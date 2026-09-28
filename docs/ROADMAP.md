@@ -63,7 +63,7 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 
 35. ✅ **The Chroma Wyrm.** A huge, peaceful rainbow serpent loops the island's skies. Hit it with paint to knock loose Chroma Scales worth a lot of Pigment.
 36. ✅ **Rainbows.** After rain clears in daylight, a rainbow arcs across the sky opposite the sun.
-37. **Regression and docs.** Full browser regression, README pass, roadmap update.
+37. ✅ **Regression and docs.** Full browser regression, README pass, roadmap update.
 
 ## Wave eight
 
@@ -76,5 +76,11 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 41. ✅ **Closed captions.** An option that captions important sounds (boss roars, thunder, alarms, splashes, pickups nearby) with a direction arrow.
 42. ✅ **Wandering merchant.** Tinker travels between the easels, selling rare ingredients, meals and a Stamina Tonic for Pigment.
 43. ✅ **Photo mode extras.** Frames (polaroid, painted border), posing the hero with emotes, and a hide-friends toggle.
+
+## Wave ten
+
+44. ✅ **Paint Shrines.** Three single-room puzzle shrines behind stone arches on the surface, each mixing colours (Frost floes and an Ember-melted wall; a Spring bounce and a Bloom climb; three braziers burning at once). Each ends in a chest with a Paint Sprite and Pigment.
+45. **Shrine polish.** Shrine entrance cinematic sweep, a "shrine cleared" arch glow for everyone in the room, and a shrine counter in the adventure log.
+46. **Regression and docs.** Browser regression of shrines and co-op revive, README, roadmap.
 
 The work continues through this list until the budget is used up.

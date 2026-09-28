@@ -8,7 +8,7 @@ import { applyStats } from '../core/progress.js';
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 
-class Builder {
+export class Builder {
   constructor(root, origin) {
     this.root = root;
     this.o = origin;
