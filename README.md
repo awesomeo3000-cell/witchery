@@ -131,7 +131,7 @@ All art is generated in code: painted canvas textures (bark, leaves, stone, shin
 ## Accessibility
 
 The pause menu's *Accessibility* section has:
-- a HUD size slider
+- HUD size, field of view and camera distance sliders
 - colour symbols (▲ Ember, ❄ Frost, ● Spring, ✿ Bloom) on the potions, colour wheel and compass
 - *Reduce motion*, which removes speed lines, the FOV kick and the underwater wobble
 - *Reduce screen flashes*

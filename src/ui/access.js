@@ -78,6 +78,8 @@ export class AccessUI {
     this.capture = null;
     const s = G.settings;
     s.hudScale ??= 1;
+    s.fov ??= 65;
+    s.camDist ??= 1;
     s.binds ??= {};
     const bind = (id, key, parse) => {
       const el = $(id);
@@ -90,6 +92,8 @@ export class AccessUI {
       });
     };
     bind('set-hudscale', 'hudScale', parseFloat);
+    bind('set-fov', 'fov', parseFloat);
+    bind('set-camdist', 'camDist', parseFloat);
     bind('set-symbols', 'colorSymbols');
     bind('set-motion', 'reduceMotion');
     bind('set-flash', 'reduceFlash');

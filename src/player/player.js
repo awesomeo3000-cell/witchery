@@ -973,10 +973,10 @@ export class Player {
   updateCamera(dt) {
     const cam = G.camera;
     const pivot = this.pos.clone().setY(this.pos.y + (this.state === 'ride' ? 1.8 : 1.55));
-    let dist = this.camDist;
+    let dist = this.camDist * (G.settings.camDist || 1);
     let shoulder = 0;
     if (this.aiming) { dist = 2.6; shoulder = 0.9; }
-    if (this.state === 'ride') dist = this.camDist + 3;
+    if (this.state === 'ride') dist = this.camDist * (G.settings.camDist || 1) + 3;
     if (this.state === 'dead') dist = 8;
 
     if (this.lock && this.lock.alive) {
@@ -1015,6 +1015,7 @@ export class Player {
     cam.lookAt(look);
     let fovT = this.state === 'ride' ? (Math.hypot(this.vel.x, this.vel.y, this.vel.z) > 26 ? 82 : 74) : this.aiming ? 55 : 65;
     if (G.settings.reduceMotion) fovT = this.aiming ? 58 : 68;
+    fovT += (G.settings.fov || 65) - 65; // player's field-of-view preference shifts every mode
     cam.fov = lerp(cam.fov, fovT, 1 - Math.exp(-4 * dt));
     cam.updateProjectionMatrix();
   }
