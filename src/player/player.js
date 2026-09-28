@@ -7,6 +7,7 @@ import { makeCharacter } from './character.js';
 import { Ribbon, SwingTrail } from '../combat/trails.js';
 import { brushStats } from '../world/shop.js';
 import { DOWN_TIME } from '../ui/revive.js';
+import { TROT, GALLOP, BUCK_JUMP, RIDE_Y } from '../world/steeds.js';
 
 const R = 0.4, H = 1.75, STEP = 0.6;
 const GRAV = 30;
@@ -73,6 +74,7 @@ export class Player {
     this.buffs = { power: 0, ink: 0, swift: 0, hush: 0 };
     this.pigment = 0;
     this.upg = { bristle: 0, reservoir: 0, lacquer: 0 };
+    this.mounted = null; // the Brushbuck you're riding
     this._tip = new THREE.Vector3();
     this._base = new THREE.Vector3();
   }
@@ -317,7 +319,7 @@ export class Player {
     const sprint = inp.down('ShiftLeft') || inp.down('ShiftRight');
     let speed = this.aiming ? AIM_WALK : WALK;
     // Sneak: C toggles a crouch on the ground; sprinting or leaving the ground stands you up
-    if (grounded && inp.hit('KeyC')) {
+    if (grounded && inp.hit('KeyC') && !this.mounted) {
       this.sneakOn = !this.sneakOn;
       if (this.sneakOn && !G.guide.seen.has('sneak')) { G.guide.seen.add('sneak'); G.hud.toast('Sneaking: enemies notice you later, and sleeping giants stay asleep. Strike unaware foes for double damage!', '#c8d8ff', 5); }
     }
@@ -331,12 +333,20 @@ export class Player {
     if (this.exhausted) speed *= 0.6;
     if (this.buffs.swift > 0) speed *= 1.25;
     if (this.attack && this.attack.kind !== 'spin') speed *= 0.3;
+    // On a Brushbuck: trot, gallop with Sprint (lighter on stamina), no sneaking; a wild buck bucks in place
+    const mount = this.mounted;
+    if (mount) {
+      this.sneakOn = this.sneaking = false;
+      speed = mount.taming > 0 ? 0 : sprint && moving && !this.exhausted ? GALLOP : TROT;
+      if (speed === GALLOP) this.useStamina(6 * dt);
+      if (this.exhausted) speed *= 0.6;
+    }
 
     // Dodge (locked-on)
     if (this.dodgeT > 0) {
       this.dodgeT -= dt;
       if (this.dodgeT <= 0) this.state = grounded ? 'ground' : 'air';
-    } else if (this.lock && grounded && inp.hit('Space')) {
+    } else if (this.lock && grounded && !mount && inp.hit('Space')) {
       const dir = moving ? move.clone().normalize() : this.pos.clone().sub(this.lock.pos).setY(0).normalize();
       this.vel.x = dir.x * 15; this.vel.z = dir.z * 15;
       this.vel.y = 3;
@@ -348,7 +358,7 @@ export class Player {
     }
 
     const icy = this._onIce;
-    const accel = grounded ? (icy ? 2.5 : 14) : 4;
+    const accel = grounded ? (icy ? 2.5 : mount ? 5 : 14) : 4;
     const target = move.multiplyScalar(speed);
     const lunging = this.attack && this.attack.kind !== 'spin' && this.attack.t < 0.4;
     if (this.dodgeT <= 0 && !lunging) {
@@ -366,19 +376,19 @@ export class Player {
     } else if (this.aiming) {
       this.yaw = dampAngle(this.yaw, this.camYaw + Math.PI, 20, dt);
     } else if (moving && !this.attack) {
-      this.yaw = dampAngle(this.yaw, Math.atan2(target.x, target.z), 12, dt);
+      this.yaw = dampAngle(this.yaw, Math.atan2(target.x, target.z), mount ? 5 : 12, dt);
     }
 
     // Jump / glide
-    if (inp.hit('Space') && !this.lock) {
+    if (inp.hit('Space') && !this.lock && !(mount && mount.taming > 0)) {
       if (grounded) {
-        this.vel.y = JUMP_V;
+        this.vel.y = mount ? BUCK_JUMP : JUMP_V;
         this.state = 'air';
         this.airTime = 0;
         G.audio.play('jump');
       } else if (this.state === 'glide') {
         this.state = 'air';
-      } else if (this.state === 'air' && !this.exhausted && this.airTime > 0.15) {
+      } else if (this.state === 'air' && !mount && !this.exhausted && this.airTime > 0.15) {
         this.state = 'glide';
         G.audio.play('glide');
       }
@@ -400,7 +410,7 @@ export class Player {
 
     // Climb
     const c = G.collision.climbableAt(this.pos, R, H);
-    if (c && moving && this.dodgeT <= 0) {
+    if (c && moving && this.dodgeT <= 0 && !mount) {
       const into = -(move.x * c.normal.x + move.z * c.normal.z) / Math.max(0.01, Math.hypot(move.x, move.z));
       if (into > 0.5) {
         this.state = 'climb';
@@ -948,6 +958,7 @@ export class Player {
     const g = this.char.group;
     g.position.copy(this.pos);
     if (this.state === 'ride') g.position.y += 0.1 + Math.sin(G.time * 3) * 0.06;
+    if (this.mounted) g.position.y += RIDE_Y + (this.state === 'ground' ? Math.abs(Math.sin(G.time * (4 + Math.hypot(this.vel.x, this.vel.z) * 0.5))) * 0.06 : 0);
     g.rotation.y = this.yaw;
     const hv = Math.hypot(this.vel.x, this.vel.z);
     this.speed = hv;
@@ -955,6 +966,7 @@ export class Player {
     if (st === 'ground') st = hv > 0.5 ? 'walk' : 'idle';
     if (st === 'air') st = this.vel.y > 0 ? 'jump' : 'fall';
     if (this.dodgeT > 0) st = 'dodge';
+    if (this.mounted) st = 'mount';
     if (this.sneaking && (st === 'idle' || st === 'walk')) st = 'sneak';
     // Emotes play while standing still; moving, jumping or attacking cancels them
     if (this.emote) {
@@ -1060,6 +1072,7 @@ export class Player {
       rp: +this.ridePitch.toFixed(2),
       rr: +this.rideRoll.toFixed(2),
       cs: G.game?.wardrobe ? G.game.wardrobe.code() : undefined,
+      mt: this.mounted ? this.mounted.coat : undefined,
     };
   }
 }

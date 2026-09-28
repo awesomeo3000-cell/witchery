@@ -39,6 +39,7 @@ import { Tablets } from './world/tablets.js';
 import { Shrines } from './trials/shrines.js';
 import { Fishing } from './world/fishing.js';
 import { Critters } from './world/critters.js';
+import { Steeds } from './world/steeds.js';
 import { Merchant } from './world/merchant.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
@@ -118,6 +119,13 @@ class Peer {
     this.attack = m.a ? { kind: m.a[0] === 'spin' ? 'spin' : m.a[0], t: m.a[1] } : null;
     if (m.c !== this.color) { this.color = m.c; this.char.setBrushColor(COLORS[m.c].hex); }
     if (m.cs !== this.cs) { this.cs = m.cs; applyCosmetics(this.char, this.trail, m.cs); }
+    const mt = typeof m.mt === 'number' && m.mt >= 0 && m.mt < 5 ? m.mt : -1;
+    if (mt !== (this.mountCoat ?? -1)) {
+      if (this.mount) G.scene.remove(this.mount.g);
+      this.mount = mt >= 0 && G.steeds ? G.steeds.visual(mt) : null;
+      if (this.mount) { this.mount.saddle.visible = true; G.scene.add(this.mount.g); }
+      this.mountCoat = mt;
+    }
   }
 
   update(dt) {
@@ -129,6 +137,12 @@ class Peer {
     if (this.attack && this.attack.kind === 'spin') this.yaw += dt * 16;
     this.char.group.position.copy(this.pos);
     this.char.group.rotation.y = this.yaw;
+    if (this.mount) {
+      this.mount.g.position.copy(this.pos);
+      this.mount.g.rotation.y = this.yaw;
+      G.steeds.animateVisual(this.mount, dt, this.speed, false);
+      this.char.group.position.y += 1.02;
+    }
     this.char.animate({ state: this.state, speed: this.speed, attack: this.attack, aim: this.aim, aimPitch: -this.pitch * 0.6, pitch: this.rp, roll: this.rr }, dt);
     this.char.group.updateMatrixWorld(true);
     this.char.brushTip.getWorldPosition(this._tip);
@@ -139,7 +153,7 @@ class Peer {
     }
   }
 
-  dispose() { G.scene.remove(this.char.group); this.trail.dispose(G.scene); }
+  dispose() { G.scene.remove(this.char.group); if (this.mount) G.scene.remove(this.mount.g); this.trail.dispose(G.scene); }
 }
 
 class Game {
@@ -228,6 +242,7 @@ class Game {
     G.shrines = timed('shrines', () => new Shrines(G.trials.root));
     G.fishing = timed('fishing', () => new Fishing(G.scene));
     G.critters = timed('critters', () => new Critters(G.scene));
+    G.steeds = timed('steeds', () => new Steeds(G.scene));
     G.merchant = timed('merchant', () => new Merchant(G.scene));
     G.cine = timed('cine', () => new Cinematic());
     G.guide = timed('guide', () => new Guide());
@@ -323,6 +338,7 @@ class Game {
       if (save.fog) G.fog.load(save.fog);
       if (save.honours) G.honours.load(save.honours);
       if (save.tablets) G.tablets.load(save.tablets);
+      if (save.steed) G.steeds.load(save.steed);
       if (!G.net.connected && typeof save.dayT === 'number') G.sky.setTime(save.dayT);
     }
     this.wardrobe.render(true);
@@ -403,9 +419,10 @@ class Game {
     // Gamepad quick menu (hold View)
     G.input.onPadQuick = () => {
       if (!this.running || G.hud.choiceCb) return;
-      G.hud.choice('Quick menu', 'What would you like to do?', ['Ping this spot', 'Emote', 'Cancel'], (i) => {
+      G.hud.choice('Quick menu', 'What would you like to do?', ['Ping this spot', 'Emote', 'Whistle for your Brushbuck', 'Cancel'], (i) => {
         if (i === 0) G.pings.cast();
         else if (i === 1) setTimeout(() => G.player.openEmotes(), 0);
+        else if (i === 2) G.steeds.whistle();
       });
     };
     const q = $('set-quality');
@@ -694,6 +711,7 @@ class Game {
     G.shrines.update(dt);
     G.fishing.update(dt);
     G.critters.update(dt);
+    G.steeds.update(dt);
     G.merchant.update(dt);
     G.greyMoon.update(dt);
     G.enemies.update(wdt);

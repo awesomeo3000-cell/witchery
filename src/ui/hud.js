@@ -56,7 +56,7 @@ export class HUD {
       `${k('KeyR')} Ride the brush`, `${k('KeyC')} Sneak · descend (riding)`,
       `${k('KeyF')} Interact`, `${k('KeyM')} Map · <kbd>Enter</kbd> Chat`,
       `${k('KeyI')} Satchel`, `${k('KeyG')} Quick eat · ${k('KeyP')} Photo`,
-      `${k('KeyV')} Ping · ${k('KeyB')} Emote`,
+      `${k('KeyV')} Ping · ${k('KeyB')} Emote · ${k('KeyX')} Whistle`,
     ].map((h) => `<div>${h}</div>`).join('');
   }
 
@@ -672,6 +672,7 @@ export class HUD {
     if (G.puzzles) G.puzzles.mapMarkers(add);
     if (G.merchant) G.merchant.mapMarkers(add);
     if (G.shrines) G.shrines.mapMarkers(add);
+    if (G.steeds) G.steeds.mapMarkers(add);
     const p = G.player;
     const me = add(p.pos.x, p.pos.z, 'me', '', 'You');
     me.querySelector('.dot').style.transform = `rotate(${-p.camYaw}rad)`;

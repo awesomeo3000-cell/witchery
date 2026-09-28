@@ -103,3 +103,13 @@ test('shrine sites keep clear of puzzles and tablets', async () => {
   assert.equal(shrines.length, 3);
   for (const s of shrines) for (const q of [...totems, ...rings, ...tablets]) assert.ok(Math.hypot(s.x - q.x, s.z - q.z) > 100);
 });
+
+test('Brushbuck herds graze on flat, dry meadow away from the village', async () => {
+  const { herdSites } = await import('../src/world/steeds.js');
+  const sites = herdSites(terrain);
+  assert.ok(sites.length >= 2, `found ${sites.length} herds`);
+  for (const s of sites) {
+    assert.ok(s.y > 4 && terrain.normalAt(s.x, s.z).y > 0.9);
+    assert.ok(Math.hypot(s.x - VILLAGE.x, s.z - VILLAGE.z) > VILLAGE.r + 20);
+  }
+});

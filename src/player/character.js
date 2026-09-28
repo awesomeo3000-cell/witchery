@@ -452,6 +452,12 @@ export function makeCharacter(look = {}) {
       lHip = [-1.45, 0, 0.18]; rHip = [-1.45, 0, -0.18]; lK = [0.35, 0, 0]; rK = [0.5, 0, 0];
       lSh = [0.35, 0, 0.35]; rSh = [0.35, 0, -0.35]; lF = [-0.2, 0, 0]; rF = [-0.2, 0, 0];
       brushRot = [1.3, 0, 0];
+    } else if (st === 'mount') {
+      // Astride a Brushbuck, reins in both hands
+      hipY = 0.62; bodyX = 0.12;
+      lHip = [-1.1, 0, 0.55]; rHip = [-1.1, 0, -0.55]; lK = [1.25, 0, 0]; rK = [1.25, 0, 0];
+      lSh = [-0.75, 0, 0.25]; rSh = [-0.75, 0, -0.25]; lF = [-0.7, 0, 0]; rF = [-0.7, 0, 0];
+      brushRot = [1.3, 0, 0];
     } else if (st === 'dodge') {
       hipY = 0.55; bodyX = 0.9;
       lHip = [-1.4, 0, 0]; rHip = [-1.4, 0, 0]; lK = [2, 0, 0]; rK = [2, 0, 0];

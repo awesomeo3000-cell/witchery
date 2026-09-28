@@ -25,6 +25,7 @@ export const ACTIONS = [
   { id: 'photo', label: 'Photo mode', code: 'KeyP' },
   { id: 'ping', label: 'Ping a spot', code: 'KeyV' },
   { id: 'emote', label: 'Emote', code: 'KeyB' },
+  { id: 'whistle', label: 'Whistle for your Brushbuck', code: 'KeyX' },
   { id: 'hide', label: 'Hide controls', code: 'KeyH' },
 ];
 

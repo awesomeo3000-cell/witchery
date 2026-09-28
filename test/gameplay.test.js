@@ -263,3 +263,12 @@ test('cooking names meals and records order-free recipes', async () => {
   assert.equal(recipeKey(['fish', 'apple']), recipeKey(['apple', 'fish']));
   assert.equal(cookMeal(['apple']).name, 'Hearty Apple Skewer');
 });
+
+test('taming a Brushbuck needs stamina; galloping beats trotting', async () => {
+  const { canTame, TAME_COST, TROT, GALLOP, COATS } = await import('../src/world/steeds.js');
+  assert.equal(canTame(100, false), true);
+  assert.equal(canTame(TAME_COST * 0.5, false), false);
+  assert.equal(canTame(100, true), false);
+  assert.ok(GALLOP > TROT && TROT > 5.8);
+  assert.equal(new Set(COATS.map((c) => c.name)).size, COATS.length);
+});

@@ -38,6 +38,7 @@ If the page can't reach a server (for example, when the built `dist/` is opened 
 | Enter | Chat (the host can type `/weather rain`, `/time dusk`, `/greymoon`) |
 | V | Ping the spot under the crosshair for your friends |
 | B | Emote: wave, cheer or sit (friends see it too) |
+| X | Whistle for your Brushbuck |
 | C (on foot) | Sneak: crouch so enemies notice you later and sleeping giants stay asleep. Strikes on unaware enemies deal double damage |
 | H | Hide the controls panel |
 | Esc | Pause and settings |
@@ -111,6 +112,7 @@ Bring every 4 sprites to Pip in Palette Hollow for a Heart Container or Stamina 
   Each one pays Pigment to everyone nearby. Found and solved puzzles show on the map.
 - **Fishing.** Schools of fish circle in the lake and the coastal shallows; watch for one leaping out. Paint a Frost floe over a school and the fish under it freeze into the ice, then walk over to pick them up. Glimmerfish heal well, and rare pink Prismfin make meals that fill your ink faster. Fish come back after a few minutes.
 - **Critters.** Butterflies flutter over the grass on dry days and fireflies drift about at night. They take fright if you rush at them (or fly in on your brush), so sneak up (C) and walk into one to catch it. Sunwings restore stamina; Glowbugs cook into Hushed meals that let you get closer to enemies before they notice.
+- **Brushbucks.** Herds of painted deer with rainbow antlers graze in the meadows. They bolt if you rush at them, so sneak up (C) and press Interact to climb on, then hold on while it bucks (this costs stamina; if you run out you're thrown off). Once tamed, your Brushbuck trots, gallops while you Sprint and jumps with Space; Interact climbs down. Whistle (X, or the gamepad quick menu) and it runs to you, even from far away. Your Brushbuck is saved and shows on the map, and friends see you riding.
 - **Paint Shrines.** Three stone arches with swirling paint lead down to small one-room puzzles, each mixing colours:
   - **Shrine of Crossing:** freeze floes across a cold pool, then melt the ice wall with Ember.
   - **Shrine of Heights:** bounce onto a smooth ledge with Spring, then grow vines up the mossy cliff.
@@ -162,7 +164,7 @@ All art is generated in code: painted canvas textures (bark, leaves, stone, shin
 
 ## Painter's Honours
 
-There are twenty-six achievements, such as First Flight, Soft Bristles (a sneak strike), Record Breaker, Cartographer, Good Samaritan (reviving a friend) and Echo Breaker. Each one pops a toast when earned, is listed with its progress in the satchel, and is saved per player.
+There are twenty-seven achievements, such as First Flight, Soft Bristles (a sneak strike), Record Breaker, Cartographer, Good Samaritan (reviving a friend) and Echo Breaker. Each one pops a toast when earned, is listed with its progress in the satchel, and is saved per player.
 
 ### Wardrobe
 

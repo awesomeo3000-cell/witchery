@@ -89,4 +89,10 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 48. ✅ **Critters.** Butterflies flutter over meadows by day and fireflies drift at night. Sneak up to catch them for cooking: Sunwings give stamina, Glowbugs make Hushed meals that shrink how far away enemies notice you.
 49. ✅ **Recipe book.** Every meal you cook is recorded in the satchel with its ingredients and effects, so you can cook it again.
 
+## Wave twelve
+
+50. ✅ **Brushbucks.** Herds of painted deer graze in the meadows. Sneak up, mount one and hold on (it costs stamina) to tame it. Ride at a trot or gallop, jump, and whistle (X) to call your Brushbuck. Friends see you riding.
+51. **Mounted play.** Flick paint from the saddle, gallop through Sky Race-style meadow gates for a Brushbuck course, and a stable post in the village where you can rename your mount.
+52. **Regression and docs.**
+
 The work continues through this list until the budget is used up.
