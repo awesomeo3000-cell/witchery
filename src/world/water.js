@@ -22,7 +22,7 @@ export class Water {
       uniforms,
       fog: true,
       transparent: true,
-      depthWrite: false,
+      depthWrite: true, // so the post haze sees the sea surface
       vertexShader: /* glsl */`
         #include <fog_pars_vertex>
         varying vec3 vW;

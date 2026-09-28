@@ -71,6 +71,7 @@ export class Grass {
         uPaint: { value: null },
         uPaintC: { value: new THREE.Vector2() },
         uPaintS: { value: 128 },
+        uTip: { value: new THREE.Color(1, 0.9, 0.6) },
       },
     ]);
     uniforms.uHeight.value = this.terrain.heightTex;
@@ -86,6 +87,7 @@ export class Grass {
         uniform vec3 uPush[4];
         attribute vec3 aOff; attribute float aH;
         varying float vH; varying float vHue; varying float vShade; varying vec4 vPaint;
+        varying float vGust; varying float vFlower; varying float vDist;
         void main(){
           vec2 off = aOff.xy;
           vec2 wp = off + uW * floor((uCenter.xz - off) / uW + 0.5);
@@ -107,7 +109,11 @@ export class Grass {
           p.y *= bh;
           p.xz *= 0.6 + 0.6 * s;
           float w = sin(uTime * 1.6 + wp.x * 0.13 + wp.y * 0.09) * 0.55 + sin(uTime * 3.1 + wp.x * 0.5 + wp.y * 0.3) * 0.18;
-          vec2 bend = vec2(w * 0.28, w * 0.12) * aH * aH;
+          // Rolling wind gusts that sweep across the fields
+          float gw = dot(wp, vec2(0.8, 0.6)) * 0.045 - uTime * 1.1;
+          float gust = pow(max(sin(gw) * 0.5 + 0.5, 0.0), 6.0) * (0.6 + 0.4 * sin(wp.x * 0.013 - wp.y * 0.021 + uTime * 0.2));
+          vGust = gust;
+          vec2 bend = vec2(w * 0.24 + gust * 0.55, w * 0.1 + gust * 0.4) * aH * aH;
           for (int i = 0; i < 4; i++) {
             vec2 d = wp - uPush[i].xz;
             float l = length(d);
@@ -115,6 +121,8 @@ export class Grass {
           }
           vec3 world = vec3(wp.x + p.x + bend.x, t.r + p.y - length(bend) * 0.35 * aH, wp.y + p.z + bend.y);
           vH = aH; vHue = t.b; vShade = 0.85 + fract(r * 3.7) * 0.3;
+          vFlower = (fract(r * 97.3) < 0.035 && t.b < 0.75) ? floor(fract(r * 53.1) * 3.0) + 1.0 : 0.0;
+          vDist = dist;
           vec4 mvPosition = viewMatrix * vec4(world, 1.0);
           gl_Position = projectionMatrix * mvPosition;
           #include <fog_vertex>
@@ -123,6 +131,8 @@ export class Grass {
         #include <fog_pars_fragment>
         uniform vec3 uLight;
         varying float vH; varying float vHue; varying float vShade; varying vec4 vPaint;
+        varying float vGust; varying float vFlower; varying float vDist;
+        uniform vec3 uTip;
         void main(){
           vec3 forest = vec3(0.22, 0.46, 0.18);
           vec3 meadow = vec3(0.45, 0.7, 0.24);
@@ -130,6 +140,11 @@ export class Grass {
           vec3 c = vHue < 0.3 ? mix(forest, meadow, vHue / 0.3) : mix(meadow, golden, (vHue - 0.3) / 0.7);
           c *= (0.5 + 0.7 * vH) * vShade;
           c += vec3(0.08, 0.1, 0.02) * smoothstep(0.7, 1.0, vH);
+          // Sunlit tips + brighter streaks where gusts flatten the blades
+          c += uTip * smoothstep(0.6, 1.0, vH) * 0.06;
+          c += vec3(0.05, 0.07, 0.02) * vGust * vH;
+          // Tiny wildflowers
+          if (vFlower > 0.5 && vH > 0.75) c = vFlower < 1.5 ? vec3(0.95, 0.95, 0.9) : vFlower < 2.5 ? vec3(1.0, 0.85, 0.3) : vec3(0.9, 0.55, 0.75);
           c = mix(c, vPaint.rgb * (0.55 + 0.6 * vH), clamp(vPaint.a * 1.2, 0.0, 0.9));
           gl_FragColor = vec4(c * uLight, 1.0);
           #include <fog_fragment>
@@ -155,8 +170,9 @@ export class Grass {
       if (p) u.uPush.value[i].copy(p); else u.uPush.value[i].set(0, -999, 0);
     }
     const sunUp = Math.max(0.2, env.lightDir ? env.lightDir.y : 1);
-    u.uLight.value.copy(env.sun.color).multiplyScalar(env.sun.intensity * 0.32 * sunUp)
-      .add(env.hemi.color.clone().multiplyScalar(env.hemi.intensity * 0.55));
+    u.uLight.value.copy(env.sun.color).multiplyScalar(env.sun.intensity * 0.25 * sunUp)
+      .add(env.hemi.color.clone().multiplyScalar(env.hemi.intensity * 0.42));
+    u.uTip.value.copy(env.sun.color);
     this.mesh.visible = !inDungeonY(G.camera.position.y);
   }
 }

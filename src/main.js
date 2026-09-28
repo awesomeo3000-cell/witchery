@@ -9,7 +9,7 @@ import { Environment } from './world/sky.js';
 import { Water } from './world/water.js';
 import { Grass } from './world/grass.js';
 import { World } from './world/world.js';
-import { initMaterials } from './world/props.js';
+import { initMaterials, WIND } from './world/props.js';
 import { WAYPOINTS } from './world/layout.js';
 import { PaintSystem } from './combat/paint.js';
 import { Particles } from './combat/particles.js';
@@ -17,8 +17,10 @@ import { EnemyManager } from './enemies/enemies.js';
 import { Trials } from './trials/trials.js';
 import { Player } from './player/player.js';
 import { makeCharacter } from './player/character.js';
+import { Ribbon } from './combat/trails.js';
 import { HUD } from './ui/hud.js';
 import { Net } from './net/net.js';
+import { PostFX } from './core/post.js';
 import { damp, dampAngle } from './core/math.js';
 
 const $ = (id) => document.getElementById(id);
@@ -65,6 +67,8 @@ class Peer {
     this.attack = null;
     this.aim = false;
     this.fresh = true;
+    this.trail = new Ribbon(G.scene, { width: 0.7, life: 0.85 });
+    this._tip = new THREE.Vector3();
   }
 
   apply(m) {
@@ -92,13 +96,16 @@ class Peer {
     this.char.group.position.copy(this.pos);
     this.char.group.rotation.y = this.yaw;
     this.char.animate({ state: this.state, speed: this.speed, attack: this.attack, aim: this.aim, aimPitch: -this.pitch * 0.6, pitch: this.rp, roll: this.rr }, dt);
+    this.char.group.updateMatrixWorld(true);
+    this.char.brushTip.getWorldPosition(this._tip);
+    this.trail.update(dt, this._tip, this.state === 'ride', COLORS[this.color].hex);
     if (this.state === 'ride' && Math.random() < dt * 30) {
       G.particles.burst(this.pos.clone().setY(this.pos.y + 0.6).addScaledVector(new THREE.Vector3(-Math.sin(this.yaw), 0, -Math.cos(this.yaw)), 1.6),
         { count: 1, color: COLORS[this.color].hex, speed: 0.6, life: 1.2, size: 0.45, gravity: 1, pool: 'glow', alpha: 0.8 });
     }
   }
 
-  dispose() { G.scene.remove(this.char.group); }
+  dispose() { G.scene.remove(this.char.group); this.trail.dispose(G.scene); }
 }
 
 class Game {
@@ -115,6 +122,8 @@ class Game {
     renderer.toneMappingExposure = 1.05;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     G.renderer = renderer;
+    G.post = new PostFX(renderer);
+    G.post.enabled = G.settings.post !== false;
     G.scene = new THREE.Scene();
     G.camera = new THREE.PerspectiveCamera(65, innerWidth / innerHeight, 0.1, 5000);
     G.input = new Input(canvas);
@@ -166,6 +175,7 @@ class Game {
     G.camera.aspect = innerWidth / innerHeight;
     G.camera.updateProjectionMatrix();
     G.renderer.setSize(innerWidth, innerHeight);
+    G.post.setSize(innerWidth, innerHeight);
     G.particles.setScale(innerHeight);
   }
 
@@ -266,6 +276,7 @@ class Game {
     bind('set-invert', 'invertY');
     bind('set-grass', 'grass', parseFloat, (v) => G.grass.build(v));
     bind('set-shadows', 'shadows');
+    bind('set-post', 'post', null, (v) => { G.post.enabled = v; });
     bind('set-volume', 'volume', parseFloat, (v) => G.audio.setVolume(v));
     bind('set-music', 'music');
   }
@@ -428,6 +439,7 @@ class Game {
     this.clock.update();
     let dt = Math.min(this.clock.getDelta(), 0.05);
     G.time += dt;
+    WIND.value = G.time;
     if (!this.running) {
       // Slow orbit over the island behind the menu
       const t = G.time * 0.05;
@@ -438,25 +450,24 @@ class Game {
       G.grass.update(dt, G.sky, []);
       G.world.update(dt, G.time);
       G.trials.root.visible = false;
-      G.renderer.render(G.scene, G.camera);
+      this._render({});
       return;
     }
-    if (G.debugFreeze) { G.renderer.render(G.scene, G.camera); return; }
-    if (G.hitStop > 0) { G.hitStop -= dt; dt *= 0.15; }
+    if (G.debugFreeze) { this._render({}); return; }
+    if (G.hitStop > 0) { G.hitStop -= dt; dt *= 0.12; }
+    // Flurry Rush slows everything except the player
+    if (G.flurry > 0) G.flurry -= dt;
+    const wdt = G.flurry > 0 ? dt * 0.28 : dt;
     const p = G.player;
     if (!this.mapOpen) p.update(dt);
-    G.trials.update(dt);
-    G.enemies.update(dt);
-    G.paint.update(dt);
-    G.particles.update(dt);
+    G.trials.update(wdt);
+    G.enemies.update(wdt);
+    G.paint.update(wdt);
+    G.particles.update(wdt);
     G.world.update(dt, G.time);
     for (const peer of G.peers.values()) peer.update(dt);
     this._checkWaypoints();
     p.updateCamera(dt);
-    // Only draw the half of the world the camera is in
-    const under = p.inDungeon;
-    G.trials.root.visible = under;
-    G.world.root.visible = G.terrain.mesh.visible = !under;
     G.sky.update(dt, p.pos);
     G.water.update(dt, G.sky);
     const pushers = [p.pos];
@@ -473,7 +484,17 @@ class Game {
       G.net.send(p.netState());
     }
     G.input.endFrame();
-    G.renderer.render(G.scene, G.camera);
+    const speed = p.state === 'ride' ? Math.hypot(p.vel.x, p.vel.y, p.vel.z) : 0;
+    this._render({
+      speed: Math.max(0, Math.min(1, (speed - 24) / 14)),
+      flurry: Math.min(1, (G.flurry || 0) * 3),
+      hurt: p.hurtFlash > 0 ? p.hurtFlash * 2 : (p.hp <= 2 && p.alive ? 0.25 + Math.sin(G.time * 6) * 0.15 : 0),
+    });
+  }
+
+  _render(fx) {
+    if (G.post.enabled) G.post.render(G.scene, G.camera, G.sky, fx);
+    else G.renderer.render(G.scene, G.camera);
   }
 }
 

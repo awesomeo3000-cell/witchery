@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { G, COLORS, inDungeonY } from '../core/ctx.js';
 import { clamp, damp, dampAngle, angleDiff, lerp } from '../core/math.js';
 import { makeCharacter } from './character.js';
+import { Ribbon, SwingTrail } from '../combat/trails.js';
 
 const R = 0.4, H = 1.75, STEP = 0.6;
 const GRAV = 30;
@@ -63,6 +64,11 @@ export class Player {
     this.cameraShake = 0;
     this.aimPoint = new THREE.Vector3();
     this.char.setBrushColor(COLORS[0].hex);
+    this.rideTrail = new Ribbon(G.scene, { width: 0.7, life: 0.85 });
+    this.swingTrail = new SwingTrail(G.scene);
+    this.attackBuffer = 0;
+    this._tip = new THREE.Vector3();
+    this._base = new THREE.Vector3();
   }
 
   spawn(p) {
@@ -104,6 +110,7 @@ export class Player {
   }
 
   takeDamage(n, from, opts = {}) {
+    if (this.alive && this.dodgeT > 0 && from && !(G.flurry > 0)) { this.triggerFlurry(); return false; }
     if (!this.alive || this.invuln > 0 || G.godMode) return false;
     this.hp -= n;
     this.invuln = 0.9;
@@ -123,6 +130,15 @@ export class Player {
     if (opts.element === 'ice') G.particles.burst(this.pos.clone().setY(this.pos.y + 1), { count: 12, color: 0xcdefff, speed: 3 });
     if (this.hp <= 0) this.die();
     return true;
+  }
+
+  // Dodging an attack at the last moment slows the world down (Flurry Rush)
+  triggerFlurry() {
+    G.flurry = 2.4;
+    this.invuln = Math.max(this.invuln, 0.8);
+    G.audio.play('flurry');
+    G.hud.toast('Flurry Rush!', '#bfe8ff', 1.5);
+    G.particles.burst(this.pos.clone().setY(this.pos.y + 1), { count: 40, color: 0xbfe8ff, speed: 8, life: 0.6, size: 0.5, pool: 'glow', gravity: 0 });
   }
 
   die() {
@@ -294,9 +310,13 @@ export class Player {
     const icy = this._onIce;
     const accel = grounded ? (icy ? 2.5 : 14) : 4;
     const target = move.multiplyScalar(speed);
-    if (this.dodgeT <= 0) {
+    const lunging = this.attack && this.attack.kind !== 'spin' && this.attack.t < 0.4;
+    if (this.dodgeT <= 0 && !lunging) {
       this.vel.x = damp(this.vel.x, target.x, accel, dt);
       this.vel.z = damp(this.vel.z, target.z, accel, dt);
+    } else if (lunging && grounded) {
+      this.vel.x = damp(this.vel.x, 0, 5, dt);
+      this.vel.z = damp(this.vel.z, 0, 5, dt);
     }
 
     // Facing
@@ -599,14 +619,20 @@ export class Player {
     }
     this.painting = false;
 
-    // Melee
-    if (inp.btnDown(0)) {
-      this.holdTime = 0;
-      if (!this.attack || (this.attack.kind !== 'spin' && this.attack.t > 0.55)) this._startSwing();
+    // Melee: inputs are buffered so combos chain smoothly; late recovery can be cancelled by moving
+    if (inp.btnDown(0)) { this.holdTime = 0; this.attackBuffer = 0.35; }
+    this.attackBuffer = Math.max(0, this.attackBuffer - dt);
+    const grounded = this.state === 'ground';
+    const aNow = this.attack;
+    if (this.attackBuffer > 0 && (!aNow || (aNow.kind !== 'spin' && aNow.kind !== 'plunge' && aNow.t > 0.42))) {
+      this.attackBuffer = 0;
+      const g = G.collision.groundAt(this.pos.x, this.pos.z, R, this.pos.y);
+      if ((this.state === 'air' || this.state === 'glide') && this.pos.y - g.y > 1.8) this._startPlunge();
+      else this._startSwing();
     }
-    if (inp.btn(0)) {
+    if (inp.btn(0) && grounded) {
       this.holdTime += dt;
-      if (this.holdTime > 0.45 && (!this.attack || this.attack.kind !== 'spin') && !this.exhausted && this.state !== 'glide') {
+      if (this.holdTime > 0.4 && (!this.attack || (this.attack.kind !== 'spin' && this.attack.kind !== 'plunge')) && !this.exhausted) {
         if (this.useStamina(18)) {
           this.attack = { kind: 'spin', t: 0, dur: 1.0, tick: 0, hit: new Set() };
           G.audio.play('spin');
@@ -615,46 +641,87 @@ export class Player {
     }
     if (this.attack) {
       const a = this.attack;
-      a.t += dt / a.dur;
+      const speed = G.flurry > 0 ? 1.7 : 1;
+      a.t += (dt * speed) / a.dur;
       if (a.kind === 'spin') {
         this.yaw += dt * 16;
         a.tick -= dt;
         if (a.tick <= 0) {
-          a.tick = 0.22;
+          a.tick = 0.2;
           a.hit.clear();
-          this._meleeHits(3.8, Math.PI, 8, a);
+          this._meleeHits(3.9, Math.PI, 8, a);
           G.particles.burst(this.pos.clone().setY(this.pos.y + 1), { count: 18, color: COLORS[this.color].hex, speed: 7, life: 0.35, size: 0.4, spread: 0.2, pool: 'glow', gravity: 0 });
         }
         if (!inp.btn(0) && a.t > 0.35) a.t = Math.max(a.t, 0.9);
-      } else if (!a.done && a.t > 0.42) {
-        a.done = true;
-        const reach = a.kind === 2 ? 3.6 : 3.3;
-        this._meleeHits(reach, 1.2, a.kind === 2 ? 13 : 9, a);
-        this._swingPaint(a.kind);
+      } else if (a.kind === 'plunge') {
+        this.vel.x *= 0.9; this.vel.z *= 0.9;
+        this.vel.y = -34;
+        if (this.state === 'ground' || this.state === 'swim') {
+          this._plungeImpact();
+          this.attack = null;
+          return;
+        }
+        a.t = Math.min(a.t, 0.5);
+      } else {
+        if (!a.done && a.t > 0.3) {
+          a.done = true;
+          const reach = a.kind === 2 ? 3.7 : 3.4;
+          this._meleeHits(reach, 1.25, a.kind === 2 ? 13 : 9, a);
+          this._swingPaint(a.kind);
+        }
+        // Recovery cancel: moving out of the tail of a swing feels snappier
+        if (a.t > 0.72) {
+          const ax = inp.axis();
+          if (ax.x || ax.z) this.attack = null;
+        }
       }
-      if (a.t >= 1) this.attack = null;
+      if (this.attack && this.attack.t >= 1) this.attack = null;
     }
+  }
+
+  _startPlunge() {
+    this.attack = { kind: 'plunge', t: 0, dur: 1, hit: new Set() };
+    this.state = 'air';
+    this.vel.y = 4;
+    G.audio.play('swing', 0.8);
+  }
+
+  _plungeImpact() {
+    const a = { hit: new Set() };
+    this._meleeHits(4.2, Math.PI, 15, a);
+    G.enemies.fx('slam', this.pos);
+    this.cameraShake = 0.35;
+    G.hitStop = Math.max(G.hitStop, 0.08);
+    const n = UP.clone();
+    const g = G.collision.groundAt(this.pos.x, this.pos.z, R, this.pos.y + 0.5);
+    if (this.ink[this.color] >= 6) {
+      this.ink[this.color] -= 6;
+      G.paint.paintAt(this.pos.clone().setY(g.y), g.obj ? n : G.terrain.normalAt(this.pos.x, this.pos.z), this.color, g.obj ? 'box' : 'terrain', { radius: 2.4 });
+    }
+    G.particles.burst(this.pos.clone().setY(this.pos.y + 0.3), { count: 40, color: COLORS[this.color].hex, speed: 10, life: 0.5, size: 0.5, spread: 0.15, pool: 'glow', gravity: 4 });
   }
 
   _startSwing() {
     const kind = this.combo % 3;
     this.combo++;
     this.comboTimer = 0.9;
-    this.attack = { kind, t: 0, dur: kind === 2 ? 0.55 : 0.4, hit: new Set() };
+    this.attack = { kind, t: 0, dur: kind === 2 ? 0.5 : 0.36, hit: new Set() };
     G.audio.play('swing');
-    // Snap facing toward lock target or camera direction
-    if (this.lock) {
-      const d = this.lock.pos.clone().sub(this.pos);
+    // Face the input direction (camera-relative), then snap to a nearby enemy in that cone
+    const move = this._moveInput(G.input);
+    if (move.lengthSq() > 0.01 && !this.lock) this.yaw = Math.atan2(move.x, move.z);
+    let target = this.lock;
+    if (!target) target = G.enemies.findLockTarget(this.pos, new THREE.Vector3(Math.sin(this.yaw), 0, Math.cos(this.yaw)), 6.5);
+    let lunge = 3;
+    if (target) {
+      const d = target.pos.clone().sub(this.pos);
+      d.y = 0;
       this.yaw = Math.atan2(d.x, d.z);
-    } else {
-      const near = G.enemies.findLockTarget(this.pos, new THREE.Vector3(Math.sin(this.yaw), 0, Math.cos(this.yaw)), 5);
-      if (near) {
-        const d = near.pos.clone().sub(this.pos);
-        this.yaw = Math.atan2(d.x, d.z);
-      }
+      const gap = d.length() - target.radius - 1.6;
+      if (gap > 0.3) lunge = Math.min(11, 3 + gap * 3.5); // close the distance
     }
     const f = new THREE.Vector3(Math.sin(this.yaw), 0, Math.cos(this.yaw));
-    if (this.state === 'ground') { this.vel.x += f.x * 3; this.vel.z += f.z * 3; }
+    if (this.state === 'ground') { this.vel.x = f.x * lunge; this.vel.z = f.z * lunge; }
   }
 
   _meleeHits(reach, arc, dmg, a) {
@@ -672,12 +739,17 @@ export class Player {
       if (arc < Math.PI && d.normalize().dot(f) < Math.cos(arc)) continue;
       a.hit.add(e.id);
       any = true;
-      G.enemies.localHit(e, { dmg, element: el, dir: d.clone().normalize(), source: 'melee' });
+      const bonus = G.flurry > 0 ? 1.5 : 1;
+      G.enemies.localHit(e, { dmg: Math.round(dmg * bonus), element: el, dir: d.clone().normalize(), source: 'melee' });
+      // Ink splatter flies off in the direction of the blow
+      const hp = e.pos.clone().setY(e.pos.y + e.height * 0.5);
+      G.particles.burst(hp, { count: 16, color: COLORS[this.color].hex, speed: 9, life: 0.45, size: 0.35, dir: d.clone().normalize().multiplyScalar(6), gravity: 12 });
+      G.particles.burst(hp, { count: 1, color: COLORS[this.color].light, speed: 0, life: 0.1, size: 1.3, pool: 'glow', gravity: 0, alpha: 0.7 });
     }
     if (any) {
       if (useInk) this.ink[this.color] -= 3;
-      this.cameraShake = 0.12;
-      G.hitStop = 0.05;
+      this.cameraShake = Math.max(this.cameraShake, 0.16);
+      G.hitStop = Math.max(G.hitStop, 0.065 + dmg * 0.002);
     }
     // Poke paint-reactive objects & ink flowers
     const tip = this.pos.clone().addScaledVector(f, 1.8).setY(this.pos.y + 1);
@@ -815,6 +887,12 @@ export class Player {
       g.rotation.x = 0;
       g.rotation.z = 0;
     }
+    g.updateMatrixWorld(true);
+    this.char.brushTip.getWorldPosition(this._tip);
+    this.char.brushBase.getWorldPosition(this._base);
+    const swinging = !!this.attack && (this.attack.kind === 'spin' || this.attack.kind === 'plunge' || (this.attack.t > 0.2 && this.attack.t < 0.7));
+    this.swingTrail.update(dt, this._tip, this._base, swinging, COLORS[this.color].hex);
+    this.rideTrail.update(dt, this._tip, this.state === 'ride', COLORS[this.color].hex);
     if (this.invuln > 0 && this.state !== 'dead' && this.invuln < 0.9) g.visible = Math.floor(G.time * 20) % 2 === 0 || this.dodgeT > 0;
     else g.visible = true;
   }

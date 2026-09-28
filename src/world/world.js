@@ -5,6 +5,7 @@ import { mulberry32, smoothstep } from '../core/math.js';
 import { VILLAGE, TRIALS, CITADEL, WAYPOINTS, RUINS, FLAT_SPOTS, VOLCANO, WORLD_SIZE } from './layout.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { MAT, treeGeometries, rockGeometry, mergeColored, T, jitter } from './props.js';
+import { islandGeometry, makeWaterfall, makeWaterfallMaterial } from './islands.js';
 import { makeCharacter } from '../player/character.js';
 
 const CHUNK = 400;
@@ -132,7 +133,7 @@ export class World {
     for (const b of buckets.values()) {
       const isRock = b.type === 'rock';
       const geo = isRock ? rockGeo : geos[b.type];
-      const mesh = new THREE.InstancedMesh(geo, isRock ? rockMat : MAT.vertex, b.items.length);
+      const mesh = new THREE.InstancedMesh(geo, isRock ? rockMat : MAT.foliage, b.items.length);
       b.items.forEach(([x, y, z, s, rot, tint], i) => {
         q.setFromAxisAngle(up, rot);
         if (isRock) {
@@ -500,17 +501,20 @@ export class World {
   _citadel() {
     const { x, y, z, r } = CITADEL;
     const g = new THREE.Group();
-    const rockMat = new THREE.MeshLambertMaterial({ color: 0x7a7088, flatShading: true });
-    const under = new THREE.Mesh(jitter(new THREE.ConeGeometry(r, 110, 14, 4), 6, 11), rockMat);
-    under.rotation.x = Math.PI;
-    under.position.y = -58;
-    g.add(under);
-    const top = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 0.98, 6, 24), new THREE.MeshLambertMaterial({ color: 0x6d6a7a, flatShading: true }));
-    top.position.y = -3;
-    top.receiveShadow = true;
-    g.add(top);
-    const arena = new THREE.Mesh(new THREE.CylinderGeometry(34, 34, 0.3, 32), new THREE.MeshLambertMaterial({ color: 0x8a86a0 }));
-    arena.position.y = 0.05;
+    this.waterfallMat = makeWaterfallMaterial();
+    this.animated.push((t) => { this.waterfallMat.uniforms.uTime.value = t; });
+    const body = new THREE.Mesh(islandGeometry(r + 4, 120, 77, { layers: 9, trees: 0, grass: 0x8aa86a, grass2: 0x7a9a5e }), MAT.vertex);
+    body.receiveShadow = true;
+    body.castShadow = true;
+    g.add(body);
+    for (const [a, w] of [[0.6, 7], [2.9, 5], [4.4, 9]]) {
+      const wf = makeWaterfall(this.waterfallMat, w, 150);
+      wf.position.set(Math.cos(a) * (r + 1), -1, Math.sin(a) * (r + 1));
+      wf.rotation.y = -a + Math.PI / 2;
+      g.add(wf);
+    }
+    const arena = new THREE.Mesh(new THREE.CylinderGeometry(34, 34, 0.3, 32), new THREE.MeshLambertMaterial({ color: 0x9a94a8 }));
+    arena.position.y = 0.55;
     arena.receiveShadow = true;
     g.add(arena);
     // Ring of towers
@@ -537,7 +541,7 @@ export class World {
     }
     g.position.set(x, y, z);
     this.root.add(g);
-    this.col.addCylinder(x, z, r - 1, y - 40, y, { tags: ['citadel'] });
+    this.col.addCylinder(x, z, r - 1, y - 40, y + 0.5, { tags: ['citadel'] });
 
     // Barrier dome
     const domeMat = new THREE.ShaderMaterial({
@@ -549,10 +553,10 @@ export class World {
       vertexShader: `varying vec3 vN; varying vec3 vP; void main(){ vN = normalize(normalMatrix*normal); vP = position; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0);} `,
       fragmentShader: `uniform float uTime, uAlpha; varying vec3 vN; varying vec3 vP;
         vec3 hue(float h){ return clamp(abs(mod(h*6.0+vec3(0,4,2),6.0)-3.0)-1.0,0.0,1.0); }
-        void main(){ float f = pow(1.0-abs(vN.z), 2.0);
+        void main(){ float f = pow(1.0-abs(vN.z), 3.0);
           float hex = abs(sin(vP.x*0.25+uTime)*sin(vP.y*0.25-uTime*0.7)*sin(vP.z*0.25));
-          vec3 c = hue(fract(vP.y*0.004 + uTime*0.05)) * (0.25 + f*0.8 + step(0.92, hex)*0.5);
-          gl_FragColor = vec4(c*0.6*uAlpha, 1.0); }`,
+          vec3 c = hue(fract(vP.y*0.004 + uTime*0.05)) * (0.04 + f*0.55 + step(0.94, hex)*0.12);
+          gl_FragColor = vec4(c*0.55*uAlpha, 1.0); }`,
     });
     const dome = new THREE.Mesh(new THREE.SphereGeometry(95, 40, 24), domeMat);
     dome.userData.dynamic = true;
@@ -568,30 +572,45 @@ export class World {
       this.barrier.active = !open;
     });
 
-    // Floating islets around the citadel (landable)
-    for (let i = 0; i < 9; i++) {
-      const a = (i / 9) * Math.PI * 2 + rand() * 0.3;
-      const d = 150 + rand() * 90;
-      const ix = x + Math.cos(a) * d, iz = z + Math.sin(a) * d, iy = 90 + rand() * 110;
-      const ir = 8 + rand() * 10;
+    // Floating islets around the citadel and scattered over the island (all landable)
+    const spots = [];
+    for (let i = 0; i < 14; i++) {
+      const a = (i / 14) * Math.PI * 2 + rand() * 0.3;
+      const d = 130 + rand() * 130;
+      spots.push([x + Math.cos(a) * d, 85 + rand() * 130, z + Math.sin(a) * d, 9 + rand() * 16]);
+    }
+    for (const [sx, sz] of [[-200, 200], [250, 150], [-300, -120], [150, -320], [420, -260], [-450, 320], [60, 330]]) {
+      spots.push([sx, G.terrain.heightAt(sx, sz) + 70 + rand() * 60, sz, 8 + rand() * 12]);
+    }
+    spots.forEach(([ix, iy, iz, ir], i) => {
+      const depth = ir * (1.4 + rand() * 1.2);
       const isl = new THREE.Group();
-      const u = new THREE.Mesh(jitter(new THREE.ConeGeometry(ir, ir * 2.2, 9, 3), 1.2, i + 20), rockMat);
-      u.rotation.x = Math.PI;
-      u.position.y = -ir * 1.1;
-      const tp = new THREE.Mesh(new THREE.CylinderGeometry(ir, ir, 1.5, 12), new THREE.MeshLambertMaterial({ color: 0x6aa84a, flatShading: true }));
-      tp.position.y = -0.75;
-      isl.add(u, tp);
-      for (let k = 0; k < 3; k++) {
-        const tr = new THREE.Mesh(treeGeometries().round, MAT.vertex);
-        tr.position.set((rand() - 0.5) * ir, 0, (rand() - 0.5) * ir);
-        tr.scale.setScalar(0.7 + rand() * 0.5);
-        tr.castShadow = true;
-        isl.add(tr);
+      const m = new THREE.Mesh(islandGeometry(ir, depth, 200 + i), MAT.vertex);
+      m.castShadow = true;
+      m.receiveShadow = true;
+      isl.add(m);
+      if (rand() < 0.45) {
+        const a = rand() * Math.PI * 2;
+        const wf = makeWaterfall(this.waterfallMat, 2 + ir * 0.2, 60 + depth);
+        wf.position.set(Math.cos(a) * ir * 0.85, -0.5, Math.sin(a) * ir * 0.85);
+        wf.rotation.y = -a + Math.PI / 2;
+        isl.add(wf);
+      }
+      if (rand() < 0.3) {
+        // Ruined arch on top, like the old sky shrines
+        const arch = new THREE.Mesh(new THREE.TorusGeometry(2.4, 0.4, 5, 10, Math.PI), MAT.stone);
+        arch.position.set(ir * 0.3, 4.2, 0);
+        arch.rotation.y = rand() * 3;
+        const l = new THREE.Mesh(new THREE.BoxGeometry(0.8, 4, 0.8), MAT.stone);
+        l.position.set(ir * 0.3 - 2.4 * Math.cos(arch.rotation.y), 2.1, 2.4 * Math.sin(arch.rotation.y));
+        const r2 = l.clone();
+        r2.position.set(ir * 0.3 + 2.4 * Math.cos(arch.rotation.y), 2.1, -2.4 * Math.sin(arch.rotation.y));
+        isl.add(arch, l, r2);
       }
       isl.position.set(ix, iy, iz);
       this.root.add(isl);
-      this.col.addCylinder(ix, iz, ir - 0.5, iy - ir, iy, { tags: ['islet'] });
-    }
+      this.col.addCylinder(ix, iz, ir * 0.85, iy - depth * 0.3, iy + 0.4, { tags: ['islet'] });
+    });
   }
 
   _inkFlowers() {

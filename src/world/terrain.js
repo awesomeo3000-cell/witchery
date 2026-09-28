@@ -226,17 +226,27 @@ export class Terrain {
     const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
     mat.onBeforeCompile = (shader) => {
       shader.vertexShader = shader.vertexShader
-        .replace('#include <common>', '#include <common>\nvarying vec3 vWPos;')
-        .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWPos = (modelMatrix * vec4(transformed,1.0)).xyz;');
+        .replace('#include <common>', '#include <common>\nvarying vec3 vWPos; varying vec3 vWN;')
+        .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWPos = (modelMatrix * vec4(transformed,1.0)).xyz; vWN = normalize(mat3(modelMatrix) * objectNormal);');
       shader.fragmentShader = shader.fragmentShader
         .replace('#include <common>', `#include <common>
-          varying vec3 vWPos;
+          varying vec3 vWPos; varying vec3 vWN;
           float th(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453); }
           float tn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
             return mix(mix(th(i),th(i+vec2(1,0)),f.x), mix(th(i+vec2(0,1)),th(i+vec2(1,1)),f.x), f.y); }`)
         .replace('#include <color_fragment>', `#include <color_fragment>
+          // Painterly brush strokes and broad colour patches
           float strokes = tn(vWPos.xz * vec2(0.9, 0.35)) * 0.6 + tn(vWPos.xz * 3.1) * 0.4;
-          diffuseColor.rgb *= 0.86 + strokes * 0.26;`);
+          float patches = tn(vWPos.xz * 0.018) * 0.6 + tn(vWPos.xz * 0.06) * 0.4;
+          diffuseColor.rgb *= 0.88 + strokes * 0.2;
+          diffuseColor.rgb *= vec3(0.94 + patches * 0.12, 0.96 + patches * 0.08, 0.98);
+          // Layered rock strata on steep cliffs
+          float slope = 1.0 - clamp(vWN.y, 0.0, 1.0);
+          float cliff = smoothstep(0.3, 0.55, slope);
+          float band = sin(vWPos.y * 1.7 + tn(vWPos.xz * 0.15) * 4.0);
+          float band2 = sin(vWPos.y * 0.45 + tn(vWPos.xz * 0.05) * 3.0);
+          diffuseColor.rgb *= mix(1.0, 0.82 + 0.1 * band + 0.12 * band2, cliff);
+          diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.95, 0.93, 1.02), cliff * 0.5);`);
     };
     this.mesh = new THREE.Mesh(geo, mat);
     this.mesh.receiveShadow = true;

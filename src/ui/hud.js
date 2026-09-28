@@ -389,6 +389,17 @@ export class HUD {
     this.bannerTimer -= dt;
     if (this.bannerTimer <= 0) $('banner').classList.add('hidden');
 
+    // Altitude & speed while flying or gliding
+    const fl = $('flight');
+    const flying = p.state === 'ride' || p.state === 'glide';
+    fl.classList.toggle('hidden', !flying);
+    if (flying) {
+      const g = G.collision.groundAt(p.pos.x, p.pos.z, 0.3, p.pos.y);
+      const ground = Math.max(g.y, p.inDungeon ? g.y : 0);
+      $('fl-alt').textContent = Math.max(0, Math.round(p.pos.y - ground));
+      $('fl-spd').textContent = Math.round(Math.hypot(p.vel.x, p.vel.y, p.vel.z));
+    }
+
     // Net status
     if (G.net) {
       const n = (G.peers ? G.peers.size : 0) + 1;

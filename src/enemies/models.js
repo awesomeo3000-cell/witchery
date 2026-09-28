@@ -1,7 +1,8 @@
 // Enemy & boss meshes built from primitives. Each returns {group, parts, mats}.
 import * as THREE from 'three';
+import { softLit } from '../world/props.js';
 
-const lam = (c, o = {}) => new THREE.MeshLambertMaterial({ color: c, flatShading: true, ...o });
+const lam = (c, o = {}) => softLit(new THREE.MeshLambertMaterial({ color: c, flatShading: true, ...o }), { rim: 0.4 });
 
 function eyes(group, y, z, spread = 0.18, size = 0.09, color = 0x111111) {
   const m = new THREE.MeshBasicMaterial({ color });

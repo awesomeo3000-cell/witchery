@@ -24,9 +24,9 @@ If the page can't reach a server (for example, when the built `dist/` is opened 
 | Input | Action |
 | --- | --- |
 | WASD / Mouse | Move / look |
-| Space | Jump. Press again in the air to glide. Dodge when locked on. |
+| Space | Jump. Press again in the air to glide. Dodge when locked on. A last-moment dodge triggers **Flurry Rush** (slow motion, bonus damage). |
 | Shift | Sprint (boost while riding) |
-| LMB | Brush strike (3-hit combo). Hold for a spin attack. |
+| LMB | Brush strike (3-hit combo, inputs are buffered). Hold for a spin attack. In mid-air, plunge attack. |
 | RMB + LMB | Aim. Tap to flick a paint glob, hold to paint a stroke (Brush Art). |
 | Q / Middle mouse | Lock on to an enemy |
 | 1–4, E, Tab | Pick a colour: number keys, cycle, or hold Tab for the wheel |
@@ -59,15 +59,19 @@ Coloured light beams mark the four trial shrines. Each trial has a puzzle built 
 
 Each Prism Shard adds a heart container. With all four shards, the barrier around the **Sky Citadel** falls. At the top waits **the Hueless King**, whose shield changes colour. Break it with the opposite colour (Ember ↔ Frost, Spring ↔ Bloom), then attack while it's stunned.
 
+## Graphics options
+
+The pause menu (Esc) has toggles for shadows, grass density, and *Atmosphere & bloom*. That last one is the post-processing pass that draws the height haze, sun glow, bloom and colour grade. Turn it off on slower GPUs.
+
 ## Project layout
 
 ```
 server/server.js      static file server + WebSocket rooms (relay, host election, shared flags)
 src/main.js           boot, menus, networking glue, main loop
-src/core/             shared context, input, procedural audio, math/noise
-src/world/            terrain & biomes, sky/day-night, water, GPU grass, props, overworld population, collision
+src/core/             shared context, input, procedural audio, math/noise, post-processing (haze, bloom, grade)
+src/world/            terrain & biomes, sky/day-night, billboard clouds, floating islands, water, GPU grass, props, overworld population, collision
 src/player/           character model/animation and the player controller (walk, glide, climb, swim, ride, combat)
-src/combat/           paint globs/splats/elemental effects and particles
+src/combat/           paint globs/splats/elemental effects, particles, brush-stroke trails
 src/enemies/          enemy & boss models, AI, projectiles, shockwaves, loot, network snapshots
 src/trials/           the four dungeons, their puzzles and boss arenas, and the final boss trigger
 src/ui/               HUD (hearts, compass, ink potions, stamina wheel, boss bar, map, chat) and styles

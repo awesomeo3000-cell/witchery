@@ -1,14 +1,16 @@
 // Sky dome, day/night cycle, sun/moon lighting, fog and drifting clouds.
 import * as THREE from 'three';
 import { G, inDungeonY } from '../core/ctx.js';
-import { smoothstep, mulberry32 } from '../core/math.js';
+import { smoothstep } from '../core/math.js';
+import { Clouds } from './clouds.js';
 
 const DAY_LENGTH = 720; // seconds for a full cycle
 
+// Palettes lean on soft aerial perspective: pale hazy horizons, cool shadows, warm light.
 const KEYS = {
-  night: { top: 0x0a1233, hor: 0x24386a, fog: 0x1d2c55, sun: 0x9fb4ff, sunI: 0.75, hemiS: 0x4a5c9a, hemiG: 0x1a2038, hemiI: 0.9 },
-  dusk: { top: 0x3b5a9a, hor: 0xf2a36e, fog: 0xd8a383, sun: 0xffa86a, sunI: 1.6, hemiS: 0x9ab0e0, hemiG: 0x6a4a3a, hemiI: 0.85 },
-  day: { top: 0x3b8de0, hor: 0xc4e6f7, fog: 0xbfdff0, sun: 0xfff2dc, sunI: 2.4, hemiS: 0xbfe0ff, hemiG: 0x5a6a3a, hemiI: 1.0 },
+  night: { top: 0x0d1a3d, hor: 0x33507e, fog: 0x2e4670, sun: 0xa8bcff, sunI: 0.9, hemiS: 0x6a82c8, hemiG: 0x2e3660, hemiI: 1.35 },
+  dusk: { top: 0x5a6fa8, hor: 0xf0b894, fog: 0xd9ad9c, sun: 0xffb27a, sunI: 2.0, hemiS: 0xb8b0e0, hemiG: 0x806058, hemiI: 1.25 },
+  day: { top: 0x4c8fd6, hor: 0xd4e8f0, fog: 0xb4cddb, sun: 0xfff1da, sunI: 2.5, hemiS: 0xa8c8f0, hemiG: 0x6a6a48, hemiI: 1.05 },
   dungeon: { top: 0x10131c, hor: 0x1a1e2a, fog: 0x161a26, sun: 0xfff0e0, sunI: 0.5, hemiS: 0xb8bcd8, hemiG: 0x4a4050, hemiI: 1.6 },
 };
 
@@ -39,6 +41,7 @@ export class Environment {
         uSunCol: { value: new THREE.Color() },
         uNight: { value: 0 },
         uDungeon: { value: 0 },
+        uFogC: { value: new THREE.Color() },
       },
       vertexShader: /* glsl */`
         varying vec3 vDir;
@@ -48,17 +51,23 @@ export class Environment {
           gl_Position = p.xyww;
         }`,
       fragmentShader: /* glsl */`
-        uniform vec3 uTop, uHor, uSunDir, uSunCol;
+        uniform vec3 uTop, uHor, uSunDir, uSunCol, uFogC;
         uniform float uNight, uDungeon;
         varying vec3 vDir;
         float h(vec3 p){ return fract(sin(dot(p, vec3(127.1,311.7,74.7))) * 43758.5453); }
         void main(){
           vec3 d = normalize(vDir);
           float e = max(d.y, 0.0);
-          vec3 col = mix(uHor, uTop, pow(e, 0.55));
-          col = mix(col, uHor * 0.8, smoothstep(0.0, -0.3, d.y));
+          vec3 col = mix(uHor, uTop, pow(e, 0.45));
+          col = mix(col, uHor * 0.92, smoothstep(0.0, -0.25, d.y));
+          col = mix(col, uFogC, smoothstep(0.1, 0.0, abs(d.y)) * 0.85); // meet the terrain haze at the horizon
           float sd = max(dot(d, uSunDir), 0.0);
-          col += uSunCol * (pow(sd, 900.0) * 3.0 + pow(sd, 12.0) * 0.35) * (1.0 - uNight);
+          // Wide warm glow around the sun that bleeds into the horizon haze
+          col = mix(col, uSunCol, pow(sd, 5.0) * 0.35 * (1.0 - uNight) * (1.0 - e * 0.6));
+          col += uSunCol * (smoothstep(0.9985, 0.9993, sd) * 2.5 + pow(sd, 60.0) * 0.4) * (1.0 - uNight);
+          // Faint high streaky cirrus
+          float ci = sin(d.x * 9.0 + d.z * 3.0) * sin(d.z * 14.0 - d.x * 5.0);
+          col += vec3(0.06) * smoothstep(0.55, 1.0, ci) * smoothstep(0.05, 0.4, d.y) * (1.0 - uNight);
           // Moon
           float md = max(dot(d, -uSunDir), 0.0);
           col += vec3(0.9,0.95,1.0) * (smoothstep(0.9993, 0.9996, md) * 1.2 + pow(md, 40.0) * 0.15) * uNight;
@@ -89,40 +98,9 @@ export class Environment {
     this.hemi = new THREE.HemisphereLight(0xbfe0ff, 0x5a6a3a, 1);
     scene.add(this.hemi);
 
-    scene.fog = new THREE.Fog(0xbfdff0, 200, 1300);
-    this._buildClouds();
+    this.fog = new THREE.Fog(0xbfdff0, 200, 1300);
+    this.clouds = new Clouds(scene);
     this.cur = null;
-  }
-
-  _buildClouds() {
-    const rand = mulberry32(99);
-    const mat = new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x9aa8c0, emissiveIntensity: 0.45 });
-    const puffs = [];
-    this.cloudList = [];
-    for (let i = 0; i < 38; i++) {
-      const a = rand() * Math.PI * 2, d = 150 + rand() * 1100;
-      const c = { x: Math.cos(a) * d, y: 150 + rand() * 140, z: Math.sin(a) * d, speed: 1 + rand() * 2, first: puffs.length };
-      const n = 4 + Math.floor(rand() * 5);
-      for (let k = 0; k < n; k++) {
-        const r = 10 + rand() * 16;
-        puffs.push({ cloud: c, ox: (k - n / 2) * 13 + rand() * 6, oy: rand() * 6, oz: rand() * 14 - 7, sx: r * 1.3, sy: r * 0.7, sz: r });
-      }
-      this.cloudList.push(c);
-    }
-    this.puffs = puffs;
-    this.clouds = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 3), mat, puffs.length);
-    this.clouds.frustumCulled = false;
-    this._placeClouds();
-    this.scene.add(this.clouds);
-  }
-
-  _placeClouds() {
-    const m4 = new THREE.Matrix4();
-    this.puffs.forEach((p, i) => {
-      m4.makeScale(p.sx, p.sy, p.sz).setPosition(p.cloud.x + p.ox, p.cloud.y + p.oy, p.cloud.z + p.oz);
-      this.clouds.setMatrixAt(i, m4);
-    });
-    this.clouds.instanceMatrix.needsUpdate = true;
   }
 
   setTime(t) { this.dayT = ((t % 1) + 1) % 1; }
@@ -133,6 +111,10 @@ export class Environment {
     this.sunDir.set(Math.cos(th), Math.sin(th), -0.35).normalize();
     const e = this.sunDir.y;
     const dungeon = inDungeonY(focus.y);
+    this.dungeon = dungeon;
+    // Only draw the half of the world the camera is in
+    if (G.trials) G.trials.root.visible = dungeon;
+    if (G.world) G.world.root.visible = G.terrain.mesh.visible = !dungeon;
 
     let k;
     if (e < -0.12) k = mixKey(KEYS.night, KEYS.night, 0);
@@ -149,6 +131,7 @@ export class Environment {
     this.skyMat.uniforms.uSunCol.value.copy(k.sun);
     this.skyMat.uniforms.uNight.value = night;
     this.skyMat.uniforms.uDungeon.value = dungeon ? 1 : 0;
+    this.skyMat.uniforms.uFogC.value.copy(k.fog);
     this.sky.position.copy(G.camera.position);
 
     // Light comes from the moon at night
@@ -168,16 +151,12 @@ export class Environment {
     this.hemi.groundColor.copy(k.hemiG);
     this.hemi.intensity = k.hemiI;
 
-    this.scene.fog.color.copy(k.fog);
-    this.scene.fog.near = dungeon ? 30 : 220;
-    this.scene.fog.far = dungeon ? 160 : 1400;
+    // Built-in fog is only used when post-processing (which draws the haze) is off
+    this.scene.fog = G.post && G.post.enabled ? null : this.fog;
+    this.fog.color.copy(k.fog);
+    this.fog.near = dungeon ? 30 : 220;
+    this.fog.far = dungeon ? 160 : 1400;
     G.renderer.setClearColor(k.fog);
-
-    this.clouds.visible = !dungeon;
-    for (const c of this.cloudList) {
-      c.x += c.speed * dt;
-      if (c.x > 1400) c.x = -1400;
-    }
-    this._placeClouds();
+    this.clouds.update(dt, this, G.camera.position);
   }
 }

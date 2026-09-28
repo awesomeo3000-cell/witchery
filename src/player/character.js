@@ -1,16 +1,17 @@
 // Procedurally built & animated hero (also used for friends and NPCs).
 import * as THREE from 'three';
 import { lerp, damp } from '../core/math.js';
+import { softLit } from '../world/props.js';
 
 let gradientMap = null;
 function toon(color, extra = {}) {
   if (!gradientMap) {
-    const data = new Uint8Array([90, 170, 255]);
+    const data = new Uint8Array([120, 185, 255]);
     gradientMap = new THREE.DataTexture(data, 3, 1, THREE.RedFormat);
     gradientMap.minFilter = gradientMap.magFilter = THREE.NearestFilter;
     gradientMap.needsUpdate = true;
   }
-  return new THREE.MeshToonMaterial({ color, gradientMap, ...extra });
+  return softLit(new THREE.MeshToonMaterial({ color, gradientMap, ...extra }), { rim: 0.5 });
 }
 
 function capsule(r, len, mat) {
@@ -69,7 +70,10 @@ export function makeBrush(colorHex = 0xe8442e) {
   const tipPoint = new THREE.Object3D();
   tipPoint.position.y = 2.35;
   brush.add(tipPoint);
-  return { group: brush, tipMat, tipPoint };
+  const basePoint = new THREE.Object3D();
+  basePoint.position.y = 1.1;
+  brush.add(basePoint);
+  return { group: brush, tipMat, tipPoint, basePoint };
 }
 
 export function makeCharacter(look = {}) {
@@ -112,12 +116,38 @@ export function makeCharacter(look = {}) {
   hoodTip.position.set(0, 0.2, -0.32);
   hoodTip.rotation.x = -1.2;
   headG.add(hoodTip);
+  // Pointed ears poking out of the hood, and a fringe of hair
+  const skinMat = toon(skinC);
+  for (const sd of [-1, 1]) {
+    const ear = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.34, 5), skinMat);
+    ear.position.set(sd * 0.29, 0.02, -0.02);
+    ear.rotation.z = -sd * 1.25;
+    ear.rotation.y = sd * 0.3;
+    headG.add(ear);
+  }
+  const hairMat = toon(look.hair ?? 0xd8a860);
+  for (let i = 0; i < 5; i++) {
+    const lock = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.22, 4), hairMat);
+    lock.position.set((i - 2) * 0.07, 0.15, 0.24 - Math.abs(i - 2) * 0.02);
+    lock.rotation.x = Math.PI + 0.5;
+    lock.rotation.z = (i - 2) * 0.15;
+    headG.add(lock);
+  }
   const eyeMat = new THREE.MeshBasicMaterial({ color: 0x1a1a24 });
   for (const s of [-1, 1]) {
     const eye = new THREE.Mesh(new THREE.SphereGeometry(0.035, 6, 5), eyeMat);
     eye.position.set(s * 0.09, 0.02, 0.25);
     headG.add(eye);
   }
+  const satchel = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.2, 0.12), toon(0x7a5230));
+  satchel.position.set(-0.26, 0.08, 0.1);
+  satchel.rotation.y = 0.4;
+  torso.add(satchel);
+  const strap = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.025, 4, 16), toon(0x5a3a20));
+  strap.position.set(0, 0.35, 0);
+  strap.rotation.set(Math.PI / 2, 0.55, 0);
+  strap.scale.set(1, 1.25, 1);
+  torso.add(strap);
   const scarf = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.08, 6, 12), toon(scarfC));
   scarf.rotation.x = Math.PI / 2;
   scarf.position.y = 0.66;
@@ -339,7 +369,7 @@ export function makeCharacter(look = {}) {
   }
 
   return {
-    group: root, brush, brushTip: brushParts.tipPoint, animate, setBrushColor, setHurt,
+    group: root, brush, brushTip: brushParts.tipPoint, brushBase: brushParts.basePoint, animate, setBrushColor, setHurt,
     hand: armR.hand, head: headG, glider,
   };
 }

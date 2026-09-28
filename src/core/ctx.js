@@ -26,6 +26,7 @@ export const G = {
     invertY: false,
     grass: 1,
     shadows: true,
+    post: true,
     volume: 0.7,
     music: true,
   },

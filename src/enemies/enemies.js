@@ -319,6 +319,7 @@ export class EnemyManager {
     }
     e.hitFlash = 0.15;
     e.lastHit = G.time;
+    if (!e.boss && hit.dir && !this.isHost) { e.pos.x += hit.dir.x * 0.4; e.pos.z += hit.dir.z * 0.4; } // predicted knockback
     const col = hit.element ? COLORS[ELEMENTS.indexOf(hit.element)].hex : 0xffffff;
     G.particles.burst(e.center, { count: 12, color: col, speed: 6, life: 0.4, size: 0.4, pool: 'glow' });
   }
@@ -375,6 +376,8 @@ export class EnemyManager {
     } else if (el === 'fire' && e.type !== 'magmaw') e.status.burn = 2;
     e.hp -= res.dmg;
     if (e.state === 'idle' && hit.from) e.state = 'chase';
+    // Staggering interrupts regular enemies mid wind-up
+    if (!e.boss && (e.state === 'windup' || e.state === 'attack')) { e.state = 'recover'; e.stateT = 0; e.cool = Math.max(e.cool, 0.8); }
     if (e.hp <= 0) this.kill(e);
   }
 
@@ -702,9 +705,24 @@ export class EnemyManager {
     e.anim += dt;
     e.hitFlash = Math.max(0, e.hitFlash - dt);
     const f = e.hitFlash > 0 ? 1 : 0;
-    for (const { m, base } of e.mats) {
-      if (f) m.emissive.setRGB(1, 1, 1); else m.emissive.copy(base);
+    // Telegraph: a bright glint flashes when an attack winds up
+    const tele = e.state === 'windup' || e.state === 'slam' || e.state === 'shoot' || e.state === 'summon' || e.state === 'dive';
+    if (tele && e.prevState !== e.state) {
+      const head = e.pos.clone().setY(e.pos.y + e.height * 0.85).addScaledVector(new THREE.Vector3(Math.sin(e.yaw), 0, Math.cos(e.yaw)), e.radius * 0.6);
+      G.particles.burst(head, { count: 1, color: 0xfff2c0, speed: 0, life: 0.35, size: e.boss ? 5 : 2.4, pool: 'glow', gravity: 0 });
+      G.particles.burst(head, { count: 8, color: 0xffe8a0, speed: 3, life: 0.3, size: 0.3, pool: 'glow', gravity: 0 });
+      if (e.pos.distanceTo(G.player.pos) < 40) G.audio.play('glint', 0.6);
     }
+    e.prevState = e.state;
+    const tint = tele && e.stateT < 1.2 ? 0.25 + 0.25 * Math.sin(e.anim * 30) : 0;
+    for (const { m, base } of e.mats) {
+      if (f) m.emissive.setRGB(1, 1, 1);
+      else if (tint > 0) m.emissive.setRGB(base.r + tint, base.g + tint * 0.3, base.b);
+      else m.emissive.copy(base);
+    }
+    // Squash on impact
+    const sq = e.hitFlash / 0.15;
+    g.scale.set(1 + sq * 0.14, 1 - sq * 0.16, 1 + sq * 0.14);
     e.iceBlock.visible = e.status.frozen > 0 && e.type !== 'magmaw';
     e.vineWrap.visible = e.status.rooted > 0 && e.type !== 'galewing';
     if (e.status.burn > 0 && Math.random() < dt * 25) G.particles.flames(e.pos.clone().setY(e.pos.y + e.height * 0.3), e.radius * 0.6, 1);

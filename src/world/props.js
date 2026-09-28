@@ -1,8 +1,44 @@
 // Shared stylised geometry builders and materials.
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 
 export const MAT = {};
+export const WIND = { value: 0 };
+
+// Adds a soft rim light (and optional wind sway for instanced foliage) to a Lambert/Toon material.
+export function softLit(mat, { wind = 0, rim = 0.3, wrap = 0 } = {}) {
+  const prev = mat.onBeforeCompile;
+  mat.onBeforeCompile = (shader, r) => {
+    if (prev) prev(shader, r);
+    shader.uniforms.uWind = WIND;
+    if (wind) {
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', '#include <common>\nuniform float uWind;')
+        .replace('#include <begin_vertex>', `#include <begin_vertex>
+          {
+            vec3 ip = vec3(0.0);
+            #ifdef USE_INSTANCING
+              ip = vec3(instanceMatrix[3][0], instanceMatrix[3][1], instanceMatrix[3][2]);
+            #endif
+            float hgt = max(transformed.y - 1.8, 0.0);
+            float sway = sin(uWind * 1.3 + ip.x * 0.05 + ip.z * 0.07) * 0.045 + sin(uWind * 3.1 + ip.x * 0.4 + transformed.y) * 0.012;
+            transformed.x += sway * hgt * ${wind.toFixed(2)};
+            transformed.z += sway * hgt * 0.5 * ${wind.toFixed(2)};
+          }`);
+    }
+    shader.fragmentShader = shader.fragmentShader.replace('#include <opaque_fragment>', `
+      {
+        vec3 vd = normalize(vViewPosition);
+        float rimF = pow(1.0 - clamp(abs(dot(normal, vd)), 0.0, 1.0), 3.0);
+        outgoingLight += diffuseColor.rgb * rimF * ${rim.toFixed(2)};
+        ${wrap ? `outgoingLight = mix(outgoingLight, diffuseColor.rgb * 0.55, ${wrap.toFixed(2)} * (1.0 - clamp(length(outgoingLight) * 1.2, 0.0, 1.0)));` : ''}
+      }
+      #include <opaque_fragment>`);
+  };
+  mat.customProgramCacheKey = () => `soft${wind}${rim}${wrap}`;
+  return mat;
+}
+
 export function initMaterials() {
   const lam = (c, o = {}) => new THREE.MeshLambertMaterial({ color: c, ...o });
   MAT.stone = lam(0x9c968c, { flatShading: true });
@@ -16,6 +52,7 @@ export function initMaterials() {
   MAT.roofBlue = lam(0x3f6fa8, { flatShading: true });
   MAT.plaster = lam(0xefe4cc, { flatShading: true });
   MAT.vertex = lam(0xffffff, { vertexColors: true, flatShading: true });
+  MAT.foliage = softLit(lam(0xffffff, { vertexColors: true }), { wind: 1, rim: 0.35 });
   MAT.glow = new THREE.MeshBasicMaterial({ color: 0xffe9a0 });
   MAT.crystal = new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x666677, flatShading: true, transparent: true, opacity: 0.9 });
   MAT.smooth = lam(0xc8c4d8, { flatShading: true }); // un-climbable crystal walls
@@ -62,9 +99,8 @@ export function colorize(geo, hex) {
 export function mergeColored(parts) {
   const gs = parts.map(([g, c]) => colorize(g.index ? g.toNonIndexed() : g, c));
   for (const g of gs) { if (g.attributes.uv) g.deleteAttribute('uv'); }
-  const m = mergeGeometries(gs, false);
-  m.computeVertexNormals();
-  return m;
+  // Keep each part's own normals so smooth parts (canopies) stay smooth
+  return mergeGeometries(gs, false);
 }
 
 export function jitter(geo, amt, seed = 1) {
@@ -93,21 +129,50 @@ const T = (g, x, y, z, sx = 1, sy = 1, sz = 1, ry = 0, rx = 0, rz = 0) => {
 };
 export { T };
 
+// Lumpy blob for canopies
+function blob(r, seed) {
+  let g = jitter(new THREE.IcosahedronGeometry(r, 1), r * 0.22, seed);
+  g.deleteAttribute('normal');
+  g.deleteAttribute('uv');
+  g = mergeVertices(g);
+  g.computeVertexNormals();
+  return g;
+}
+
+// Darken the underside and brighten the crown of canopy vertices (fake self-shadowing).
+function shadeCanopy(geo) {
+  const p = geo.attributes.position, c = geo.attributes.color;
+  let min = Infinity, max = -Infinity;
+  for (let i = 0; i < p.count; i++) { min = Math.min(min, p.getY(i)); max = Math.max(max, p.getY(i)); }
+  for (let i = 0; i < p.count; i++) {
+    const r = c.getX(i), g = c.getY(i), b = c.getZ(i);
+    const isLeaf = g > r * 1.15; // trunks stay as they are
+    if (!isLeaf) continue;
+    const t = (p.getY(i) - min) / (max - min || 1);
+    const k = 0.62 + 0.55 * t;
+    c.setXYZ(i, r * k + 0.03 * t, g * k + 0.04 * t, b * k * 0.95);
+  }
+  c.needsUpdate = true;
+  return geo;
+}
+
 export function treeGeometries() {
   const trunk = 0x6b4a2e;
-  const round = mergeColored([
-    [T(new THREE.CylinderGeometry(0.25, 0.4, 4, 6), 0, 2, 0), trunk],
-    [T(new THREE.IcosahedronGeometry(1.9, 0), 0, 4.8, 0), 0x5a9a3a],
-    [T(new THREE.IcosahedronGeometry(1.5, 0), 1.2, 4.2, 0.4), 0x4e8c34],
-    [T(new THREE.IcosahedronGeometry(1.4, 0), -1.1, 4.4, -0.5), 0x66a843],
-    [T(new THREE.IcosahedronGeometry(1.3, 0), 0.2, 6.1, -0.3), 0x72b54a],
-  ]);
-  const tall = mergeColored([
-    [T(new THREE.CylinderGeometry(0.22, 0.35, 3, 6), 0, 1.5, 0), trunk],
-    [T(new THREE.IcosahedronGeometry(1.4, 0), 0, 3.6, 0, 1, 1.3, 1), 0x3f7f35],
-    [T(new THREE.IcosahedronGeometry(1.2, 0), 0.2, 5.4, 0.1, 1, 1.4, 1), 0x4a8c3a],
-    [T(new THREE.IcosahedronGeometry(0.9, 0), -0.1, 7.0, 0, 1, 1.4, 1), 0x57994a],
-  ]);
+  const round = shadeCanopy(mergeColored([
+    [T(new THREE.CylinderGeometry(0.25, 0.42, 4, 7), 0, 2, 0), trunk],
+    [T(new THREE.CylinderGeometry(0.08, 0.14, 1.8, 4), 0.7, 3.6, 0, 1, 1, 1, 0, 0, -0.9), trunk],
+    [T(blob(2.1, 1), 0, 5.0, 0, 1.1, 0.85, 1.1), 0x62a23c],
+    [T(blob(1.6, 2), 1.5, 4.4, 0.5, 1, 0.85, 1), 0x5a9a38],
+    [T(blob(1.5, 3), -1.4, 4.5, -0.6, 1, 0.85, 1), 0x6aaa44],
+    [T(blob(1.4, 4), 0.3, 6.3, -0.4, 1, 0.85, 1), 0x74b54c],
+    [T(blob(1.2, 5), -0.5, 4.8, 1.3, 1, 0.85, 1), 0x5f9e3c],
+  ]));
+  const tall = shadeCanopy(mergeColored([
+    [T(new THREE.CylinderGeometry(0.2, 0.35, 3.2, 6), 0, 1.6, 0), trunk],
+    [T(blob(1.5, 6), 0, 3.8, 0, 1, 1.35, 1), 0x3f7f35],
+    [T(blob(1.25, 7), 0.2, 5.6, 0.1, 1, 1.4, 1), 0x4a8c3a],
+    [T(blob(0.95, 8), -0.1, 7.2, 0, 1, 1.4, 1), 0x57994a],
+  ]));
   const pine = mergeColored([
     [T(new THREE.CylinderGeometry(0.2, 0.35, 2.4, 5), 0, 1.2, 0), trunk],
     [T(new THREE.ConeGeometry(2.4, 3.2, 7), 0, 3.2, 0), 0x2f5f3a],
@@ -122,11 +187,11 @@ export function treeGeometries() {
     [T(new THREE.ConeGeometry(1.35, 1.1, 7), 0, 5.8, 0), 0xf0f6ff],
     [T(new THREE.ConeGeometry(1.3, 2.4, 7), 0, 6.5, 0), 0xe6f0fa],
   ]);
-  const acacia = mergeColored([
+  const acacia = shadeCanopy(mergeColored([
     [T(new THREE.CylinderGeometry(0.22, 0.4, 4.2, 5), 0.3, 2.1, 0, 1, 1, 1, 0, 0, -0.15), 0x7a5230],
-    [T(new THREE.IcosahedronGeometry(2.6, 0), 0.7, 4.7, 0, 1.3, 0.35, 1.1), 0x8a9a3a],
-    [T(new THREE.IcosahedronGeometry(1.8, 0), -0.9, 4.4, 0.6, 1.2, 0.35, 1.1), 0x9aa844],
-  ]);
+    [T(blob(2.6, 9), 0.7, 4.7, 0, 1.3, 0.35, 1.1), 0x8a9a3a],
+    [T(blob(1.8, 10), -0.9, 4.4, 0.6, 1.2, 0.35, 1.1), 0x9aa844],
+  ]));
   const dead = mergeColored([
     [T(new THREE.CylinderGeometry(0.2, 0.45, 5, 5), 0, 2.5, 0), 0x2a2224],
     [T(new THREE.CylinderGeometry(0.08, 0.16, 2.2, 4), 0.7, 3.8, 0, 1, 1, 1, 0, 0, -0.8), 0x2a2224],
@@ -134,11 +199,11 @@ export function treeGeometries() {
     [T(new THREE.IcosahedronGeometry(0.22, 0), 1.45, 4.5, 0), 0xff6a2a],
     [T(new THREE.IcosahedronGeometry(0.18, 0), -1.25, 4.95, 0.35), 0xff8a3a],
   ]);
-  const bush = mergeColored([
-    [T(new THREE.IcosahedronGeometry(0.9, 0), 0, 0.6, 0), 0x4f8f36],
-    [T(new THREE.IcosahedronGeometry(0.7, 0), 0.7, 0.45, 0.2), 0x5ea040],
-    [T(new THREE.IcosahedronGeometry(0.6, 0), -0.6, 0.4, -0.3), 0x5ea040],
-  ]);
+  const bush = shadeCanopy(mergeColored([
+    [T(blob(0.9, 11), 0, 0.6, 0), 0x4f8f36],
+    [T(blob(0.7, 12), 0.7, 0.45, 0.2), 0x5ea040],
+    [T(blob(0.6, 13), -0.6, 0.4, -0.3), 0x5ea040],
+  ]));
   return { round, tall, pine, snowPine, acacia, dead, bush };
 }
 
