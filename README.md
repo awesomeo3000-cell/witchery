@@ -114,6 +114,10 @@ Bring every 4 sprites to Pip in Palette Hollow for a Heart Container or Stamina 
 - **Living water.** The sea has rolling swells that grow in storms, sky reflections, caustics in the shallows, and ripples when you splash, swim or paint it.
 - **Boss intros**, a colour-draining final fight, and a credits roll with your party's names.
 
+## Music
+
+The score is generated live and changes with what you're doing: gentle piano for exploring, slower at night, sparse plucks over a heartbeat while sneaking, airy pads when soaring on the brush, drums for skirmishes, driving beats for Sky Races, and full battle themes for bosses. Changes land on the bar line, so they stay musical.
+
 ## Saving
 
 Online rooms save their world progress on the server in `data/rooms.json`, so it survives restarts. Each browser also remembers where you were. Solo games keep everything in the browser's local storage.

@@ -24,7 +24,7 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 15. ✅ **Overworld paint puzzles.** Small Korok-style puzzles scattered across the map that reward Pigment, a Paint Sprite chime and map completion:
     - Colour Totems: paint the pillars to match the shrine.
     - Brazier Rings: light every brazier within a time limit.
-16. **Adaptive music layers** for races, night, sneaking and combat intensity.
+16. ✅ **Adaptive music layers** for races, night, sneaking and combat intensity.
 17. **Performance guard in CI.** The smoke test fails if village draw calls go over a budget. Also distance culling for NPC animation.
 18. **Final pass.** Full browser regression, README and credits update, roadmap closed out.
 

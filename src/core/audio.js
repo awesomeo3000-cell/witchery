@@ -232,33 +232,44 @@ export class Audio {
     this._ambience(dt);
     const now = this.ctx.currentTime;
     if (this.nextNote < now) this.nextNote = now + 0.05;
-    let mood = this.mood;
-    if (mood === 'explore' && G.sky && G.sky.night > 0.6) mood = 'night';
-    if (mood === 'battle' && G.enemies && G.enemies.bossActive) mood = 'boss';
-    const cfg = {
+    const want = this._wantMood();
+    const CFG = {
       explore: { root: 261.6, scale: [0, 2, 4, 7, 9, 12, 14, 16, 19], step: 0.34, prog: [0, 5, 3, 4], density: 0.42 },
       night: { root: 220, scale: [0, 3, 5, 7, 10, 12, 15], step: 0.48, prog: [0, 3, 5, 4], density: 0.3 },
       dungeon: { root: 196, scale: [0, 1, 5, 7, 8, 12], step: 0.52, prog: [0, 1, 0, 5], density: 0.22 },
       battle: { root: 164.8, scale: [0, 3, 5, 7, 10, 12], step: 0.18, prog: [0, 0, 3, 5], density: 0.7 },
       boss: { root: 146.8, scale: [0, 1, 3, 6, 7, 10, 12], step: 0.17, prog: [0, 1, 0, 6], density: 0.75 },
       victory: { root: 293.7, scale: [0, 4, 7, 11, 12, 16, 19], step: 0.22, prog: [0, 5, 7, 5], density: 0.6 },
-    }[mood];
-    const semis = (n) => cfg.root * Math.pow(2, n / 12);
+      // Adaptive layers on top of exploring
+      skirmish: { root: 196, scale: [0, 2, 3, 7, 10, 12], step: 0.2, prog: [0, 3, 0, 5], density: 0.5 },
+      sneak: { root: 174.6, scale: [0, 3, 7, 10], step: 0.5, prog: [0, 0, 5, 3], density: 0.18 },
+      soar: { root: 293.7, scale: [0, 2, 4, 7, 9, 12, 14, 16, 19, 21], step: 0.26, prog: [0, 5, 3, 4], density: 0.55 },
+      race: { root: 329.6, scale: [0, 2, 4, 7, 9, 12, 14, 16], step: 0.15, prog: [0, 5, 3, 4], density: 0.55 },
+    };
+    if (!this.curMood) this.curMood = want;
     while (this.nextNote < now + 0.3) {
       const t = this.nextNote;
-      const st = this.step++;
-      const bar = Math.floor(st / 16);
+      const st = this.step;
       const beat = st % 16;
+      // Change mood only on a bar line so transitions stay musical
+      if (beat === 0) this.curMood = want;
+      const mood = this.curMood;
+      const cfg = CFG[mood];
+      const semis = (n) => cfg.root * Math.pow(2, n / 12);
+      this.step++;
+      const bar = Math.floor(st / 16);
       const chord = cfg.prog[bar % 4];
+      const heavy = mood === 'battle' || mood === 'boss';
       if (beat === 0) {
         // Chord bed
-        if (mood === 'battle' || mood === 'boss') this.pad(semis(chord - 12), t, cfg.step * 16, 0.035);
-        else {
+        if (heavy) this.pad(semis(chord - 12), t, cfg.step * 16, 0.035);
+        else if (mood === 'soar') { this.pad(semis(chord - 12), t, cfg.step * 16, 0.03); this.pad(semis(chord - 5), t, cfg.step * 16, 0.02); }
+        else if (mood !== 'sneak') {
           this.piano(semis(chord - 12), t, 0.5, 4);
           this.piano(semis(chord - 5), t + 0.02, 0.35, 4);
         }
       }
-      if ((mood === 'battle' || mood === 'boss') && beat % 2 === 0) {
+      if (heavy && beat % 2 === 0) {
         const pat = mood === 'boss' ? [1, 0, 0, 1, 0, 0, 1, 0] : [1, 0, 1, 0, 1, 0, 1, 1];
         if (pat[(beat / 2) % 8]) this.drum(t, 'kick', 0.8);
         if (beat % 8 === 4) this.drum(t, 'snare');
@@ -266,15 +277,44 @@ export class Audio {
         // Driving bass ostinato
         this.tone(semis(chord - 24 + (beat % 4 === 2 ? 7 : 0)), cfg.step * 1.6, 'sawtooth', 0.05, 1, t - this.ctx.currentTime, this.musicGain);
       }
+      if (mood === 'skirmish') {
+        if (beat % 4 === 0) this.drum(t, 'kick', 0.5);
+        if (beat % 8 === 4) this.drum(t, 'snare', 0.6);
+        if (beat % 2 === 0) this.tone(semis(chord - 24), cfg.step * 1.2, 'triangle', 0.05, 1, t - this.ctx.currentTime, this.musicGain);
+      }
+      if (mood === 'race') {
+        this.drum(t, 'hat', 0.6);
+        if (beat % 4 === 0) this.drum(t, 'kick', 0.7);
+        if (beat % 8 === 4) this.drum(t, 'snare', 0.7);
+        if (beat % 2 === 0) this.tone(semis(chord - 12 + [0, 7, 12, 7][(beat / 2) % 4]), cfg.step * 1.4, 'triangle', 0.05, 1, t - this.ctx.currentTime, this.musicGain);
+      }
+      // Sneaking: a soft heartbeat under sparse plucks
+      if (mood === 'sneak' && (beat === 0 || beat === 1)) this.drum(t, 'kick', beat ? 0.25 : 0.4);
       if (mood === 'dungeon' && beat === 8) this.pad(semis(chord - 24), t, cfg.step * 8, 0.03);
-      if (Math.random() < cfg.density && !(beat % 2 && mood !== 'battle' && mood !== 'boss')) {
+      const fast = heavy || mood === 'race' || mood === 'skirmish';
+      if (Math.random() < cfg.density && !(beat % 2 && !fast)) {
         const n = cfg.scale[Math.floor(Math.random() * cfg.scale.length)] + chord;
         const vel = 0.25 + Math.random() * 0.35 + (beat % 4 === 0 ? 0.15 : 0);
-        if (mood === 'battle' || mood === 'boss') this.tone(semis(n), cfg.step * 1.5, 'square', 0.035, 1, t - this.ctx.currentTime, this.musicGain);
+        if (heavy) this.tone(semis(n), cfg.step * 1.5, 'square', 0.035, 1, t - this.ctx.currentTime, this.musicGain);
+        else if (mood === 'sneak') this.tone(semis(n), 0.18, 'triangle', 0.05, 0.98, t - this.ctx.currentTime, this.musicGain);
         else this.piano(semis(n + 12), t, vel, mood === 'night' ? 3.5 : 2.4);
       }
       this.nextNote += cfg.step;
     }
+  }
+
+  // Pick the score for the moment: trials set the base mood, the overworld layers on top of it
+  _wantMood() {
+    let mood = this.mood;
+    if (mood === 'battle' && G.enemies && G.enemies.bossActive) return 'boss';
+    if (mood !== 'explore') return mood;
+    const p = G.player;
+    if (G.races && G.races.active) return 'race';
+    if (p && G.enemies && G.enemies.list.some((e) => e.alive && !e.boss && (e.target ? e.target.local : ['chase', 'windup', 'attack'].includes(e.state)) && e.pos.distanceTo(p.pos) < 28)) return 'skirmish';
+    if (p && p.sneaking) return 'sneak';
+    if (p && p.state === 'ride' && p.speed > 16) return 'soar';
+    if (G.sky && G.sky.night > 0.6) mood = 'night';
+    return mood;
   }
 
   _loopNoise(key, type, freq, q) {
