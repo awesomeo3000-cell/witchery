@@ -559,6 +559,7 @@ export class EnemyManager {
     if (!e.alive) return;
     // Count foes that fall near you (anyone in the room can land the blow)
     if (e.type !== 'dummy' && G.player && e.pos.distanceTo(G.player.pos) < 60) G.tally?.add('foes');
+    G.bounties?.onFoe(e);
     // Practice dummies just pop back to full straw
     if (e.type === 'dummy') { e.hp = e.maxHp; this.fx('dummyReset', e.pos); return; }
     e.alive = false;
@@ -1079,6 +1080,7 @@ export class EnemyManager {
       if (!seen.has(e.id) && e.alive) {
         e.alive = false;
         if (e.pos.distanceTo(G.player.pos) < 150) this._deathFx(e);
+        if (e.hp <= 0 || e.state !== 'idle') G.bounties?.onFoe(e);
         this.remove(e);
       }
     }

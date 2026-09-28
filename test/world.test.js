@@ -152,3 +152,18 @@ test('Painter\'s Towers stand on dry ground between the village and each trial',
     assert.ok(Math.hypot(s.x - TRIALS[i].x, s.z - TRIALS[i].z) > 60, `${s.name} is away from its trial`);
   });
 });
+
+test('bounty postings are shared, varied and always include a job that isn\'t a fight', async () => {
+  const { pickJobs, postIndex, POST_MS, JOBS } = await import('../src/world/bounties.js');
+  assert.equal(postIndex(POST_MS * 5 + 10), 5);
+  const seen = new Set();
+  for (let p = 0; p < 200; p++) {
+    const jobs = pickJobs(p);
+    assert.equal(jobs.length, 3);
+    assert.equal(new Set(jobs.map((j) => j.id)).size, 3, 'no repeats in a posting');
+    assert.ok(jobs.some((j) => j.kind !== 'foe'), 'one peaceful job');
+    assert.deepEqual(pickJobs(p), jobs, 'same posting for everyone');
+    for (const j of jobs) seen.add(j.id);
+  }
+  assert.equal(seen.size, JOBS.length, 'every job turns up');
+});

@@ -187,4 +187,8 @@ The whole budget goes to this roadmap, worked autonomously in waves. The session
 91. ✅ **Accessibility pass on new systems.** Camera shake is much smaller with Reduce motion, which also skips the opening flyover; Reduce flashes softens fireworks; captions for fireworks, blasts, steam, fish splashes and critter chimes (sentry lock-ons were already captioned).
 92. **Final regression and docs.** Full browser, co-op, smoke and soak runs; README and roadmap brought up to date.
 
+## Wave twenty-two
+
+93. ✅ **Bounty board.** A noticeboard on the west edge of the plaza posts three jobs every 20 minutes (defeat certain ink creatures, catch fish or critters, cook). Postings come from the wall clock so friends see the same notices; progress and pay (6-14 Pigment each) are your own. A Bounty Hunter honour for five collected.
+
 The work continues through this list until the budget is used up.

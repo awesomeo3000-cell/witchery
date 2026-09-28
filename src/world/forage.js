@@ -287,6 +287,7 @@ export class Forage {
     this.meals.push(meal);
     G.audio.play('solve');
     G.hud.toast(`Cooked: ${meal.name}!`, '#ffe08a', 2.5);
+    G.bounties?.event('cook');
     const spot = this.potSpots.reduce((a, b) => (a.pos.distanceTo(G.player.pos) < b.pos.distanceTo(G.player.pos) ? a : b));
     G.particles.burst(spot.pos.clone().setY(spot.pos.y + 1.4), { count: 30, color: 0xffe0a0, speed: 3, up: 3, life: 1.2, size: 0.5, pool: 'glow', gravity: -1 });
     this.render();

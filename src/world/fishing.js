@@ -101,6 +101,7 @@ export class Fishing {
     G.audio.play('pickup', 0.6);
     G.hud.toast(`${f.prism ? '🐠 Prismfin' : '🐟 Glimmerfish'} (${G.forage.inv[key]})`, f.prism ? '#f0a8ec' : '#b8e8ff', 1.4);
     G.honours?.event('fish');
+    G.bounties?.event('fish');
   }
 
   update(dt) {

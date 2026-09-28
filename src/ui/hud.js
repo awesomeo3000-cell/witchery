@@ -675,6 +675,7 @@ export class HUD {
     if (G.steeds) G.steeds.mapMarkers(add);
     if (G.towers) G.towers.mapMarkers(add);
     if (G.vault) G.vault.mapMarkers(add);
+    if (G.bounties) G.bounties.mapMarkers(add);
     if (G.pins) G.pins.mapMarkers(add);
     const p = G.player;
     const me = add(p.pos.x, p.pos.z, 'me', '', 'You');

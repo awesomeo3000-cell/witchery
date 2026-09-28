@@ -72,6 +72,7 @@ export class Critters {
     G.hud.toast(`${c.kind === 'fly' ? '🦋 Sunwing' : '✨ Glowbug'} (${G.forage.inv[key]})`, c.kind === 'fly' ? '#ffd890' : '#e0ff9a', 1.4);
     G.particles.burst(c.pos, { count: 10, color: c.kind === 'fly' ? 0xffd890 : 0xd8ff7a, speed: 1.5, life: 0.6, size: 0.25, pool: 'glow', gravity: -0.5 });
     G.honours?.event('critter');
+    G.bounties?.event('critter');
     this._remove(c);
   }
 
