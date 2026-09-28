@@ -2,6 +2,7 @@
 // the village statue opens a way down. Echoes of the four trial bosses (at 60% strength) come one
 // after another; the host runs the gauntlet and the fastest clear is kept as a room record.
 import * as THREE from 'three';
+import { makePortal } from './portal.js';
 import { G, COLORS, DUNGEON_Y } from '../core/ctx.js';
 import { VILLAGE } from '../world/layout.js';
 import { MAT } from '../world/props.js';
@@ -70,7 +71,7 @@ export class Gallery {
     light.position.set(0, 18, 0);
     g.add(light);
     // Return portal
-    const portal = new THREE.Mesh(new THREE.TorusGeometry(1.6, 0.2, 8, 32), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xc8a8ff).multiplyScalar(1.6) }));
+    const portal = makePortal(0xc8a8ff, 1.6);
     portal.position.set(0, 2, r - 2);
     g.add(portal);
     this.group = g;

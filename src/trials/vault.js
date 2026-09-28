@@ -6,6 +6,7 @@
 //   D  paint the four crystals in the order the mural shows
 // The last chamber holds a chest with 100 Pigment and the Prismatic glider.
 import * as THREE from 'three';
+import { makePortal } from './portal.js';
 import { G, COLORS, DUNGEON_Y } from '../core/ctx.js';
 import { LAKE } from '../world/layout.js';
 import { MAT } from '../world/props.js';
@@ -126,7 +127,7 @@ export class Vault {
     b.box(0, -14, 112.5, 22, 38, 1, MAT.dungeon);
     b.box(0, 23, 55, 22, 1, 116, MAT.dungeon, { shadow: false });
     for (let z = 10; z < 110; z += 24) b.light(0, 14, z, 0xe8e0ff, 26, 40);
-    const portal = new THREE.Mesh(new THREE.TorusGeometry(1.3, 0.18, 8, 24), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xc8b8ff).multiplyScalar(1.4) }));
+    const portal = makePortal(0xc8b8ff, 1.3);
     portal.position.copy(b.w(0, 1.8, -1.7));
     this.root.add(portal);
     b.torch(-8, 0, 0, 0xc8b8ff);

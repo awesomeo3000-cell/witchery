@@ -13,6 +13,7 @@ import { initMaterials, WIND } from './world/props.js';
 import { WAYPOINTS } from './world/layout.js';
 import { PaintSystem } from './combat/paint.js';
 import { CelFire } from './combat/celfire.js';
+import { portalTime } from './trials/portal.js';
 import { Particles } from './combat/particles.js';
 import { EnemyManager } from './enemies/enemies.js';
 import { Trials } from './trials/trials.js';
@@ -791,6 +792,7 @@ class Game {
     G.enemies.update(wdt);
     G.paint.update(wdt);
     G.celFire.update(wdt);
+    portalTime.value = G.time;
     G.particles.update(wdt);
     G.world.update(dt, G.time);
     for (const peer of G.peers.values()) peer.update(dt);

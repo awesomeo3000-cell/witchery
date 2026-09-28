@@ -2,6 +2,7 @@
 // A stone arch on the surface leads down to the shrine; solving it opens a chest with a Paint Sprite
 // and a pouch of Pigment. Progress is kept in shared flags so friends can solve them together.
 import * as THREE from 'three';
+import { makePortal } from './portal.js';
 import { G, COLORS, DUNGEON_Y } from '../core/ctx.js';
 import { MAT } from '../world/props.js';
 import { puzzleSites } from '../world/puzzles.js';
@@ -113,7 +114,7 @@ export class Shrines {
     b.torch(7, 0, 0, c);
     b.light(0, 12, 8, 0xfff0dc, 30, 50);
     b.light(0, 12, 26, COLORS[s.def.colors[1]].hex, 26, 44);
-    const portal = new THREE.Mesh(new THREE.TorusGeometry(1.3, 0.18, 8, 24), new THREE.MeshBasicMaterial({ color: new THREE.Color(c).multiplyScalar(1.3) }));
+    const portal = makePortal(c, 1.3);
     portal.position.copy(b.w(0, 1.8, -1.7));
     this.root.add(portal);
     G.world.interactables.push({ pos: b.w(0, 1, -0.8), radius: 2.6, prompt: 'Leave the shrine', action: () => this.leave(s) });

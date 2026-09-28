@@ -5,6 +5,8 @@ import { G, COLORS } from '../core/ctx.js';
 import { TRIALS, CITADEL } from '../world/layout.js';
 import { MAT, jitter } from '../world/props.js';
 import { applyStats } from '../core/progress.js';
+import { addFlame, FLAME_PALETTE } from '../combat/celfire.js';
+import { makePortal } from './portal.js';
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 
@@ -32,10 +34,10 @@ export class Builder {
   torch(x, y, z, color = 0xffb060) {
     const post = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.15, 1.2, 5), MAT.woodDark);
     post.position.set(this.o.x + x, this.o.y + y + 0.6, this.o.z + z);
-    const flame = new THREE.Mesh(new THREE.OctahedronGeometry(0.3), new THREE.MeshBasicMaterial({ color }));
-    flame.position.set(this.o.x + x, this.o.y + y + 1.4, this.o.z + z);
-    this.root.add(post, flame);
-    return flame;
+    const bowl = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.16, 0.25, 8), MAT.stoneDark);
+    bowl.position.set(this.o.x + x, this.o.y + y + 1.3, this.o.z + z);
+    this.root.add(post, bowl);
+    return addFlame(new THREE.Vector3(this.o.x + x, this.o.y + y + 1.4, this.o.z + z), 0.75, FLAME_PALETTE[color] ?? 0);
   }
 
   light(x, y, z, color, intensity = 30, dist = 40) {
@@ -130,7 +132,7 @@ export class Trials {
     b.torch(5, 0, 0, COLORS[t.color].hex);
     b.light(0, 6, 5, COLORS[t.color].hex, 18, 30);
     // Exit portal
-    const portal = new THREE.Mesh(new THREE.TorusGeometry(1.4, 0.2, 8, 24), new THREE.MeshBasicMaterial({ color: COLORS[t.color].hex }));
+    const portal = makePortal(COLORS[t.color].hex, 1.4);
     portal.position.copy(b.w(0, 1.8, -1.6));
     this.root.add(portal);
     this.interactables.push({ pos: b.w(0, 1, -0.8), radius: 2.6, prompt: 'Leave the trial', action: () => this.exit(t.key) });
@@ -267,6 +269,7 @@ export class Trials {
     flame.position.copy(b.w(x, y + 3, z));
     this.root.add(flame);
     const pos = b.w(x, y + 2.2, z);
+    addFlame(pos.clone().setY(pos.y - 0.1), 1.25, 0, () => !!G.flags[flag]);
     this._reactive(d, {
       pos, radius: 1.6, hitbox: 1.3, flag,
       onPaint: (el) => {
@@ -277,7 +280,7 @@ export class Trials {
       tick: (dt) => {
         const lit = !!G.flags[flag];
         flame.intensity = lit ? 25 + Math.random() * 6 : 0;
-        if (lit && Math.random() < dt * 30) G.particles.flames(pos, 0.5, 1, 1.2);
+        if (lit && Math.random() < dt * 6) G.particles.flames(pos, 0.5, 1, 0.8);
       },
     });
   }

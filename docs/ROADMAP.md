@@ -204,5 +204,6 @@ Reference stills live in `docs/inspo/`: golden-hour light with violet shadows, w
 100. ✅ **Cel flames.** Burning Ember paint and burning ink creatures now show flat, hand-drawn flame tongues (red rim, orange body, pale core) that sway and flicker, in one instanced draw call; the old particle flames are cut back to a few sparks.
 101. ✅ **Nameplates and lock-on.** Ink creatures that are hunting you within 35 m show their name with a "!" and a red slanted health bar (white-gold when calm); locking on draws a red ring with four white arrowheads that snaps in and slowly turns (no spin with Reduce motion).
 102. ✅ **Cel paint splats.** Splats are flat colour with a darker rim and an element pattern: Ember cools to a dark crust split by glowing cracks, Frost grows white frost-flowers, Spring ripples in rings, Bloom sprouts little leaves.
+103. ✅ **Trial dressing.** Torches in every trial, shrine and the Vault burn with cel flames in the room's colour (blue-white for Frost, gold, green, violet), lit braziers get big flame tongues, and exit portals are swirling discs of paint inside a glowing ring. Tips moved onto the brush-stroke panel too.
 
 The work continues through this list until the budget is used up.
