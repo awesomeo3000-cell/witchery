@@ -260,6 +260,8 @@ export class Audio {
       sneak: { root: 174.6, scale: [0, 3, 7, 10], step: 0.5, prog: [0, 0, 5, 3], density: 0.18 },
       soar: { root: 293.7, scale: [0, 2, 4, 7, 9, 12, 14, 16, 19, 21], step: 0.26, prog: [0, 5, 3, 4], density: 0.55 },
       race: { root: 329.6, scale: [0, 2, 4, 7, 9, 12, 14, 16], step: 0.15, prog: [0, 5, 3, 4], density: 0.55 },
+      // Galloping on a Brushbuck: a bright, bouncing country lope
+      gallop: { root: 261.6, scale: [0, 2, 4, 7, 9, 12, 14, 16], step: 0.19, prog: [0, 3, 4, 0], density: 0.45 },
     };
     if (!this.curMood) this.curMood = want;
     while (this.nextNote < now + 0.3) {
@@ -303,10 +305,16 @@ export class Audio {
         if (beat % 8 === 4) this.drum(t, 'snare', 0.7);
         if (beat % 2 === 0) this.tone(semis(chord - 12 + [0, 7, 12, 7][(beat / 2) % 4]), cfg.step * 1.4, 'triangle', 0.05, 1, t - this.ctx.currentTime, this.musicGain);
       }
+      if (mood === 'gallop') {
+        // Hoof-like lope: long-short-short, with a walking bass
+        if (beat % 4 === 0) this.drum(t, 'kick', 0.45);
+        if (beat % 4 === 2 || beat % 4 === 3) this.drum(t, 'hat', 0.45);
+        if (beat % 2 === 0) this.tone(semis(chord - 12 + [0, 4, 7, 4][(beat / 2) % 4]), cfg.step * 1.3, 'triangle', 0.045, 1, t - this.ctx.currentTime, this.musicGain);
+      }
       // Sneaking: a soft heartbeat under sparse plucks
       if (mood === 'sneak' && (beat === 0 || beat === 1)) this.drum(t, 'kick', beat ? 0.25 : 0.4);
       if (mood === 'dungeon' && beat === 8) this.pad(semis(chord - 24), t, cfg.step * 8, 0.03);
-      const fast = heavy || mood === 'race' || mood === 'skirmish';
+      const fast = heavy || mood === 'race' || mood === 'skirmish' || mood === 'gallop';
       if (Math.random() < cfg.density && !(beat % 2 && !fast)) {
         const n = cfg.scale[Math.floor(Math.random() * cfg.scale.length)] + chord;
         const vel = 0.25 + Math.random() * 0.35 + (beat % 4 === 0 ? 0.15 : 0);
@@ -328,6 +336,7 @@ export class Audio {
     if (p && G.enemies && G.enemies.list.some((e) => e.alive && !e.boss && (e.target ? e.target.local : ['chase', 'windup', 'attack'].includes(e.state)) && e.pos.distanceTo(p.pos) < 28)) return 'skirmish';
     if (p && p.sneaking) return 'sneak';
     if (p && p.state === 'ride' && p.speed > 16) return 'soar';
+    if (p && p.mounted && p.speed > 10) return 'gallop';
     if (G.sky && G.sky.night > 0.6) mood = 'night';
     return mood;
   }
