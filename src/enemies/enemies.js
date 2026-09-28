@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { G, COLORS, COUNTER, inDungeonY } from '../core/ctx.js';
 import { damp, dampAngle, mulberry32 } from '../core/math.js';
 import {
-  buildBounder, buildInkling, buildSpitter, buildWisp, buildInkbat, buildFrostmaw, buildMagmaw,
+  buildBounder, buildInkling, buildSpitter, buildWisp, buildInkbat, buildDummy, buildFrostmaw, buildMagmaw,
   buildShellback, buildGalewing, buildHueless, buildArcher, buildBlotGiant, buildSentinel, VARIANT_TINT,
 } from './models.js';
 import { fmtTime } from '../world/races.js';
@@ -25,6 +25,7 @@ export const TYPES = {
   hueless: { name: 'The Hueless King', hp: 700, speed: 2.5, aggro: 90, build: buildHueless, boss: true },
   blotgiant: { name: 'Blot Giant', hp: 360, speed: 2.6, aggro: 45, build: buildBlotGiant, boss: true, field: true },
   sentinel: { name: 'Stone Sentinel', hp: 300, speed: 1.8, aggro: 40, build: () => buildSentinel(smoothRockGeometry), boss: true, field: true },
+  dummy: { name: 'Practice Dummy', hp: 200, speed: 0, aggro: 0, build: buildDummy, static: true },
   inkbat: { name: 'Inkbat', hp: 7, speed: 13, aggro: 60, build: buildInkbat, fly: true },
 };
 const TYPE_KEYS = Object.keys(TYPES);
@@ -232,6 +233,16 @@ export class EnemyManager {
     if (e.def.field) { e.state = e.type === 'blotgiant' ? 'sleep' : 'dormant'; e.weakCd = 0; }
     if (e.type === 'sentinel') e.collider = G.collision.addCylinder(pos.x, pos.z, 2.6, pos.y, pos.y + 6.2, { dynamic: true, tags: ['sentinel'] });
     return e;
+  }
+
+  // Three practice dummies in the village training yard
+  _dummies() {
+    if (this.list.some((e) => e.type === 'dummy')) return;
+    for (let i = 0; i < 3; i++) {
+      const x = VILLAGE.x - 32 + (i - 1) * 4.5, z = VILLAGE.z + 30 + Math.abs(i - 1) * 1.5;
+      const e = this.spawn('dummy', new THREE.Vector3(x, G.terrain.heightAt(x, z), z), {});
+      e.yaw = Math.PI * 0.85;
+    }
   }
 
   // Flocks of Inkbats come out at night away from the village, and melt away at dawn
@@ -492,6 +503,8 @@ export class EnemyManager {
 
   kill(e) {
     if (!e.alive) return;
+    // Practice dummies just pop back to full straw
+    if (e.type === 'dummy') { e.hp = e.maxHp; this.fx('dummyReset', e.pos); return; }
     e.alive = false;
     e.hp = 0;
     this._deathFx(e);
@@ -549,6 +562,7 @@ export class EnemyManager {
         break;
       }
       case 'star': G.stars?.streak(p); break;
+      case 'dummyReset': G.particles.burst(p.setY(p.y + 1.4), { count: 30, color: 0xd8b060, speed: 5, life: 0.9, size: 0.45, gravity: 8 }); G.audio.play('pickup', 0.5); break;
       case 'rushClear': {
         G.audio.play('shard');
         const b = G.flags.rush_best;
@@ -1013,7 +1027,7 @@ export class EnemyManager {
 
   update(dt) {
     const host = this.isHost;
-    if (host) { this._updateCamps(dt); this._nightBats(dt); }
+    if (host) { this._updateCamps(dt); this._nightBats(dt); this._dummies(); }
     this.bossActive = null;
     for (const e of [...this.list]) {
       if (!e.alive) continue;
@@ -1730,6 +1744,12 @@ const RENDER = {
     const m = e.model;
     m.bow.scale.set(1, 1, e.state === 'windup' ? 1.3 : 1);
     m.body.rotation.x = e.state === 'windup' ? -0.15 : 0;
+  },
+  dummy(e) {
+    // Wobble when struck
+    const k = Math.max(0, 0.6 - (G.time - (e.lastHit || -9)));
+    e.model.body.rotation.z = Math.sin(G.time * 22) * k * 0.4;
+    e.model.body.rotation.x = k * 0.2;
   },
   inkbat(e) {
     const m = e.model;

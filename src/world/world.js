@@ -374,6 +374,7 @@ export class World {
           'Press R to ride your brush through the skies. Mind your stamina!',
           'Some of the villagers could use a hand. Look for the ones with a ! over their heads.',
           'Sable at the market reworks brushes, if you bring Pigment from the ink creatures.',
+          'The straw dummies on the west side of the village are good for practising combos and colours.',
           `You have ${done} of 4 Prism Shards.`,
         ];
         G.hud.dialog('Elder Umber', lines[hintIdx % lines.length]);

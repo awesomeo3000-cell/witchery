@@ -150,6 +150,34 @@ export function buildWisp() {
   return { group: g, body, wings, height: 1.6, radius: 0.8 };
 }
 
+// Practice dummy: a straw sack on a post with a painted target and a pot helmet
+export function buildDummy() {
+  const g = new THREE.Group();
+  const body = new THREE.Group();
+  g.add(body);
+  const wood = lam(0x7a5230), straw = lam(0xd8b060), pot = lam(0x5a5a64);
+  const post = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.11, 1.2, 8), wood);
+  post.position.y = 0.6;
+  const sack = new THREE.Mesh(new THREE.CapsuleGeometry(0.38, 0.55, 6, 14), straw);
+  sack.position.y = 1.35;
+  sack.castShadow = true;
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.26, 14, 10), straw);
+  head.position.y = 2.1;
+  const helm = new THREE.Mesh(new THREE.SphereGeometry(0.29, 14, 8, 0, Math.PI * 2, 0, Math.PI * 0.5), pot);
+  helm.position.y = 2.14;
+  const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.5, 6), wood);
+  arm.rotation.z = Math.PI / 2;
+  arm.position.y = 1.55;
+  // Painted target rings on the chest
+  const rings = [0xe8442e, 0xfff0dc, 0xe8442e].map((c, i) => {
+    const r = new THREE.Mesh(new THREE.CircleGeometry(0.26 - i * 0.08, 16), new THREE.MeshBasicMaterial({ color: c }));
+    r.position.set(0, 1.4, 0.36 + i * 0.005);
+    return r;
+  });
+  body.add(post, sack, head, helm, arm, ...rings);
+  return { group: g, body, height: 2.4, radius: 0.5 };
+}
+
 // Night Inkbat: a round ink body with scalloped membrane wings and glowing eyes
 export function buildInkbat() {
   const g = new THREE.Group();
