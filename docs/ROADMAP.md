@@ -164,4 +164,6 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 
 86. ✅ **Tandem riding.** In co-op, climb on behind a friend's Brushbuck and ride along while you paint.
 
+87. ✅ **Ink Knights.** Shielded elite-camp leaders: frontal blows are blocked, they turn slowly so flanking works, and Spring knocks the shield aside for a stagger and bonus damage.
+
 The work continues through this list until the budget is used up.

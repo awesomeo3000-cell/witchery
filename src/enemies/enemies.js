@@ -4,7 +4,7 @@ import { G, COLORS, COUNTER, inDungeonY } from '../core/ctx.js';
 import { damp, dampAngle, mulberry32 } from '../core/math.js';
 import {
   buildBounder, buildInkling, buildSpitter, buildWisp, buildInkbat, buildDummy, buildFrostmaw, buildMagmaw,
-  buildShellback, buildGalewing, buildHueless, buildArcher, buildBlotGiant, buildSentinel, buildRainmane, buildSentry, buildInkspout, VARIANT_TINT,
+  buildShellback, buildGalewing, buildHueless, buildArcher, buildBlotGiant, buildSentinel, buildRainmane, buildSentry, buildInkspout, buildKnight, VARIANT_TINT,
 } from './models.js';
 import { fmtTime } from '../world/races.js';
 import { STAR_PIGMENT } from '../world/stars.js';
@@ -33,6 +33,7 @@ export const TYPES = {
   sentry: { name: 'Ruin Sentry', hp: 90, speed: 0, aggro: 48, build: buildSentry, static: true },
   // Floats at the surface (fly: no gravity), so it can bob up and duck under the water
   inkspout: { name: 'Inkspout', hp: 30, speed: 0, aggro: 26, build: buildInkspout, static: true, fly: true },
+  knight: { name: 'Ink Knight', hp: 60, speed: 3.4, aggro: 26, build: buildKnight },
 };
 const TYPE_KEYS = Object.keys(TYPES);
 const VARIANTS = ['none', 'fire', 'ice'];
@@ -86,6 +87,7 @@ class Enemy {
     if (type === 'frostmaw') { this.armor = this.maxArmor = 50; }
     if (type === 'hueless') { this.shield = 0; this.shieldHp = 3; }
     if (type === 'rainmane') this.shield = Math.floor(Math.random() * 4);
+    if (type === 'knight') this.shieldHp = 1; // 1: shield raised
     this.name = (variant === 'fire' ? 'Cinder ' : variant === 'ice' ? 'Frost ' : '') + this.def.name;
     this._buildStatusFx();
   }
@@ -206,7 +208,10 @@ export class EnemyManager {
       const towerPos = new THREE.Vector3(x + Math.cos(ta) * 11, 0, z + Math.sin(ta) * 11);
       towerPos.y = G.terrain.heightAt(towerPos.x, towerPos.z) + 6.5;
       if (tower) types = [...types, 'archer'];
-      camps.push({ id: camps.length, x, z, variant, types, active: false, members: [], respawn: 0, tower, towerPos, elite: rand() < 0.35 });
+      // Elite camps are led by an Ink Knight
+      const elite = rand() < 0.35;
+      if (elite) types = [...types, 'knight'];
+      camps.push({ id: camps.length, x, z, variant, types, active: false, members: [], respawn: 0, tower, towerPos, elite });
     }
     // Field bosses in fixed, open spots
     const fieldSpots = [['blotgiant', -120, 250], ['blotgiant', 230, -150], ['sentinel', 250, 330], ['sentinel', 60, -330], ['rainmane', -100, -120]];
@@ -405,6 +410,15 @@ export class EnemyManager {
         if (e.state === 'dormant') { dmg *= 1.5; res.crit = true; }
         break;
       }
+      case 'knight': {
+        // The raised shield turns aside blows from the front; Spring knocks it away
+        const dir = hit.dir;
+        const front = e.shieldHp > 0 && dir && (dir.x * Math.sin(e.yaw) + dir.z * Math.cos(e.yaw)) < -0.25;
+        if (front && el === 'bounce') { res.shieldHit = true; return res; }
+        if (front) { res.blocked = true; res.hint = 'Its shield blocks you! Strike from behind, or knock the shield aside with Spring (yellow).'; return res; }
+        if (e.shieldHp <= 0) { dmg *= 1.5; res.crit = true; }
+        break;
+      }
       case 'inkspout':
         if (e.pos.y < -0.9 && e.status.frozen <= 0) { res.blocked = true; res.hint = 'It ducked under the water! Strike when it surfaces, or freeze it with Frost.'; return res; }
         if (e.status.frozen > 0 && hit.source === 'melee') { dmg *= 2; res.crit = true; res.shatter = true; }
@@ -494,6 +508,15 @@ export class EnemyManager {
         if (e.type === 'shellback') { e.status.stun = 7; e.state = 'stun'; e.vel.y = 10; this.fx('flip', e.pos); }
         if (e.type === 'galewing') { e.status.rooted = 7; e.state = 'stun'; this.fx('tangle', e.pos); }
       }
+      return;
+    }
+    if (res.shieldHit && e.type === 'knight') {
+      e.shieldHp = 0;
+      e.shieldT = 0;
+      e.status.stun = 2.5;
+      e.state = 'stun';
+      e.stateT = 0;
+      this.fx('knightShield', e.pos);
       return;
     }
     if (res.shieldHit) {
@@ -610,6 +633,7 @@ export class EnemyManager {
         break;
       }
       case 'sentryLock': G.hud.caption('A Ruin Sentry locks on', pos); G.audio.play('glint', 0.8); G.audio.tone?.(880, 1.8, 'sine', 0.05, 1.6); break;
+      case 'knightShield': G.audio.play('break', 0.8); G.particles.burst(p.setY(p.y + 1.5), { count: 30, color: 0xd8d8e8, speed: 7, life: 0.6, size: 0.4 }); if (G.player && G.player.pos.distanceTo(pos) < 20) G.hud.toast('The shield flies aside! Strike now!', '#fff09a', 1.8); break;
       case 'parry': G.audio.play('crit'); G.audio.play('shield', 0.6); G.particles.burst(p, { count: 30, color: 0xffffff, speed: 8, life: 0.4, size: 0.4, pool: 'glow' }); if (G.player && G.player.pos.distanceTo(pos) < 12) { G.hud.toast('Parried!', '#ffffff', 1.2); G.hitStop = Math.max(G.hitStop || 0, 0.12); } break;
       case 'topple': G.audio.play('slam'); G.hud.toast('It staggers! Attack now!', '#fff09a', 2); G.particles.burst(p.setY(p.y + 1), { count: 40, color: 0xd8d0c0, speed: 8, life: 0.8, size: 0.9, gravity: 6 }); break;
       case 'summon': G.hud.caption('Ink bubbles up', pos); G.particles.burst(p.setY(p.y + 1), { count: 30, color: 0x2a2433, speed: 5, life: 1, size: 0.8 }); break;
@@ -1447,6 +1471,42 @@ const AI = {
       default: setState(e, 'chase');
     }
   },
+  knight(e, dt, t, mgr) {
+    e.stateT += dt;
+    // Shield back up once the stagger passes
+    if (e.shieldHp <= 0) { e.shieldT = (e.shieldT || 0) + dt; if (e.shieldT > 5) { e.shieldHp = 1; e.shieldT = 0; } }
+    const leash = e.pos.distanceTo(e.home) > 40;
+    if (!t || leash) {
+      if (leash) moveToward(e, e.home, e.def.speed, dt); else wander(e, dt);
+      if (e.state !== 'idle') setState(e, 'idle');
+      return;
+    }
+    const d = t.pos.distanceTo(e.pos);
+    switch (e.state) {
+      case 'idle': case 'chase':
+        e.state = 'chase';
+        // Turns slowly, so circling round behind it works
+        moveToward(e, t.pos, d > 3 ? e.def.speed : 0, dt);
+        faceTo(e, t.pos, dt, 2.2);
+        e.cool -= dt;
+        if (d < 3.2 && e.cool <= 0) { setState(e, 'windup'); e.hitSet = new Set(); }
+        break;
+      case 'windup':
+        faceTo(e, t.pos, dt, 2.5);
+        e.vel.x = damp(e.vel.x, 0, 8, dt); e.vel.z = damp(e.vel.z, 0, 8, dt);
+        if (e.stateT > 0.7) { setState(e, 'attack'); const f = fwdOf(e); e.vel.set(f.x * 6, 0, f.z * 6); }
+        break;
+      case 'attack':
+        contactDamage(e, mgr, 3, 1.4, e.variant === 'fire' ? 'fire' : e.variant === 'ice' ? 'ice' : null);
+        if (e.stateT > 0.4) { setState(e, 'recover'); e.cool = 1.6 + Math.random(); }
+        break;
+      case 'recover':
+        e.vel.x = damp(e.vel.x, 0, 8, dt); e.vel.z = damp(e.vel.z, 0, 8, dt);
+        if (e.stateT > 0.9) setState(e, 'chase');
+        break;
+      default: setState(e, 'chase');
+    }
+  },
   inkspout(e, dt, t, mgr) {
     e.stateT += dt;
     e.vel.set(0, 0, 0);
@@ -2002,6 +2062,14 @@ const RENDER = {
     m.arms[1].rotation.x = st === 'attack' ? (k < 0.5 ? -2.2 * (k / 0.5) : -2.2 + (k - 0.5) * 5) : st === 'roll' ? -1.4 : st === 'shoot' ? -1.8 : -0.3;
     m.arms[1].rotation.z = st === 'attack' && k > 0.5 ? -1.2 : 0;
     m.arms[0].rotation.x = st === 'shoot' ? -2.6 : st === 'wake' ? -2.8 : -0.2;
+  },
+  knight(e) {
+    const m = e.model;
+    for (const s of m.shield) s.visible = e.shieldHp > 0;
+    const walk = e.state === 'chase' ? Math.sin(e.anim * 5) : 0;
+    m.arms[0].rotation.x = e.shieldHp > 0 ? -1.1 : 0.3; // shield held up in front
+    m.arms[1].rotation.x = e.state === 'windup' ? -2.4 * Math.min(1, e.stateT / 0.7) : e.state === 'attack' ? -2.4 + Math.min(1, e.stateT / 0.3) * 3.2 : walk * 0.3;
+    m.body.rotation.z = e.status.stun > 0 ? Math.sin(e.anim * 8) * 0.08 : walk * 0.04;
   },
   inkspout(e) {
     const m = e.model;

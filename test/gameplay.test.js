@@ -387,3 +387,13 @@ test('hats unlock by honour, flag or honour count', async () => {
   assert.equal(unlocked(hat('peak'), 15, {}, got), true);
   assert.equal(new Set(HATS.map((h) => h.id)).size, HATS.length);
 });
+
+test('Ink Knight shields frontal blows; Spring knocks the shield aside', () => {
+  // Facing +z (yaw 0); a blow travelling -z comes from the front
+  const k = enemy('knight', { yaw: 0, shieldHp: 1 });
+  const front = { x: 0, z: -1 }, back = { x: 0, z: 1 };
+  assert.equal(computeHit(k, { dmg: 10, element: 'fire', dir: front }).blocked, true);
+  assert.equal(computeHit(k, { dmg: 10, element: 'bounce', dir: front }).shieldHit, true);
+  assert.equal(computeHit(k, { dmg: 10, element: 'fire', dir: back }).dmg, 10);
+  assert.equal(computeHit(enemy('knight', { yaw: 0, shieldHp: 0 }), { dmg: 10, element: 'fire', dir: front }).dmg, 15);
+});

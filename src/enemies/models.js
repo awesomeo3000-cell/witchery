@@ -671,3 +671,48 @@ export function buildInkspout(tint) {
   body.traverse((m) => { if (m.isMesh) m.castShadow = true; });
   return { group: g, body, snout, height: 1.4, radius: 0.9 };
 }
+
+// Ink Knight: a heavy blot in painted armour with a round shield that turns aside frontal blows.
+export function buildKnight(tint) {
+  const g = new THREE.Group();
+  const body = new THREE.Group();
+  g.add(body);
+  const ink = lam(tint || 0x3a3246);
+  const plate = lam(0x9a9aa8, { map: paintTex('cloth') });
+  const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.55, 0.7, 6, 12), ink);
+  torso.position.y = 1.2;
+  const chest = new THREE.Mesh(new THREE.SphereGeometry(0.58, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.55), plate);
+  chest.position.y = 1.35;
+  const helm = new THREE.Mesh(new THREE.SphereGeometry(0.38, 14, 12), plate);
+  helm.position.y = 2.15;
+  const visor = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.08, 0.1), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xff5a4a).multiplyScalar(1.5) }));
+  visor.position.set(0, 2.15, 0.34);
+  const plume = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.5, 6), lam(0xe8442e));
+  plume.position.set(0, 2.6, -0.05);
+  body.add(torso, chest, helm, visor, plume);
+  for (const s of [-1, 1]) {
+    const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.18, 0.5, 4, 8), ink);
+    leg.position.set(s * 0.25, 0.4, 0);
+    body.add(leg);
+  }
+  const arms = [];
+  for (const s of [-1, 1]) {
+    const arm = new THREE.Group();
+    arm.position.set(s * 0.7, 1.6, 0);
+    const up = new THREE.Mesh(new THREE.CapsuleGeometry(0.15, 0.55, 4, 8), ink);
+    up.position.y = -0.4;
+    arm.add(up);
+    body.add(arm);
+    arms.push(arm);
+  }
+  // Shield on the left arm, sword in the right
+  const shield = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.1, 18).rotateX(Math.PI / 2), plate);
+  shield.position.set(0.1, -0.5, 0.45);
+  const boss = new THREE.Mesh(new THREE.SphereGeometry(0.14, 10, 8), lam(0xd8b060));
+  boss.position.set(0.1, -0.5, 0.52);
+  arms[0].add(shield, boss);
+  const sword = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.3, 0.04).translate(0, -1.2, 0), plate);
+  arms[1].add(sword);
+  body.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+  return { group: g, body, arms, shield: [shield, boss], height: 2.7, radius: 0.8 };
+}
