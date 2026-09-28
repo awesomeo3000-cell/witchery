@@ -73,6 +73,9 @@ On phones and tablets, touch controls appear automatically: a floating joystick 
 
 Each colour has its own ink bottle, which refills slowly over time. Ink flowers and enemy drops refill it faster.
 
+
+Heat rises: glide over burning Ember paint on the ground and the updraft carries you up, like a campfire.
+
 ## The Prism Trials
 
 Coloured light beams mark the four trial shrines. Each trial has a puzzle built around its colour, followed by a mini-boss:

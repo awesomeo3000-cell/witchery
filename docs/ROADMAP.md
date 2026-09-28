@@ -151,4 +151,6 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 
 79. ✅ **Journey statistics.** Time played, distance walked/flown/ridden/swum, foes defeated, globs flicked and faints, saved locally and listed in the adventure log.
 
+80. ✅ **Fire updrafts.** Burning Ember paint on the ground lifts gliders, with rising heat motes to show it.
+
 The work continues through this list until the budget is used up.

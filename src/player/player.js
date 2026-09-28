@@ -438,6 +438,14 @@ export class Player {
       const d = Math.hypot(this.pos.x - u.x, this.pos.z - u.z);
       if (d < u.r + 2 && this.pos.y < u.y1 && this.pos.y > u.y0 - 5) return 55;
     }
+    // Heat rises: burning Ember paint on the ground lifts a glider for a while
+    for (const s of G.paint.splats) {
+      if (s.element !== 'fire' || s.life <= 0 || s.vertical || s.onWater) continue;
+      if (Math.hypot(this.pos.x - s.pos.x, this.pos.z - s.pos.z) < s.radius + 1.2 && this.pos.y > s.pos.y && this.pos.y < s.pos.y + 28) {
+        if (!G.guide?.seen.has('heat')) { G.guide?.seen.add('heat'); G.hud.toast('Heat rises! Glide over burning Ember paint to ride the updraft.', '#ffb080', 3.5); }
+        return 42;
+      }
+    }
     return 0;
   }
 
