@@ -504,3 +504,104 @@ export function buildSentinel(rockGeoFn) {
   body.add(eyes);
   return { group: g, body, arms, crystal, eyes, height: 7, radius: 3.2 };
 }
+
+// Rainmane: a painted centaur-lion that roams the plains. Its great mane shifts through the four
+// colours; only the colour that undoes the mane's current one really hurts it.
+export function buildRainmane() {
+  const g = new THREE.Group();
+  const body = new THREE.Group();
+  g.add(body);
+  const hide = lam(0x3a3246);
+  const belly = lam(0x6a5a78);
+  const gold = lam(0xd8b060, { emissive: 0x302000 });
+  // Lion body
+  const barrel = new THREE.Mesh(new THREE.CapsuleGeometry(1.0, 2.4, 8, 16).rotateX(Math.PI / 2), hide);
+  barrel.position.set(0, 2.3, -0.4);
+  const under = new THREE.Mesh(new THREE.CapsuleGeometry(0.8, 2.0, 6, 12).rotateX(Math.PI / 2), belly);
+  under.position.set(0, 2.0, -0.4);
+  under.scale.set(0.9, 0.7, 1);
+  body.add(barrel, under);
+  const legs = [];
+  for (const [x, z] of [[-0.6, 0.9], [0.6, 0.9], [-0.6, -1.6], [0.6, -1.6]]) {
+    const pivot = new THREE.Group();
+    pivot.position.set(x, 2.1, z);
+    const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.28, 1.4, 6, 10), hide);
+    leg.position.y = -1.0;
+    const paw = new THREE.Mesh(new THREE.SphereGeometry(0.34, 10, 8), belly);
+    paw.scale.set(1, 0.6, 1.3);
+    paw.position.set(0, -1.95, 0.1);
+    pivot.add(leg, paw);
+    body.add(pivot);
+    legs.push(pivot);
+  }
+  const tail = new THREE.Group();
+  tail.position.set(0, 2.6, -2.2);
+  const tailM = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 1.8, 6).translate(0, -0.9, 0), hide);
+  tailM.rotation.x = -0.5;
+  const tuft = new THREE.Mesh(new THREE.SphereGeometry(0.3, 10, 8), gold);
+  tuft.position.set(0, -1.6, -0.85);
+  tail.add(tailM, tuft);
+  body.add(tail);
+  // Upright torso, arms and head
+  const torso = new THREE.Group();
+  torso.position.set(0, 3.0, 1.2);
+  const chest = new THREE.Mesh(new THREE.CapsuleGeometry(0.75, 1.2, 8, 14), hide);
+  chest.position.y = 0.9;
+  const plate = new THREE.Mesh(new THREE.SphereGeometry(0.7, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.5), gold);
+  plate.rotation.x = Math.PI / 2;
+  plate.position.set(0, 1.1, 0.45);
+  plate.scale.set(1, 1, 0.5);
+  const head = new THREE.Group();
+  head.position.y = 2.35;
+  const skull = new THREE.Mesh(new THREE.SphereGeometry(0.55, 16, 12), belly);
+  skull.scale.set(1, 1, 1.1);
+  const snout = new THREE.Mesh(new THREE.SphereGeometry(0.3, 12, 10), belly);
+  snout.position.set(0, -0.15, 0.5);
+  for (const s of [-1, 1]) {
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 6), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffe066).multiplyScalar(1.8) }));
+    eye.position.set(s * 0.22, 0.1, 0.48);
+    const horn = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.9, 8), gold);
+    horn.position.set(s * 0.35, 0.55, -0.1);
+    horn.rotation.set(-0.6, 0, -s * 0.3);
+    head.add(eye, horn);
+  }
+  // The mane: a ruff of spikes whose colour shows its current pigment
+  const maneMat = new THREE.MeshLambertMaterial({ color: 0xe8442e, emissive: 0xe8442e, emissiveIntensity: 0.45 });
+  const mane = new THREE.Group();
+  for (let i = 0; i < 16; i++) {
+    const a = (i / 16) * Math.PI * 2;
+    const spike = new THREE.Mesh(new THREE.ConeGeometry(0.2, 1.0 + (i % 2) * 0.4, 6), maneMat);
+    spike.position.set(Math.cos(a) * 0.55, Math.sin(a) * 0.55, -0.25);
+    spike.rotation.z = a - Math.PI / 2;
+    spike.rotation.x = -0.35;
+    mane.add(spike);
+  }
+  head.add(skull, snout, mane);
+  torso.add(chest, plate, head);
+  const arms = [];
+  for (const s of [-1, 1]) {
+    const arm = new THREE.Group();
+    arm.position.set(s * 0.95, 1.5, 0);
+    const up = new THREE.Mesh(new THREE.CapsuleGeometry(0.24, 1.1, 6, 10), hide);
+    up.position.y = -0.7;
+    const hand = new THREE.Mesh(new THREE.SphereGeometry(0.26, 10, 8), belly);
+    hand.position.y = -1.45;
+    arm.add(up, hand);
+    torso.add(arm);
+    arms.push(arm);
+  }
+  // A huge paint-glaive in the right hand
+  const glaive = new THREE.Group();
+  glaive.position.set(0, -1.45, 0);
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 3.8, 6), lam(0x5a3a22));
+  shaft.rotation.x = Math.PI / 2;
+  shaft.position.z = 0.8;
+  const blade = new THREE.Mesh(new THREE.ConeGeometry(0.35, 1.4, 4).rotateX(Math.PI / 2), maneMat);
+  blade.position.z = 3.3;
+  blade.scale.set(0.35, 1, 1);
+  glaive.add(shaft, blade);
+  arms[1].add(glaive);
+  body.add(torso);
+  body.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+  return { group: g, body, legs, torso, head, arms, glaive, tail, mane, maneMat, height: 5, radius: 1.8 };
+}

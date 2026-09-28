@@ -93,6 +93,12 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 
 50. ✅ **Brushbucks.** Herds of painted deer graze in the meadows. Sneak up, mount one and hold on (it costs stamina) to tame it. Ride at a trot or gallop, jump, and whistle (X) to call your Brushbuck. Friends see you riding.
 51. ✅ **Mounted play.** The Meadow Dash, a ground course of gates for Brushbucks with a room record; Rosa's stable post in the village, where you can rename your mount or have it fetched; a higher, wider camera in the saddle.
-52. **Regression and docs.**
+52. ✅ **Regression and docs.** Full browser regression including shrines, fishing, critters, recipes, Brushbucks and the co-op mount view.
+
+## Wave thirteen
+
+53. **Rainmane.** A Lynel-style painted centaur prowls a western plain. Its mane cycles through the four colours and only the colour that undoes it bites deep. It sweeps its glaive, charges, fires paint volleys and leaps onto you.
+54. **Cold and heat.** Snowy peaks chill you and the volcano's crater scorches you, slowly costing hearts. Spicy (Bold) meals keep you warm; Inky meals keep you cool. A frost or heat edge on the screen warns you.
+55. **Regression and docs.**
 
 The work continues through this list until the budget is used up.

@@ -4,7 +4,7 @@ import { G, COLORS, COUNTER, inDungeonY } from '../core/ctx.js';
 import { damp, dampAngle, mulberry32 } from '../core/math.js';
 import {
   buildBounder, buildInkling, buildSpitter, buildWisp, buildInkbat, buildDummy, buildFrostmaw, buildMagmaw,
-  buildShellback, buildGalewing, buildHueless, buildArcher, buildBlotGiant, buildSentinel, VARIANT_TINT,
+  buildShellback, buildGalewing, buildHueless, buildArcher, buildBlotGiant, buildSentinel, buildRainmane, VARIANT_TINT,
 } from './models.js';
 import { fmtTime } from '../world/races.js';
 import { STAR_PIGMENT } from '../world/stars.js';
@@ -28,6 +28,7 @@ export const TYPES = {
   sentinel: { name: 'Stone Sentinel', hp: 300, speed: 1.8, aggro: 40, build: () => buildSentinel(smoothRockGeometry), boss: true, field: true },
   dummy: { name: 'Practice Dummy', hp: 200, speed: 0, aggro: 0, build: buildDummy, static: true },
   inkbat: { name: 'Inkbat', hp: 7, speed: 13, aggro: 60, build: buildInkbat, fly: true },
+  rainmane: { name: 'Rainmane', hp: 420, speed: 6, aggro: 50, build: buildRainmane, boss: true, field: true },
 };
 const TYPE_KEYS = Object.keys(TYPES);
 const VARIANTS = ['none', 'fire', 'ice'];
@@ -78,6 +79,7 @@ class Enemy {
     this.target = null;
     if (type === 'frostmaw') { this.armor = this.maxArmor = 50; }
     if (type === 'hueless') { this.shield = 0; this.shieldHp = 3; }
+    if (type === 'rainmane') this.shield = Math.floor(Math.random() * 4);
     this.name = (variant === 'fire' ? 'Cinder ' : variant === 'ice' ? 'Frost ' : '') + this.def.name;
     this._buildStatusFx();
   }
@@ -199,7 +201,7 @@ export class EnemyManager {
       camps.push({ id: camps.length, x, z, variant, types, active: false, members: [], respawn: 0, tower, towerPos, elite: rand() < 0.35 });
     }
     // Field bosses in fixed, open spots
-    const fieldSpots = [['blotgiant', -120, 250], ['blotgiant', 230, -150], ['sentinel', 250, 330], ['sentinel', 60, -330]];
+    const fieldSpots = [['blotgiant', -120, 250], ['blotgiant', 230, -150], ['sentinel', 250, 330], ['sentinel', 60, -330], ['rainmane', -330, -60]];
     for (const [type, fx, fz] of fieldSpots) {
       let bx = fx, bz = fz;
       for (let k = 0; k < 40 && G.terrain.heightAt(bx, bz) < 4; k++) { bx *= 0.95; bz *= 0.95; }
@@ -377,6 +379,18 @@ export class EnemyManager {
         const onTop = hit.hy !== undefined && hit.hy > e.pos.y + e.height * 0.7;
         if (!onTop && e.status.stun <= 0) { res.blocked = true; res.hint = 'Solid stone! Strike the glowing crystal on its back (bounce or glide on top).'; return res; }
         dmg *= 1.6; res.crit = true;
+        break;
+      }
+      case 'rainmane': {
+        // Only the colour that undoes its mane bites deep (and can stagger it)
+        const need = COUNTER[ELEMENTS[e.shield]];
+        if (el === need) { dmg *= 2; res.crit = true; if (Math.random() < 0.35) res.weak = true; }
+        else {
+          dmg *= 0.4;
+          const ci = ELEMENTS.indexOf(need);
+          res.hint = `Its ${COLORS[e.shield].name} mane shrugs that off! Strike with ${COLORS[ci].name}.`;
+        }
+        if (e.state === 'dormant') { dmg *= 1.5; res.crit = true; }
         break;
       }
       case 'hueless': {
@@ -569,6 +583,12 @@ export class EnemyManager {
         G.audio.play('shard');
         const b = G.flags.rush_best;
         G.hud.banner('The Echoes Are Stilled', b ? `Gallery record ${fmtTime(b.t)} · ${b.n}` : 'The gallery falls silent', '#c8a8ff');
+        break;
+      }
+      case 'maneShift': {
+        const e = this.list.find((q) => q.type === 'rainmane' && q.pos.distanceTo(pos) < 6);
+        if (e) G.particles.burst(e.pos.clone().setY(e.pos.y + 5.3), { count: 30, color: COLORS[e.shield].hex, speed: 5, life: 0.7, size: 0.5, pool: 'glow' });
+        if (G.player && G.player.pos.distanceTo(pos) < 40) G.audio.play('shield', 0.5);
         break;
       }
       case 'topple': G.audio.play('slam'); G.hud.toast('It staggers! Attack now!', '#fff09a', 2); G.particles.burst(p.setY(p.y + 1), { count: 40, color: 0xd8d0c0, speed: 8, life: 0.8, size: 0.9, gravity: 6 }); break;
@@ -1274,6 +1294,101 @@ const AI = {
       default: setState(e, 'chase');
     }
   },
+  rainmane(e, dt, t, mgr) {
+    e.stateT += dt;
+    e.weakCd = Math.max(0, (e.weakCd || 0) - dt);
+    if (e.state === 'dormant') {
+      // Prowls slowly around its plain until someone comes close
+      e.prowlT = (e.prowlT || 0) - dt;
+      if (e.prowlT <= 0) { e.prowlT = 3 + Math.random() * 4; const a = Math.random() * Math.PI * 2; e.wanderTo = e.home.clone().add(new THREE.Vector3(Math.cos(a) * 10, 0, Math.sin(a) * 10)); }
+      if (e.wanderTo && e.pos.distanceTo(e.wanderTo) > 1.5) moveToward(e, e.wanderTo, 1.6, dt);
+      else { e.vel.x = damp(e.vel.x, 0, 4, dt); e.vel.z = damp(e.vel.z, 0, 4, dt); }
+      for (const p of mgr.players()) if (p.alive && p.pos.distanceTo(e.pos) < (p.sneak ? 9 : 26)) { mgr._wake(e); break; }
+      return;
+    }
+    if (e.state === 'wake') { e.vel.x = e.vel.z = 0; if (e.stateT > 1.8) setState(e, 'chase'); return; }
+    // The mane shifts colour every few seconds (faster when hurt)
+    e.shiftT = (e.shiftT || 0) + dt;
+    if (e.shiftT > (e.hp < e.maxHp * 0.5 ? 6 : 9)) { e.shiftT = 0; e.shield = (e.shield + 1 + Math.floor(Math.random() * 3)) % 4; mgr.fx('maneShift', e.pos); }
+    if (!t) { if (e.stateT > 15) { setState(e, 'dormant'); e.home.copy(e.pos); } return; }
+    const d = t.pos.distanceTo(e.pos);
+    const fwd = fwdOf(e);
+    switch (e.state) {
+      case 'chase': case 'recover': case 'idle':
+        if (e.state === 'recover' && e.stateT < 0.6) { e.vel.x = damp(e.vel.x, 0, 6, dt); e.vel.z = damp(e.vel.z, 0, 6, dt); break; }
+        e.state = 'chase';
+        moveToward(e, t.pos, d > 14 ? e.def.speed * 1.5 : e.def.speed, dt);
+        e.cool -= dt;
+        if (e.cool <= 0) {
+          e.cool = e.hp < e.maxHp * 0.5 ? 1.4 : 2.0;
+          e.hitSet = new Set();
+          e.did = false;
+          const r = Math.random();
+          if (d < 6) setState(e, r < 0.7 ? 'attack' : 'slam');
+          else if (d < 22) setState(e, r < 0.55 ? 'roll' : r < 0.8 ? 'shoot' : 'slam');
+          else setState(e, 'shoot');
+          if (e.state === 'roll') e.chargeDir = t.pos.clone().sub(e.pos).setY(0).normalize();
+          if (e.state === 'slam') e.leapTo = t.pos.clone();
+        }
+        break;
+      case 'attack': // wide glaive sweep
+        faceTo(e, t.pos, dt, e.stateT < 0.45 ? 5 : 1);
+        e.vel.x = damp(e.vel.x, 0, 8, dt); e.vel.z = damp(e.vel.z, 0, 8, dt);
+        if (e.stateT > 0.5 && e.stateT < 0.85) {
+          for (const p of mgr.players()) {
+            if (!p.alive || e.hitSet.has(p.id)) continue;
+            const v = p.pos.clone().sub(e.pos); v.y = 0;
+            if (v.length() < 6 && v.normalize().dot(fwd) > -0.1 && Math.abs(p.pos.y - e.pos.y) < 4) { e.hitSet.add(p.id); mgr.damagePlayer(p, 4, e.pos, ELEMENTS[e.shield]); }
+          }
+        }
+        if (e.stateT > 1.2) setState(e, 'recover');
+        break;
+      case 'roll': // head-down charge in a straight line
+        if (e.stateT < 0.5) { faceTo(e, e.pos.clone().add(e.chargeDir), dt, 8); e.vel.x = damp(e.vel.x, 0, 8, dt); e.vel.z = damp(e.vel.z, 0, 8, dt); break; }
+        e.vel.x = e.chargeDir.x * 22; e.vel.z = e.chargeDir.z * 22;
+        contactDamage(e, mgr, 5, 1.2, ELEMENTS[e.shield]);
+        if (e.stateT > 1.5) { e.vel.x *= 0.3; e.vel.z *= 0.3; setState(e, 'recover'); }
+        break;
+      case 'shoot': // a volley of three paint bolts in its mane colour
+        faceTo(e, t.pos, dt, 6);
+        e.vel.x = damp(e.vel.x, 0, 8, dt); e.vel.z = damp(e.vel.z, 0, 8, dt);
+        for (let k = 0; k < 3; k++) {
+          const at = 0.55 + k * 0.22;
+          if (e.stateT > at && (e.shots || 0) === k) {
+            e.shots = k + 1;
+            const from = e.pos.clone().setY(e.pos.y + 4.4).addScaledVector(fwd, 1.5);
+            const to = t.pos.clone().setY(t.pos.y + 0.8).add(new THREE.Vector3((k - 1) * 1.5, 0, 0));
+            const tt = Math.max(0.5, from.distanceTo(to) / 26);
+            const v = to.sub(from).divideScalar(tt);
+            v.y += 0.5 * 14 * tt;
+            const el = ELEMENTS[e.shield];
+            mgr.shoot(el === 'fire' ? 'fire' : el === 'ice' ? 'ice' : 'ink', from, v, { dmg: 2, element: el, radius: el === 'ice' ? 1.1 : 0.8 });
+            G.audio.play('shoot', 0.6);
+          }
+        }
+        if (e.stateT > 1.4) { e.shots = 0; setState(e, 'recover'); }
+        break;
+      case 'slam': // leaps onto you and lands with a shockwave
+        if (e.stateT < 0.45) { faceTo(e, e.leapTo, dt, 8); e.vel.x = damp(e.vel.x, 0, 8, dt); e.vel.z = damp(e.vel.z, 0, 8, dt); break; }
+        if (!e.did) {
+          e.did = true;
+          const dx = e.leapTo.x - e.pos.x, dz = e.leapTo.z - e.pos.z;
+          const air = 1.0;
+          e.vel.set(dx / air, 13, dz / air);
+          e.leaping = true;
+        } else if (e.leaping && e.grounded && e.stateT > 0.7) {
+          e.leaping = false;
+          e.vel.x = e.vel.z = 0;
+          mgr.fx('slam', e.pos);
+          mgr.wave(e.pos, { color: COLORS[e.shield].hex, speed: 14, maxR: 16, dmg: 3 });
+          for (const p of mgr.players()) if (p.alive && p.pos.distanceTo(e.pos) < 4.5) mgr.damagePlayer(p, 4, e.pos, ELEMENTS[e.shield]);
+          setState(e, 'recover');
+        }
+        if (e.stateT > 2.5) { e.leaping = false; setState(e, 'recover'); }
+        break;
+      default: setState(e, 'chase');
+    }
+  },
   sentinel(e, dt, t, mgr) {
     e.stateT += dt;
     if (e.state === 'dormant') {
@@ -1746,6 +1861,25 @@ const RENDER = {
     m.arms[1].rotation.x = e.state === 'slam' ? -2.8 * Math.min(1, e.stateT) : e.state === 'attack' ? -1.2 : -walk * 0.4;
     m.arms[1].rotation.z = e.state === 'attack' ? 1.6 - e.stateT * 2.5 : 0;
     if (asleep && Math.random() < 0.02) G.particles.burst(e.pos.clone().setY(e.pos.y + 8), { count: 1, color: 0xffffff, speed: 0.5, up: 1.5, life: 2, size: 0.6, gravity: -0.4, alpha: 0.7 });
+  },
+  rainmane(e) {
+    const m = e.model;
+    m.maneMat.color.setHex(COLORS[e.shield].hex);
+    m.maneMat.emissive.setHex(COLORS[e.shield].hex);
+    m.maneMat.emissiveIntensity = 0.4 + Math.sin(e.anim * 6) * 0.15;
+    const sp = Math.hypot(e.vel.x, e.vel.z);
+    const gait = Math.min(1, sp / 8);
+    m.legs.forEach((l, i) => { l.rotation.x = Math.sin(e.anim * (3 + gait * 6) + [0, Math.PI, Math.PI * 0.5, Math.PI * 1.5][i]) * (0.15 + gait * 0.6); });
+    m.tail.rotation.x = Math.sin(e.anim * 3) * 0.3;
+    m.mane.rotation.z = Math.sin(e.anim * 1.5) * 0.1;
+    const st = e.state, k = e.stateT;
+    m.torso.rotation.x = st === 'roll' && k > 0.5 ? 0.6 : st === 'wake' ? -0.4 + Math.sin(k * 10) * 0.1 : st === 'stun' ? 0.5 : 0;
+    m.body.rotation.x = st === 'slam' && k < 0.45 ? 0.2 : st === 'stun' ? 0.25 : 0;
+    m.body.position.y = st === 'stun' ? -0.8 : 0;
+    // Glaive: raised then swept for the attack, levelled for the charge
+    m.arms[1].rotation.x = st === 'attack' ? (k < 0.5 ? -2.2 * (k / 0.5) : -2.2 + (k - 0.5) * 5) : st === 'roll' ? -1.4 : st === 'shoot' ? -1.8 : -0.3;
+    m.arms[1].rotation.z = st === 'attack' && k > 0.5 ? -1.2 : 0;
+    m.arms[0].rotation.x = st === 'shoot' ? -2.6 : st === 'wake' ? -2.8 : -0.2;
   },
   sentinel(e) {
     const m = e.model;

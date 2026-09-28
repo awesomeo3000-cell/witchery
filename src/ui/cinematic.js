@@ -12,6 +12,7 @@ export const BOSS_TITLES = {
   hueless: ['The Hueless King', 'Devourer of Colour'],
   blotgiant: ['Blot Giant', 'Slumbering Brute of the Fields'],
   sentinel: ['Stone Sentinel', 'Wandering Cairn'],
+  rainmane: ['Rainmane', 'Lord of the Painted Plains'],
 };
 
 export class Cinematic {

@@ -171,7 +171,7 @@ test('adventure log summarises progress', async () => {
   const s = Object.fromEntries(adventureStats().map((x) => [x.label, x.value]));
   assert.equal(s['Prism Shards'], '2 / 4');
   assert.equal(s['Villager quests'], '1 / 4');
-  assert.equal(s['Field giants felled'], '1 / 2');
+  assert.equal(s['Field giants felled'], '1 / 3');
   assert.equal(s.Pigment, '12');
   assert.equal(s['Brush (bristle · ink · wind)'], '1 · 0 · 0');
 });
@@ -271,4 +271,15 @@ test('taming a Brushbuck needs stamina; galloping beats trotting', async () => {
   assert.equal(canTame(100, true), false);
   assert.ok(GALLOP > TROT && TROT > 5.8);
   assert.equal(new Set(COATS.map((c) => c.name)).size, COATS.length);
+});
+
+test('Rainmane is hurt most by the colour that undoes its mane', () => {
+  for (let s = 0; s < 4; s++) {
+    const e = enemy('rainmane', { shield: s, state: 'chase' });
+    const need = COUNTER[ELEMENTS[s]];
+    for (const el of ELEMENTS) {
+      const r = computeHit(e, { dmg: 10, element: el });
+      if (el === need) { assert.equal(r.dmg, 20); assert.equal(r.crit, true); } else { assert.equal(r.dmg, 4); assert.ok(r.hint); }
+    }
+  }
 });
