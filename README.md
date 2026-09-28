@@ -39,6 +39,7 @@ If the page can't reach a server (for example, when the built `dist/` is opened 
 | V | Ping the spot under the crosshair for your friends |
 | B | Emote: wave, cheer or sit (friends see it too) |
 | X | Whistle for your Brushbuck |
+| T | Quick chat: Over here!, Help!, Nice one!, Follow me |
 | C (on foot) | Sneak: crouch so enemies notice you later and sleeping giants stay asleep. Strikes on unaware enemies deal double damage |
 | H | Hide the controls panel |
 | Esc | Pause and settings |
@@ -145,6 +146,8 @@ Bring every 4 sprites to Pip in Palette Hollow for a Heart Container or Stamina 
 
 ### Playing together
 - **Revives.** With friends in the room, fainting leaves you down for 12 seconds instead of respawning straight away. A friend holding Interact beside you for a moment picks you back up with half your hearts, or you can press Interact to respawn at the checkpoint.
+- **Party panel.** Under your hearts, each friend is listed with their health, distance and a direction arrow, and whether they're down, riding their brush or on a Brushbuck.
+- **Quick chat (T, or the gamepad quick menu)** sends one of a few handy phrases without typing.
 - **Pings.** Press V to mark the spot you're looking at. Friends see a beacon and a compass marker.
 - **Emotes** (B): wave, cheer or sit, and friends see it.
 - Shared progress: shards, quests, puzzles, records and upgrades from Paint Sprites are room-wide. Pigment, brush upgrades and honours are your own.

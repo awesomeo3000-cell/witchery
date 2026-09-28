@@ -131,4 +131,9 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 69. ✅ **Brush tips.** Sable sells Broad, Fine and Splatter tips that change reach, swing speed, damage, flick ink cost and flick spread; bought once, swapped freely, saved per player, and visible on the brush.
 70. **Regression and docs.**
 
+## Wave nineteen
+
+71. ✅ **Party panel.** In co-op, friends are listed under your hearts with health, distance, a direction arrow and whether they're down, flying or mounted.
+72. ✅ **Quick chat.** T (or the gamepad quick menu) sends a quick phrase to the room.
+
 The work continues through this list until the budget is used up.

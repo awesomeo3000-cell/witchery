@@ -103,13 +103,13 @@ test('key rebinding swaps conflicting keys and unbinds freed defaults', () => {
   G.hud = null;
   const ui = Object.create(AccessUI.prototype);
   ui.save = () => {};
-  ui.rebind('interact', 'KeyT');
-  assert.equal(physKey('KeyF'), 'KeyT');
-  assert.equal(G.input.map.KeyT, 'KeyF');
+  ui.rebind('interact', 'KeyY');
+  assert.equal(physKey('KeyF'), 'KeyY');
+  assert.equal(G.input.map.KeyY, 'KeyF');
   assert.equal(G.input.map.KeyF, '', 'the old key no longer interacts');
   ui.rebind('interact', 'KeyE'); // E belongs to "next colour"
   assert.equal(physKey('KeyF'), 'KeyE');
-  assert.equal(physKey('KeyE'), 'KeyT', 'the displaced action takes the old key');
+  assert.equal(physKey('KeyE'), 'KeyY', 'the displaced action takes the old key');
   ui.rebind('interact', 'KeyF');
   ui.rebind('cycle', 'KeyE');
   assert.deepEqual(G.settings.binds, {});
@@ -325,4 +325,12 @@ test('brush tips are bought once, then swapped freely', async () => {
   assert.equal(w.pigment, 5);
   assert.ok(tipStats('broad').reach > 1 && tipStats('fine').flickCost < 1 && tipStats('splatter').spread === 3);
   assert.deepEqual(tipStats('round'), { ...tipStats('nope'), key: 'round', name: TIPS[0].name, desc: TIPS[0].desc, cost: 0 });
+});
+
+test('party arrows point relative to the camera', async () => {
+  const { bearing } = await import('../src/ui/party.js');
+  // The camera looks along -z when camYaw is 0 (it sits behind, at +z)
+  assert.ok(Math.abs(bearing(0, 0, -10)) < 1e-9);
+  assert.ok(Math.abs(bearing(0, 10, 0) - -Math.PI / 2) < 1e-9 || Math.abs(bearing(0, 10, 0) - Math.PI / 2) < 1e-9);
+  assert.ok(Math.abs(Math.abs(bearing(0, 0, 10)) - Math.PI) < 1e-9);
 });

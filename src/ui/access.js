@@ -26,6 +26,7 @@ export const ACTIONS = [
   { id: 'ping', label: 'Ping a spot', code: 'KeyV' },
   { id: 'emote', label: 'Emote', code: 'KeyB' },
   { id: 'whistle', label: 'Whistle for your Brushbuck', code: 'KeyX' },
+  { id: 'quickchat', label: 'Quick chat', code: 'KeyT' },
   { id: 'hide', label: 'Hide controls', code: 'KeyH' },
 ];
 

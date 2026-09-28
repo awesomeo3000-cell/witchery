@@ -178,6 +178,16 @@ button.secondary { background: rgba(255,255,255,0.15); color: #fff; box-shadow: 
 #dialog .choices div { font: 700 16px var(--sans); color: #fff09a; }
 
 #buffs { position: absolute; top: 58px; left: 20px; display: flex; gap: 10px; font: 800 14px var(--sans); }
+#party { position: absolute; top: 92px; left: 20px; display: flex; flex-direction: column; gap: 4px; font: 700 12px var(--sans); zoom: var(--hud-scale, 1); pointer-events: none; }
+#party .pm { display: flex; align-items: center; gap: 6px; background: rgba(10,12,24,0.45); padding: 3px 9px; border-radius: 10px; }
+#party .pm i { width: 10px; height: 10px; border-radius: 50%; border: 1px solid #fff; }
+#party .pm .n { max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#party .pm .hp { width: 60px; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.15); overflow: hidden; }
+#party .pm .hp s { display: block; height: 100%; background: #ff6a6a; text-decoration: none; }
+#party .pm .d { opacity: 0.8; min-width: 42px; text-align: right; }
+#party .pm .arr { display: inline-block; font-size: 10px; color: #ffe08a; }
+#party .pm.isdown { background: rgba(120,20,20,0.55); }
+#party .pm .down { color: #ffb0b0; }
 #buffs span { background: rgba(10,12,24,0.45); padding: 2px 9px; border-radius: 10px; }
 
 #letterbox .bar { position: absolute; left: 0; right: 0; height: 0; background: #000; transition: height 0.5s ease; }

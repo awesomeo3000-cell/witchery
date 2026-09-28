@@ -44,6 +44,7 @@ import { Climate } from './world/climate.js';
 import { Memories } from './world/memories.js';
 import { Towers } from './world/towers.js';
 import { Compendium } from './ui/compendium.js';
+import { Party } from './ui/party.js';
 import { Merchant } from './world/merchant.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
@@ -116,6 +117,7 @@ class Peer {
     this.state = m.s || 'idle';
     this.speed = m.v || 0;
     this.hp = m.hp;
+    this.mhp = m.mhp;
     this.aim = !!m.m;
     this.pitch = m.pt || 0;
     this.rp = m.rp || 0;
@@ -251,6 +253,7 @@ class Game {
     G.memories = timed('memories', () => new Memories());
     G.towers = timed('towers', () => new Towers(G.scene));
     G.compendium = timed('compendium', () => new Compendium());
+    G.party = timed('party', () => new Party());
     G.merchant = timed('merchant', () => new Merchant(G.scene));
     G.cine = timed('cine', () => new Cinematic());
     G.guide = timed('guide', () => new Guide());
@@ -451,10 +454,11 @@ class Game {
     // Gamepad quick menu (hold View)
     G.input.onPadQuick = () => {
       if (!this.running || G.hud.choiceCb) return;
-      G.hud.choice('Quick menu', 'What would you like to do?', ['Ping this spot', 'Emote', 'Whistle for your Brushbuck', 'Cancel'], (i) => {
+      G.hud.choice('Quick menu', 'What would you like to do?', ['Ping this spot', 'Emote', 'Whistle for your Brushbuck', 'Quick chat', 'Cancel'], (i) => {
         if (i === 0) G.pings.cast();
         else if (i === 1) setTimeout(() => G.player.openEmotes(), 0);
         else if (i === 2) G.steeds.whistle();
+        else if (i === 3) setTimeout(() => G.party.quickChat(), 0);
       });
     };
     const q = $('set-quality');
@@ -747,6 +751,7 @@ class Game {
     G.climate.update(dt);
     G.memories.update(dt);
     G.towers.update(dt);
+    G.party.update(dt);
     G.merchant.update(dt);
     G.greyMoon.update(dt);
     G.enemies.update(wdt);

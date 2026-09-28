@@ -56,7 +56,7 @@ export class HUD {
       `${k('KeyR')} Ride the brush`, `${k('KeyC')} Sneak · descend (riding)`,
       `${k('KeyF')} Interact`, `${k('KeyM')} Map · <kbd>Enter</kbd> Chat`,
       `${k('KeyI')} Satchel`, `${k('KeyG')} Quick eat · ${k('KeyP')} Photo`,
-      `${k('KeyV')} Ping · ${k('KeyB')} Emote · ${k('KeyX')} Whistle`,
+      `${k('KeyV')} Ping · ${k('KeyB')} Emote · ${k('KeyX')} Whistle`, `${k('KeyT')} Quick chat`,
     ].map((h) => `<div>${h}</div>`).join('');
   }
 
