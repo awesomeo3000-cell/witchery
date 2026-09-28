@@ -168,6 +168,7 @@ export class Player {
   die() {
     this.hp = 0;
     this.state = 'dead';
+    G.tally?.add('deaths');
     // With friends around you stay down a while so they can pick you up
     const coop = G.net && G.net.connected && G.peers && G.peers.size > 0;
     this.deadT = coop ? DOWN_TIME : 3.5;
@@ -866,6 +867,7 @@ export class Player {
     for (let i = 0; i < n; i++) {
       const vel = base.clone().applyAxisAngle(UP, n > 1 ? (i - (n - 1) / 2) * 0.12 : 0);
       G.paint.throwGlob(from, vel, this.color, 'local', { small: small || n > 1 });
+      if (!small) G.tally?.add('globs');
       G.net?.send({ t: 'glob', p: from.toArray().map((v) => +v.toFixed(2)), v: vel.toArray().map((v) => +v.toFixed(2)), c: this.color, s: small || n > 1 ? 1 : 0 });
     }
     if (!small) G.audio.play('flick');

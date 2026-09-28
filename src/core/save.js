@@ -28,6 +28,7 @@ export function writeSave() {
     memories: G.memories ? G.memories.serialize() : undefined,
     compendium: G.compendium ? G.compendium.serialize() : undefined,
     pins: G.pins ? G.pins.serialize() : undefined,
+    tally: G.tally ? G.tally.serialize() : undefined,
     // Online, progress lives on the server; solo keeps it here
     flags: G.net && G.net.connected ? undefined : G.flags,
     t: Date.now(),

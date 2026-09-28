@@ -48,6 +48,7 @@ import { Party } from './ui/party.js';
 import { Vault } from './trials/vault.js';
 import { Festival } from './world/festival.js';
 import { Pins } from './ui/pins.js';
+import { Tally } from './ui/tally.js';
 import { Merchant } from './world/merchant.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
@@ -260,6 +261,7 @@ class Game {
     G.vault = timed('vault', () => new Vault(G.trials.root));
     G.festival = timed('festival', () => new Festival(G.scene));
     G.pins = timed('pins', () => new Pins());
+    G.tally = timed('tally', () => new Tally());
     G.merchant = timed('merchant', () => new Merchant(G.scene));
     G.cine = timed('cine', () => new Cinematic());
     G.guide = timed('guide', () => new Guide());
@@ -361,6 +363,7 @@ class Game {
       if (save.memories) G.memories.load(save.memories);
       if (save.compendium) G.compendium.load(save.compendium);
       if (save.pins) G.pins.load(save.pins);
+      if (save.tally) G.tally.load(save.tally);
       if (!G.net.connected && typeof save.dayT === 'number') G.sky.setTime(save.dayT);
     }
     this.wardrobe.render(true);
@@ -761,6 +764,7 @@ class Game {
     G.party.update(dt);
     G.vault.update(dt);
     G.festival.update(dt);
+    G.tally.update(dt);
     G.merchant.update(dt);
     G.greyMoon.update(dt);
     G.enemies.update(wdt);

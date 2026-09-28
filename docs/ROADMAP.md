@@ -149,4 +149,6 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 
 78. ✅ **Map pins.** Click the map to drop up to eight pins that show on the compass (saved locally); secondary map markers label themselves on hover to declutter the map.
 
+79. ✅ **Journey statistics.** Time played, distance walked/flown/ridden/swum, foes defeated, globs flicked and faints, saved locally and listed in the adventure log.
+
 The work continues through this list until the budget is used up.

@@ -31,6 +31,7 @@ export function adventureStats() {
   if (G.tablets) stats.push({ label: 'Painted Tablets read', value: `${G.tablets.read.size} / 12`, done: G.tablets.read.size >= 12 });
   stats.push({ label: 'Target Gallery record', value: f.tg_best ? `${f.tg_best.s} pts (${f.tg_best.n})` : 'None yet', done: !!f.tg_best });
   if (f.final) stats.push({ label: 'Gallery of Echoes', value: f.rush_best ? `${fmtTime(f.rush_best.t)} (${f.rush_best.n})` : 'Uncleared', done: !!f.rush_best });
+  if (G.tally) stats.push(...G.tally.stats());
   return stats;
 }
 

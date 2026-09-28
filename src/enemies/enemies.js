@@ -534,6 +534,8 @@ export class EnemyManager {
 
   kill(e) {
     if (!e.alive) return;
+    // Count foes that fall near you (anyone in the room can land the blow)
+    if (e.type !== 'dummy' && G.player && e.pos.distanceTo(G.player.pos) < 60) G.tally?.add('foes');
     // Practice dummies just pop back to full straw
     if (e.type === 'dummy') { e.hp = e.maxHp; this.fx('dummyReset', e.pos); return; }
     e.alive = false;

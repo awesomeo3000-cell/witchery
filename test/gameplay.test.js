@@ -360,3 +360,18 @@ test('map clicks convert to world positions', async () => {
   assert.deepEqual(mapToWorld(0.5, 0.5), { x: 0, z: 0 });
   assert.deepEqual(mapToWorld(0, 1), { x: -800, z: 800 });
 });
+
+test('journey statistics format and survive a save', async () => {
+  const { Tally, fmtDuration } = await import('../src/ui/tally.js');
+  assert.equal(fmtDuration(59), '0 min');
+  assert.equal(fmtDuration(3725), '1 h 2 min');
+  const t = new Tally();
+  t.add('foes', 3);
+  t.add('globs');
+  const u = new Tally();
+  u.load({ ...t.serialize(), junk: 5, walked: 'x' });
+  assert.equal(u.v.foes, 3);
+  assert.equal(u.v.globs, 1);
+  assert.equal(u.v.walked, 0);
+  assert.ok(u.stats().some((s) => s.label === 'Ink creatures defeated' && s.value === '3'));
+});
