@@ -125,7 +125,7 @@ Once the Hueless King falls, the village statue opens a way down to the **Galler
 
 ## Saving
 
-Online rooms save their world progress on the server in `data/rooms.json`, so it survives restarts. Each browser also remembers where you were. Solo games keep everything in the browser's local storage.
+Online rooms save their world progress on the server in `data/rooms.json`, so it survives restarts. Each browser also remembers where you were. Solo games keep everything in the browser's local storage. When a save exists, the title menu shows **Continue** plus a **Start over** button that erases this browser's save after asking to confirm. Shared room progress stays on the server.
 
 ## Graphics options
 

@@ -235,6 +235,26 @@ class Game {
     });
     $('btn-play').onclick = () => this._play();
     $('in-room').addEventListener('keydown', (e) => { if (e.key === 'Enter') this._play(); });
+    // Continue vs. new game: this browser keeps one save for solo play and one per room
+    const saveKeys = () => {
+      const room = ($('in-room').value.trim() || 'main').toLowerCase();
+      return ['witchery.save.solo', `witchery.save.room.${room}`];
+    };
+    const hasSave = () => { try { return saveKeys().some((k) => localStorage.getItem(k)); } catch (_) { return false; } };
+    const refresh = () => {
+      const has = hasSave();
+      $('btn-play').textContent = has ? 'Continue' : 'Play';
+      $('btn-erase').classList.toggle('hidden', !has);
+    };
+    $('in-room').addEventListener('input', refresh);
+    refresh();
+    $('btn-erase').onclick = () => {
+      const msg = 'Erase this browser\'s saved progress (position, satchel, Pigment, upgrades, map, and all solo progress)? Shared progress in an online room stays on the server.';
+      if (!window.confirm(msg)) return;
+      try { for (const k of saveKeys()) localStorage.removeItem(k); } catch (_) { /* storage blocked */ }
+      refresh();
+      $('menu-status').textContent = 'Save erased. Press Play for a fresh start.';
+    };
     if (params.has('autoplay')) setTimeout(() => this._play(), 50);
   }
 
