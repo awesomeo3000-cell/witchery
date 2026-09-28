@@ -40,6 +40,7 @@ import { Shrines } from './trials/shrines.js';
 import { Fishing } from './world/fishing.js';
 import { Critters } from './world/critters.js';
 import { Steeds } from './world/steeds.js';
+import { Climate } from './world/climate.js';
 import { Merchant } from './world/merchant.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
@@ -243,6 +244,7 @@ class Game {
     G.fishing = timed('fishing', () => new Fishing(G.scene));
     G.critters = timed('critters', () => new Critters(G.scene));
     G.steeds = timed('steeds', () => new Steeds(G.scene));
+    G.climate = timed('climate', () => new Climate());
     G.merchant = timed('merchant', () => new Merchant(G.scene));
     G.cine = timed('cine', () => new Cinematic());
     G.guide = timed('guide', () => new Guide());
@@ -712,6 +714,7 @@ class Game {
     G.fishing.update(dt);
     G.critters.update(dt);
     G.steeds.update(dt);
+    G.climate.update(dt);
     G.merchant.update(dt);
     G.greyMoon.update(dt);
     G.enemies.update(wdt);

@@ -98,7 +98,7 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 ## Wave thirteen
 
 53. **Rainmane.** A Lynel-style painted centaur prowls a western plain. Its mane cycles through the four colours and only the colour that undoes it bites deep. It sweeps its glaive, charges, fires paint volleys and leaps onto you.
-54. **Cold and heat.** Snowy peaks chill you and the volcano's crater scorches you, slowly costing hearts. Spicy (Bold) meals keep you warm; Inky meals keep you cool. A frost or heat edge on the screen warns you.
+54. **Cold and heat.** Snowy peaks chill you and the volcano's upper slopes scorch you, slowly costing hearts. Spicy (Bold) meals keep you warm; Inky meals keep you cool. A frost or heat edge on the screen warns you, and easels and trial doorways are safe shelters.
 55. **Regression and docs.**
 
 The work continues through this list until the budget is used up.

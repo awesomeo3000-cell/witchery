@@ -113,3 +113,20 @@ test('Brushbuck herds graze on flat, dry meadow away from the village', async ()
     assert.ok(Math.hypot(s.x - VILLAGE.x, s.z - VILLAGE.z) > VILLAGE.r + 20);
   }
 });
+
+test('peaks are cold, the volcano top is hot, the village is mild', async () => {
+  const { climateAt, protectedFrom } = await import('../src/world/climate.js');
+  const { VOLCANO } = await import('../src/world/layout.js');
+  assert.equal(climateAt(terrain, VILLAGE.x, terrain.heightAt(VILLAGE.x, VILLAGE.z), VILLAGE.z), 0);
+  assert.equal(climateAt(terrain, VOLCANO.x + 60, 120, VOLCANO.z), 1);
+  // Find a high frost peak
+  let cold = 0;
+  for (let x = -600; x <= 600 && !cold; x += 20) for (let z = -600; z <= 0 && !cold; z += 20) {
+    const h = terrain.heightAt(x, z);
+    if (climateAt(terrain, x, h, z) < 0) cold = 1;
+  }
+  assert.equal(cold, 1, 'some frost peak is freezing');
+  assert.equal(protectedFrom(-1, { power: 30, ink: 0 }), true);
+  assert.equal(protectedFrom(-1, { power: 0, ink: 30 }), false);
+  assert.equal(protectedFrom(1, { power: 0, ink: 30 }), true);
+});
