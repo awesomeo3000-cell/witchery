@@ -79,6 +79,7 @@ Heat rises: glide over burning Ember paint on the ground and the updraft carries
 Colours react with each other:
 - **Ember on a Spring pad** sets it off in a blast that burns and knocks back ink creatures nearby.
 - **Frost on burning Ember paint** boils into a cloud of steam. While you stand in it, enemies that haven't spotted you yet can't see you.
+- **Bloom on water** grows a lily pad you can stand on. It's smaller than a Frost floe but lasts longer, and Ember burns it.
 - Ember burns vines and melts Frost; Frost puts out Ember.
 
 ## The Prism Trials

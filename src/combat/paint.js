@@ -147,6 +147,20 @@ export class PaintSystem {
         splat.collider = G.collision.addCylinder(point.x, point.z, 2.2, point.y - 1.2, point.y + 0.25, { dynamic: true, tags: ['ice', 'floe'] });
         splat.life = splat.max = 30;
         G.particles.burst(point, { count: 20, color: 0xd8f4ff, speed: 4, life: 0.8, size: 0.4, gravity: 4 });
+      } else if (el === 'vine') {
+        // Bloom grows a broad lily pad you can hop across (smaller than a floe, but it doesn't melt)
+        const pad = new THREE.Group();
+        const leaf = new THREE.Mesh(this.lilyGeo || (this.lilyGeo = new THREE.CylinderGeometry(1.6, 1.5, 0.18, 14, 1, false, 0.35, Math.PI * 2 - 0.35)), this.lilyMat || (this.lilyMat = new THREE.MeshLambertMaterial({ color: 0x4aa84a, emissive: 0x143a14, side: THREE.DoubleSide })));
+        const bloom = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.4, 6), new THREE.MeshLambertMaterial({ color: 0xffb4d8, emissive: 0x402030 }));
+        bloom.position.set(0.7, 0.25, 0.4);
+        pad.add(leaf, bloom);
+        pad.position.set(point.x, point.y + 0.02, point.z);
+        pad.rotation.y = Math.random() * Math.PI * 2;
+        this.scene.add(pad);
+        splat.objs.push(pad);
+        splat.collider = G.collision.addCylinder(point.x, point.z, 1.5, point.y - 1.2, point.y + 0.12, { dynamic: true, tags: ['floe', 'lily'] });
+        splat.life = splat.max = 40;
+        G.particles.burst(point, { count: 16, color: 0x8cf08c, speed: 3, up: 2, life: 0.7, size: 0.35, gravity: 6 });
       } else {
         G.particles.burst(point, { count: 16, color: COLORS[colorIdx].hex, speed: 3, up: 3, life: 0.7, size: 0.35, gravity: 10 });
         return null; // other paints just dissolve in water
@@ -299,7 +313,7 @@ export class PaintSystem {
   _remove(s) {
     for (const o of s.objs) {
       this.scene.remove(o);
-      o.traverse?.((m) => { if (m.geometry && m.geometry !== this.padGeo && m.geometry !== this.floeGeo && m.geometry !== this.globGeo) m.geometry.dispose(); });
+      o.traverse?.((m) => { if (m.geometry && m.geometry !== this.padGeo && m.geometry !== this.floeGeo && m.geometry !== this.lilyGeo && m.geometry !== this.globGeo) m.geometry.dispose(); });
     }
     if (s.collider) G.collision.removeDynamic(s.collider);
     if (s.climb) {

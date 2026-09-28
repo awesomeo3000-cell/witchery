@@ -155,4 +155,6 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 
 81. ✅ **Colour chemistry.** Ember on a Spring pad blasts nearby enemies (dealt only by the painter's client in co-op); Frost on burning paint makes a steam cloud that hides you from enemies that haven't spotted you.
 
+82. ✅ **Lily pads.** Bloom on water grows a walkable lily pad (40 s), a gentler alternative to Frost floes.
+
 The work continues through this list until the budget is used up.
