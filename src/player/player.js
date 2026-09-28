@@ -252,6 +252,7 @@ export class Player {
       }
     }
     this.interactTarget = best;
+    inp.contextA = !!best;
     G.hud.setPrompt(best ? (typeof best.prompt === 'function' ? best.prompt() : best.prompt) : null);
     if (best && inp.hit('KeyF')) best.action(this);
   }

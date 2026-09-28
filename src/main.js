@@ -268,6 +268,11 @@ class Game {
       if (!locked && !this.mapOpen && !this.chatOpen && $('victory').classList.contains('hidden')) this._showPause(true);
       if (locked) this._showPause(false);
     };
+    G.input.onPadStart = () => {
+      if (!this.running) { this._play(); return; }
+      const paused = !$('pause').classList.contains('hidden');
+      if (paused) { this._showPause(false); G.input.lock(); } else { this._showPause(true); G.input.unlock(); }
+    };
     $('game').addEventListener('click', () => {
       if (this.running && !G.input.locked && !this.mapOpen) G.input.lock();
     });
@@ -297,6 +302,8 @@ class Game {
 
   _showPause(v) {
     $('pause').classList.toggle('hidden', !v);
+    this.paused = v;
+    if (!this.chatOpen) G.input.enabled = !v;
     if (v) {
       $('pause-room').textContent = G.net?.connected ? `Room: ${G.net.room} · ${G.peers.size + 1} player(s)` : 'Solo game';
     }
@@ -452,6 +459,7 @@ class Game {
   _frame() {
     this.clock.update();
     let dt = Math.min(this.clock.getDelta(), 0.05);
+    G.input.pollGamepad(dt);
     G.time += dt;
     WIND.value = G.time;
     if (!this.running) {

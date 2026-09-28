@@ -8,6 +8,11 @@ import { ELEMENTS } from '../enemies/enemies.js';
 const $ = (id) => document.getElementById(id);
 const HEART = 'M20 34 C 6 24 1 17 1 10.5 C 1 5 5 1 10.5 1 C 14.5 1 18 3.5 20 7 C 22 3.5 25.5 1 29.5 1 C 35 1 39 5 39 10.5 C 39 17 34 24 20 34 Z';
 const PRISM_PATH = 'M15 1 L29 14 L15 41 L1 14 Z';
+const PAD_LEGEND = [
+  ['L stick', 'Move'], ['R stick', 'Look'], ['A', 'Jump · Glide · Interact'], ['B', 'Sprint · Boost'],
+  ['X / RT', 'Strike · hold to spin'], ['LT', 'Aim (RT to flick)'], ['LB', 'Lock on (A to dodge)'], ['RB', 'Next colour'],
+  ['D-pad', 'Pick colour'], ['Y', 'Ride the brush'], ['L3', 'Descend (riding)'], ['View', 'Map · Start: Pause'],
+].map(([k, v]) => `<div><kbd>${k}</kbd> ${v}</div>`).join('');
 
 export class HUD {
   constructor() {
@@ -176,6 +181,7 @@ export class HUD {
     if (!text) { p.classList.add('hidden'); return; }
     p.classList.remove('hidden');
     p.querySelector('span').textContent = text;
+    p.querySelector('kbd').textContent = G.input && G.input.usingPad ? 'A' : 'F';
   }
 
   toast(text, color = '#fff', dur = 2.2) {
@@ -399,6 +405,14 @@ export class HUD {
       $('fl-alt').textContent = Math.max(0, Math.round(p.pos.y - ground));
       $('fl-spd').textContent = Math.round(Math.hypot(p.vel.x, p.vel.y, p.vel.z));
     }
+
+    // Swap the controls legend when a gamepad is in use
+    const pad = !!G.input.usingPad;
+    if (pad !== this._padLegend) {
+      this._padLegend = pad;
+      $('controls').querySelector('.grid').innerHTML = pad ? PAD_LEGEND : this._kbLegend || ($('controls').querySelector('.grid').innerHTML);
+    }
+    if (!this._kbLegend && !pad) this._kbLegend = $('controls').querySelector('.grid').innerHTML;
 
     // Net status
     if (G.net) {
