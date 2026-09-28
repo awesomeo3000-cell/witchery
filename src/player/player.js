@@ -1008,11 +1008,12 @@ export class Player {
   // ---------------------------------------------------------------- camera
   updateCamera(dt) {
     const cam = G.camera;
-    const pivot = this.pos.clone().setY(this.pos.y + (this.state === 'ride' ? 1.8 : 1.55));
+    const pivot = this.pos.clone().setY(this.pos.y + (this.state === 'ride' ? 1.8 : this.mounted ? 1.55 + RIDE_Y : 1.55));
     let dist = this.camDist * (G.settings.camDist || 1);
     let shoulder = 0;
     if (this.aiming) { dist = 2.6; shoulder = 0.9; }
     if (this.state === 'ride') dist = this.camDist * (G.settings.camDist || 1) + 3;
+    else if (this.mounted && !this.aiming) dist += 1.5;
     if (this.state === 'dead') dist = 8;
 
     if (this.lock && this.lock.alive) {

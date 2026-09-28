@@ -7,6 +7,8 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { G } from '../core/ctx.js';
 import { mulberry32 } from '../core/math.js';
 import { VILLAGE } from './layout.js';
+import { makeCharacter } from '../player/character.js';
+import { MAT } from './props.js';
 
 export const COATS = [
   { name: 'Sienna', hex: 0xb8643a },
@@ -15,6 +17,8 @@ export const COATS = [
   { name: 'Dapple', hex: 0x9a9a9a },
   { name: 'Cobalt', hex: 0x4a6aa8 },
 ];
+export const NAMES = ['Juniper', 'Cinder', 'Bramble', 'Pebble', 'Tansy', 'Ochre'];
+export const STABLE_ANGLE = Math.PI * 0.95;
 export const TAME_TIME = 1.8;
 export const TAME_COST = 45; // stamina spent holding on
 export const TROT = 9, GALLOP = 15.5, BUCK_JUMP = 12;
@@ -110,6 +114,71 @@ export class Steeds {
     });
     this.mine = null;
     this.whistleT = 0;
+    this._stable(scene);
+  }
+
+  // Stable post at the edge of Palette Hollow: Rosa renames your buck or fetches it for you
+  _stable(scene) {
+    const a = STABLE_ANGLE, R = VILLAGE.r - 12;
+    const x = VILLAGE.x + Math.cos(a) * R, z = VILLAGE.z + Math.sin(a) * R;
+    const y = G.terrain.heightAt(x, z);
+    const g = new THREE.Group();
+    g.position.set(x, y, z);
+    g.rotation.y = Math.atan2(VILLAGE.x - x, VILLAGE.z - z);
+    // Hitching rail, water trough and a painted sign
+    for (const px of [-2.2, 2.2]) {
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 1.3, 6), MAT.woodDark);
+      post.position.set(px, 0.65, -1.5);
+      g.add(post);
+    }
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(4.6, 0.12, 0.12), MAT.wood);
+    rail.position.set(0, 1.15, -1.5);
+    const trough = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.5, 0.7), MAT.wood);
+    trough.position.set(-3.4, 0.25, -0.6);
+    const water = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.5).rotateX(-Math.PI / 2), new THREE.MeshLambertMaterial({ color: 0x4a9ad8, emissive: 0x10304a }));
+    water.position.set(-3.4, 0.46, -0.6);
+    const sign = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.7, 0.08), new THREE.MeshLambertMaterial({ color: 0xd8a040 }));
+    sign.position.set(3.4, 1.9, -1.5);
+    const signPost = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.9, 6), MAT.woodDark);
+    signPost.position.set(3.4, 0.95, -1.55);
+    g.add(rail, trough, water, sign, signPost);
+    this.npc = makeCharacter({ hood: 0x8a5a3a, scarf: 0xd8a040, skin: 0xe0b890, tunic: 0x5a7a4a });
+    this.npc.brush.visible = false;
+    this.npc.group.position.set(1.2, 0, 0.4);
+    g.add(this.npc.group);
+    scene.add(g);
+    this.stable = g;
+    this.stablePos = new THREE.Vector3(x, y, z);
+    G.collision.addBox(x, y + 0.5, z, 1.2, 1, 1.2);
+    G.world.interactables.push({
+      pos: this.stablePos.clone().setY(y + 1), radius: 3.4,
+      prompt: () => 'Talk to Rosa the Stablehand',
+      action: () => this.talk(),
+    });
+  }
+
+  talk() {
+    const b = this.mine;
+    if (!b) {
+      G.hud.dialog('Rosa the Stablehand', 'Brushbucks graze in the open meadows. Creep up quietly, climb on and hold tight until it settles. Bring it by once you have one and I\'ll look after it!');
+      return;
+    }
+    G.hud.choice('Rosa the Stablehand', `How's ${b.name} doing? A fine buck.`, ['Rename my Brushbuck', `Bring ${b.name} here`, 'Goodbye'], (i) => {
+      if (i === 0) {
+        const opts = NAMES.filter((n) => n !== b.name).slice(0, 4);
+        G.hud.choice('Rosa the Stablehand', 'What shall we call it?', [...opts, `Keep "${b.name}"`], (k) => {
+          if (k < opts.length) { b.name = opts[k]; G.hud.toast(`Your Brushbuck is now called ${b.name}`, '#ffd890', 2); G.audio.play('pickup'); }
+        });
+      } else if (i === 1) {
+        if (G.player.mounted === b) this.dismount();
+        const s = this.stablePos;
+        const back = new THREE.Vector3(-Math.sin(this.stable.rotation.y), 0, -Math.cos(this.stable.rotation.y));
+        b.pos.set(s.x + back.x * 2.5, 0, s.z + back.z * 2.5);
+        b.pos.y = G.terrain.heightAt(b.pos.x, b.pos.z);
+        b.state = 'graze'; b.t = 8;
+        G.hud.dialog('Rosa the Stablehand', `${b.name} is tied at the rail. Take good care!`);
+      }
+    });
   }
 
   // Just the model (also used to show friends' mounts)
@@ -281,6 +350,7 @@ export class Steeds {
     if (!p) return;
     this.root.visible = !p.inDungeon;
     if (G.input.hit('KeyX')) this.whistle();
+    if (this.npc && this.stablePos.distanceTo(p.pos) < 50) this.npc.animate({ state: 'idle', speed: 0 }, dt);
     const m = p.mounted;
     if (m && (p.inDungeon || p.state === 'swim' || p.state === 'ride' || !p.alive)) this.dismount();
     // Interact climbs down, unless there's something else to interact with

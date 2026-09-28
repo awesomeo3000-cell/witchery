@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { G } from '../core/ctx.js';
 import { CITADEL } from './layout.js';
+import { herdSites } from './steeds.js';
 
 const $ = (id) => document.getElementById(id);
 export const fmtTime = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, '0')}`;
@@ -12,6 +13,8 @@ const COURSES = [
   { id: 'lake', name: 'Lakeside Loop', color: 0x4ad0e0, r: 5, pts: [[45, 16, 30], [-40, 12, 130], [-110, 10, 170], [-170, 8, 240], [-240, 12, 200], [-220, 14, 130], [-150, 10, 120], [-80, 16, 60], [-10, 18, 40]] },
   { id: 'mesa', name: 'Canyon Run', color: 0xffa040, r: 4.5, pts: [[80, 16, 330], [140, 12, 370], [190, 10, 420], [160, 14, 480], [90, 10, 500], [40, 12, 450], [30, 16, 390], [70, 20, 350]] },
   { id: 'isles', name: 'Islet Hop', color: 0xc080ff, r: 5, islets: true },
+  // Ridden on a Brushbuck: ground gates looping the first meadow herd
+  { id: 'meadow', name: 'Meadow Dash', color: 0x9ad04a, r: 3.2, mounted: true },
 ];
 
 export class Races {
@@ -25,6 +28,19 @@ export class Races {
   }
 
   _points(c) {
+    if (c.mounted) {
+      const h = herdSites(G.terrain)[0] || { x: 60, z: 160 };
+      const pts = [];
+      for (let i = 0; i < 10; i++) {
+        const a = (i / 10) * Math.PI * 2;
+        let r = 55 + Math.sin(i * 2.3) * 12;
+        // Keep the gates on dry land
+        while (r > 15 && G.terrain.heightAt(h.x + Math.cos(a) * r, h.z + Math.sin(a) * r) < 1) r -= 5;
+        const x = h.x + Math.cos(a) * r, z = h.z + Math.sin(a) * r;
+        pts.push(new THREE.Vector3(x, G.terrain.heightAt(x, z), z));
+      }
+      return pts;
+    }
     if (!c.islets) return c.pts.map(([x, h, z]) => new THREE.Vector3(x, G.terrain.heightAt(x, z) + h, z));
     // Weave between the islets ringing the citadel, in order of angle
     const isl = G.world.islets
@@ -49,8 +65,11 @@ export class Races {
     for (let i = 0; i <= n; i++) {
       const u = i / n;
       const pos = curve.getPointAt(u);
-      pos.y = Math.max(pos.y, G.terrain.heightAt(pos.x, pos.z) + c.r + 3, c.r + 3);
-      const tan = curve.getTangentAt(u).normalize();
+      if (c.mounted) pos.y = G.terrain.heightAt(pos.x, pos.z) + c.r * 0.85;
+      else pos.y = Math.max(pos.y, G.terrain.heightAt(pos.x, pos.z) + c.r + 3, c.r + 3);
+      const tan = curve.getTangentAt(u);
+      if (c.mounted) tan.setY(0);
+      tan.normalize();
       const m = new THREE.Mesh(geo, i === 0 ? new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffd84a).multiplyScalar(1.8), transparent: true, fog: false }) : mat.clone());
       m.position.copy(pos);
       m.lookAt(pos.clone().add(tan));
@@ -74,7 +93,7 @@ export class Races {
     this._show();
     G.audio.play('waypoint');
     const b = this.best(c);
-    G.hud.banner(c.name, `Fly through every ring!${b ? ` Record ${fmtTime(b.t)} (${b.n})` : ''}`, '#ffe08a');
+    G.hud.banner(c.name, `${c.mounted ? 'Gallop through every gate!' : 'Fly through every ring!'}${b ? ` Record ${fmtTime(b.t)} (${b.n})` : ''}`, '#ffe08a');
     this.nextMarker = G.hud.addMarker('<div class="ic race next">◎</div>', () => (this.active ? this.active.c.rings[this.active.i].pos : new THREE.Vector3()), () => !!this.active);
     $('race').classList.remove('hidden');
   }
@@ -132,13 +151,13 @@ export class Races {
     }
     const a = this.active;
     if (!a) {
-      if (p.state === 'ride' && !p.inDungeon) {
-        for (const c of this.courses) if (c.rings[0].pos.distanceTo(cur) < 30 && this._through(c.rings[0], c.r, cur)) { this._start(c); break; }
+      if ((p.state === 'ride' || p.mounted) && !p.inDungeon) {
+        for (const c of this.courses) if (!c.mounted === !p.mounted && c.rings[0].pos.distanceTo(cur) < 30 && this._through(c.rings[0], c.r, cur)) { this._start(c); break; }
       }
     } else {
       a.t += dt;
       a.since += dt;
-      a.grounded = p.state === 'ride' ? 0 : a.grounded + dt;
+      a.grounded = (a.c.mounted ? p.mounted : p.state === 'ride') ? 0 : a.grounded + dt;
       const r = a.c.rings[a.i];
       if (this._through(r, a.c.r, cur)) {
         const k = a.i / (a.c.rings.length - 1);
@@ -150,7 +169,7 @@ export class Races {
         a.since = 0;
         if (a.i >= a.c.rings.length) { this._finish(); this.prev.copy(cur); return; }
         this._show();
-      } else if (a.grounded > 3) this._end('Race abandoned: you left your brush.');
+      } else if (a.grounded > 3) this._end(a.c.mounted ? 'Race abandoned: you left your Brushbuck.' : 'Race abandoned: you left your brush.');
       else if (a.since > 30) this._end('Race abandoned: too long since the last ring.');
       else if (p.inDungeon || !p.alive) this._end();
       if (this.active) {

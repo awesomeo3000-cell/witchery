@@ -92,7 +92,7 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 ## Wave twelve
 
 50. ✅ **Brushbucks.** Herds of painted deer graze in the meadows. Sneak up, mount one and hold on (it costs stamina) to tame it. Ride at a trot or gallop, jump, and whistle (X) to call your Brushbuck. Friends see you riding.
-51. **Mounted play.** Flick paint from the saddle, gallop through Sky Race-style meadow gates for a Brushbuck course, and a stable post in the village where you can rename your mount.
+51. ✅ **Mounted play.** The Meadow Dash, a ground course of gates for Brushbucks with a room record; Rosa's stable post in the village, where you can rename your mount or have it fetched; a higher, wider camera in the saddle.
 52. **Regression and docs.**
 
 The work continues through this list until the budget is used up.
