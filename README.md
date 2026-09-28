@@ -159,6 +159,8 @@ Once the Hueless King falls, the village statue opens a way down to the **Galler
 
 Online rooms save their world progress on the server in `data/rooms.json`, so it survives restarts. Each browser also remembers where you were. Solo games keep everything in the browser's local storage. When a save exists, the title menu shows **Continue** plus a **Start over** button that erases this browser's save after asking to confirm. Shared room progress stays on the server.
 
+To back up your progress, open **Save backup** in the pause menu and download your save as a file. Loading a file back in restores it (the game reloads). Files are checked first, so a wrong file is simply rejected.
+
 ## Graphics options
 
 The pause menu (Esc) has Low / Medium / High presets, plus separate toggles for shadows, grass density and *Atmosphere & bloom* (the post-processing pass that draws the haze, sun glow, bloom and colour grade). "Show FPS" displays the frame rate and draw calls. *Dynamic resolution* (on by default) lowers the render scale when the frame rate falls below about 45 fps and raises it again when there is headroom. Try Medium or Low on laptops with integrated graphics.
@@ -176,7 +178,7 @@ Honours unlock cosmetics, picked under *Wardrobe* in the pause menu: brush trail
 ## Accessibility
 
 The pause menu's *Accessibility* section has:
-- HUD size, field of view and camera distance sliders
+- HUD size, text size (dialogue, captions, satchel), field of view and camera distance sliders
 - colour symbols (▲ Ember, ❄ Frost, ● Spring, ✿ Bloom) on the potions, colour wheel and compass
 - *Reduce motion*, which removes speed lines, the FOV kick and the underwater wobble
 - *Reduce screen flashes*

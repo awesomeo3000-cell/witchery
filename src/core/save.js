@@ -31,6 +31,23 @@ export function writeSave() {
   try { localStorage.setItem(key(), JSON.stringify(data)); } catch (_) { /* storage full or blocked */ }
 }
 
+// Backup: the current save as pretty JSON text, and loading one back (validated) into this slot
+export function exportSave() {
+  writeSave();
+  try { return JSON.stringify(JSON.parse(localStorage.getItem(key()) || 'null'), null, 1); } catch (_) { return null; }
+}
+
+export function validSave(d) {
+  return !!d && typeof d === 'object' && d.v === 1 && (d.pos === null || (Array.isArray(d.pos) && d.pos.length === 3 && d.pos.every(Number.isFinite)));
+}
+
+export function importSave(text) {
+  let d;
+  try { d = JSON.parse(text); } catch (_) { return false; }
+  if (!validSave(d)) return false;
+  try { localStorage.setItem(key(), JSON.stringify(d)); return true; } catch (_) { return false; }
+}
+
 export function clearSave() {
   try { localStorage.removeItem(key()); } catch (_) { /* ignore */ }
 }

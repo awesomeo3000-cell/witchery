@@ -283,3 +283,12 @@ test('Rainmane is hurt most by the colour that undoes its mane', () => {
     }
   }
 });
+
+test('save backups are validated before loading', async () => {
+  const { validSave } = await import('../src/core/save.js');
+  assert.equal(validSave({ v: 1, pos: [1, 2, 3] }), true);
+  assert.equal(validSave({ v: 1, pos: null }), true);
+  assert.equal(validSave({ v: 2, pos: null }), false);
+  assert.equal(validSave({ v: 1, pos: [1, 'x', 3] }), false);
+  assert.equal(validSave(null), false);
+});

@@ -56,7 +56,7 @@ import { Cinematic } from './ui/cinematic.js';
 import { Guide } from './ui/guide.js';
 import { PhotoMode } from './ui/photo.js';
 import { TouchControls } from './ui/touch.js';
-import { loadSave, writeSave } from './core/save.js';
+import { loadSave, writeSave, exportSave, importSave } from './core/save.js';
 import { applyStats, spriteCount } from './core/progress.js';
 import { damp, dampAngle } from './core/math.js';
 
@@ -353,7 +353,7 @@ class Game {
     G.flags.wp_village = true;
     this._applyWelcomeFlags();
     this.saveTimer = 5;
-    window.addEventListener('beforeunload', () => writeSave());
+    window.addEventListener('beforeunload', () => { if (!this._noAutosave) writeSave(); });
     $('menu').classList.add('hidden');
     G.hud.show(true);
     G.hud.banner('Palette Hollow', 'Talk to Elder Umber (F) near the statue', '#ffe08a');
@@ -393,6 +393,26 @@ class Game {
       if (this.running && !G.input.locked && !this.mapOpen) G.input.lock();
     });
     $('btn-resume').onclick = () => { this._showPause(false); G.input.lock(); };
+    // Save backup: download the save as a file, or load one back and restart from it
+    $('btn-export').onclick = () => {
+      const text = exportSave();
+      if (!text) { G.hud.toast('Nothing to save yet.', '#dddddd', 2); return; }
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+      a.download = `witchery-save-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    };
+    $('btn-import').onclick = () => $('import-file').click();
+    $('import-file').onchange = async () => {
+      const f = $('import-file').files[0];
+      $('import-file').value = '';
+      if (!f) return;
+      const text = await f.text();
+      if (!importSave(text)) { G.hud.toast('That file is not a Witchery save.', '#ffb0b0', 3); return; }
+      this._noAutosave = true;
+      location.reload();
+    };
     $('btn-copy').onclick = () => {
       const url = `${location.origin}${location.pathname}?room=${encodeURIComponent(G.net?.room || 'main')}`;
       navigator.clipboard?.writeText(url).then(() => G.hud.toast('Invite link copied!', '#ffe08a')).catch(() => G.hud.toast(url, '#ffe08a', 6));
