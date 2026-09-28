@@ -14,6 +14,7 @@ export function adventureStats() {
     { label: 'Paint Sprites', value: `${spriteCount()} / ${G.sprites ? G.sprites.total : '?'}`, done: G.sprites && spriteCount() >= G.sprites.total },
     { label: 'Villager quests', value: `${QUESTS.filter((q) => f[`q_${q.id}_done`]).length} / ${QUESTS.length}`, done: QUESTS.every((q) => f[`q_${q.id}_done`]) },
     { label: 'Island puzzles', value: G.puzzles ? `${G.puzzles.solvedCount()} / ${G.puzzles.total}` : '-', done: G.puzzles && G.puzzles.solvedCount() >= G.puzzles.total },
+    { label: "Painter's Towers", value: G.towers ? `${G.towers.activeCount()} / 4` : '-', done: G.towers && G.towers.activeCount() >= 4 },
     { label: 'Paint Shrines', value: G.shrines ? `${G.shrines.clearedCount()} / ${G.shrines.list.length}` : '-', done: G.shrines && G.shrines.clearedCount() >= G.shrines.list.length },
     { label: 'Field giants felled', value: `${['blotgiant', 'sentinel', 'rainmane'].filter((t) => f[`slain_${t}`]).length} / 3`, done: f.slain_blotgiant && f.slain_sentinel && f.slain_rainmane },
     { label: 'Map explored', value: G.fog ? `${Math.round(G.fog.explored() * 100)}%` : '-', done: G.fog && G.fog.explored() > 0.9 },

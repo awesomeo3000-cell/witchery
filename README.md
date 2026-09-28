@@ -99,6 +99,7 @@ Bring every 4 sprites to Pip in Palette Hollow for a Heart Container or Stamina 
 ## The wider world
 
 ### Exploring
+- **Painter's Towers.** Four tall painted towers stand between Palette Hollow and each trial (they show on the compass). Their winds ground your brush, so you climb: grow vines (Bloom) up the mossy base, paint a bounce pad (Spring) on the ledge, then vine up the mossy crown. Painting the easel at the top reveals a wide area of the map for everyone in the room.
 - **Map exploration.** The map starts as blank parchment and fills in wherever you travel. Flying high reveals more, and activating an easel uncovers the land around it. A rotating minimap in the corner shows the same fog, plus trials, friends, quest targets, pings and race gates. You can turn it off in Accessibility.
 - **Weather** cycles between clear, cloudy, rain and storms. It snows in the mountains, rain puts out fire paint, and storms bring lightning. Wind veers slowly and blows harder in bad weather, pushing gliders and riders (the flight readout shows it). Rain makes vines slick, so climbing is slower and you'll slip now and then. When rain clears in daylight, a rainbow arcs across the sky opposite the sun.
 - **Cold and heat.** The snowy northern heights are freezing (colder still at night) and the volcano's upper slopes are scorching. After a few seconds exposed you lose half a heart every so often, and the screen edge frosts over or glows red. A Bold (spicy, Emberpepper) meal keeps you warm; an Inky (Frostlily or Prismfin) meal keeps you cool. Easels and trial doorways are always safe to stand by.
@@ -166,7 +167,7 @@ All art is generated in code: painted canvas textures (bark, leaves, stone, shin
 
 ## Painter's Honours
 
-There are twenty-nine achievements, such as First Flight, Soft Bristles (a sneak strike), Record Breaker, Cartographer, Good Samaritan (reviving a friend) and Echo Breaker. Each one pops a toast when earned, is listed with its progress in the satchel, and is saved per player.
+There are thirty achievements, such as First Flight, Soft Bristles (a sneak strike), Record Breaker, Cartographer, Good Samaritan (reviving a friend) and Echo Breaker. Each one pops a toast when earned, is listed with its progress in the satchel, and is saved per player.
 
 ### Wardrobe
 

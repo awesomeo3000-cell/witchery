@@ -20,6 +20,7 @@ export const HONOURS = [
   { id: 'rainmane', name: 'Storm Tamer', desc: 'Defeat Rainmane, Lord of the Painted Plains', check: () => !!G.flags.slain_rainmane },
   { id: 'giants', name: 'Giant Slayer', desc: 'Fell a Blot Giant and a Stone Sentinel', check: () => G.flags.slain_blotgiant && G.flags.slain_sentinel },
   { id: 'race', name: 'Record Breaker', desc: 'Set a Sky Race record', event: 'raceRecord' },
+  { id: 'towers', name: 'Tower Climber', desc: 'Activate all four Painter\'s Towers', check: () => G.towers && G.towers.activeCount() >= 4 },
   { id: 'map50', name: 'Wayfarer', desc: 'Map half the island', check: () => G.fog && G.fog.explored() >= 0.5 },
   { id: 'map90', name: 'Cartographer', desc: 'Map 90% of the island', check: () => G.fog && G.fog.explored() >= 0.9 },
   { id: 'brush', name: 'Master Brushwright', desc: 'Max out a brush upgrade', check: () => G.player && UPGRADES.some((u) => (G.player.upg[u.key] || 0) >= u.costs.length) },

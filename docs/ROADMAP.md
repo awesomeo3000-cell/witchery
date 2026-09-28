@@ -110,7 +110,7 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 ## Wave fifteen
 
 59. ✅ **More villager quests.** Old Finn wants Glimmerfish (more stamina), Wren wants Glowbugs for a lantern (quieter sneaking), and Dell the Courier wants a sub-1:40 Meadow Dash on a Brushbuck (faster, cheaper gallops).
-60. **Painter's Towers.** Four tall painted towers, one per region. Climb them (vines, bounce pads, ledges) and activate the top to reveal the map around it, then glide off.
+60. ✅ **Painter's Towers.** Four tall painted towers, one per region, ground brush riders nearby. Climb them (vines on the mossy base, a bounce from the ledge, vines up the crown) and paint the easel at the top to reveal the map around it for the whole room.
 61. **Save backup.** Export your save to a file and import it again from the pause menu, plus a text size option.
 62. **Regression and docs.**
 

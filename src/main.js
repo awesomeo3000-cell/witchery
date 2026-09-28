@@ -42,6 +42,7 @@ import { Critters } from './world/critters.js';
 import { Steeds } from './world/steeds.js';
 import { Climate } from './world/climate.js';
 import { Memories } from './world/memories.js';
+import { Towers } from './world/towers.js';
 import { Merchant } from './world/merchant.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
@@ -247,6 +248,7 @@ class Game {
     G.steeds = timed('steeds', () => new Steeds(G.scene));
     G.climate = timed('climate', () => new Climate());
     G.memories = timed('memories', () => new Memories());
+    G.towers = timed('towers', () => new Towers(G.scene));
     G.merchant = timed('merchant', () => new Merchant(G.scene));
     G.cine = timed('cine', () => new Cinematic());
     G.guide = timed('guide', () => new Guide());
@@ -719,6 +721,7 @@ class Game {
     G.steeds.update(dt);
     G.climate.update(dt);
     G.memories.update(dt);
+    G.towers.update(dt);
     G.merchant.update(dt);
     G.greyMoon.update(dt);
     G.enemies.update(wdt);

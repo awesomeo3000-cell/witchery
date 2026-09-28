@@ -141,3 +141,14 @@ test('memory spots sit on dry land with a view', async () => {
     assert.ok(Math.hypot(m.look[0] - x, m.look[2] - z) > 60, `${m.title} looks at something distant`);
   }
 });
+
+test('Painter\'s Towers stand on dry ground between the village and each trial', async () => {
+  const { towerSites } = await import('../src/world/towers.js');
+  const sites = towerSites(terrain);
+  assert.equal(sites.length, 4);
+  sites.forEach((s, i) => {
+    assert.ok(s.y >= 3, `${s.name} is dry`);
+    assert.ok(Math.hypot(s.x - VILLAGE.x, s.z - VILLAGE.z) > VILLAGE.r, `${s.name} is outside the village`);
+    assert.ok(Math.hypot(s.x - TRIALS[i].x, s.z - TRIALS[i].z) > 60, `${s.name} is away from its trial`);
+  });
+});
