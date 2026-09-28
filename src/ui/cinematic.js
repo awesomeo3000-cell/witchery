@@ -1,6 +1,6 @@
 // Short in-engine cinematics: letterboxed camera moves with a boss title card.
 import * as THREE from 'three';
-import { G } from '../core/ctx.js';
+import { G, inDungeonY } from '../core/ctx.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -71,8 +71,11 @@ export class Cinematic {
     const cam = G.camera;
     const target = e.pos.clone().setY(e.pos.y + a.height);
     const want = target.clone().add(new THREE.Vector3(Math.sin(ang) * d, a.height * 0.3 + 1.5 - k, Math.cos(ang) * d));
-    const th = G.collision.terrainHeight(want.x, want.y, want.z);
-    if (want.y < th + 1) want.y = th + 1;
+    // Keep above the ground outdoors (underground rooms have no terrain to clamp to)
+    if (!inDungeonY(target.y)) {
+      const th = G.collision.terrainHeight(want.x, want.y, want.z);
+      if (want.y < th + 1) want.y = th + 1;
+    }
     cam.position.copy(want);
     cam.lookAt(target);
     if (a.t >= a.dur || !e.alive) {

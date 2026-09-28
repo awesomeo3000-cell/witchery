@@ -114,7 +114,7 @@ Bring every 4 sprites to Pip in Palette Hollow for a Heart Container or Stamina 
   - **Shrine of Heights:** bounce onto a smooth ledge with Spring, then grow vines up the mossy cliff.
   - **Shrine of Haste:** keep three braziers burning at the same time to raise the gate.
 
-  Each chest holds a Paint Sprite and 15 Pigment. Shrines show on the map and compass, and friends can solve them together.
+  Each chest holds a Paint Sprite and 15 Pigment. A pale beam of light rises over each shrine you haven't cleared (it turns gold once you have). Shrines show on the map and compass, and friends can solve them together.
 - **Sky Races.** Three ring courses for brush flight: Lakeside Loop by the village, Canyon Run through the southern mesas, and Islet Hop around the Sky Citadel. Fly through a golden start gate while riding to begin. Each ring tops up your stamina, and room records are saved and shown on the map.
 
 ### Creatures and bosses

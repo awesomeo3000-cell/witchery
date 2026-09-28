@@ -80,7 +80,7 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 ## Wave ten
 
 44. ✅ **Paint Shrines.** Three single-room puzzle shrines behind stone arches on the surface, each mixing colours (Frost floes and an Ember-melted wall; a Spring bounce and a Bloom climb; three braziers burning at once). Each ends in a chest with a Paint Sprite and Pigment.
-45. **Shrine polish.** Shrine entrance cinematic sweep, a "shrine cleared" arch glow for everyone in the room, and a shrine counter in the adventure log.
+45. ✅ **Shrine polish.** A camera sweep across each shrine on your first visit, light beams over uncleared shrine arches (gold once cleared, for everyone in the room), and a shrine counter in the adventure log. Cinematics no longer clamp to the surface terrain underground.
 46. **Regression and docs.** Browser regression of shrines and co-op revive, README, roadmap.
 
 The work continues through this list until the budget is used up.

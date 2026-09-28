@@ -76,7 +76,10 @@ export class Shrines {
     swirl.position.y = 2.4;
     const orb = new THREE.Mesh(new THREE.IcosahedronGeometry(0.4, 1), new THREE.MeshBasicMaterial({ color: new THREE.Color(col).multiplyScalar(1.5) }));
     orb.position.y = 4.9;
-    g.add(swirl, orb);
+    // A faint beam of light marks shrines you haven't cleared yet (gold once cleared)
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.9, 70, 10, 1, true), new THREE.MeshBasicMaterial({ color: new THREE.Color(col).multiplyScalar(1.4), transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    beam.position.y = 40;
+    g.add(swirl, orb, beam);
     this.surface.add(g);
     for (const sx of [-1, 1]) {
       const px = x + Math.cos(g.rotation.y) * sx * 2.2, pz = z - Math.sin(g.rotation.y) * sx * 2.2;
@@ -84,6 +87,7 @@ export class Shrines {
     }
     s.swirl = swirl;
     s.orb = orb;
+    s.beam = beam;
     G.world.interactables.push({
       pos: new THREE.Vector3(x, y + 1.2, z), radius: 3.4,
       prompt: () => `Enter the ${s.def.name}${this.cleared(s.i) ? ' (cleared)' : ''}`,
@@ -282,6 +286,12 @@ export class Shrines {
     G.audio.play('waypoint');
     G.audio.mood = 'dungeon';
     G.hud.banner(s.def.name, s.def.hint, COLORS[s.def.colors[0]].css);
+    // First visit: a slow look across the room to show the puzzle
+    const id = `shrine_${s.i}`;
+    if (G.cine && !G.cine.seen.has(id) && !G.settings.reduceMotion) {
+      G.cine.seen.add(id);
+      G.cine.focus({ pos: s.b.w(0, 0, 18), radius: 3.2, height: 7, alive: true }, null, null, 2.6);
+    }
   }
 
   leave(s) {
@@ -310,6 +320,13 @@ export class Shrines {
       s.swirl.rotation.z += dt * 0.8;
       s.swirl.material.opacity = this.cleared(s.i) ? 0.2 : 0.5 + Math.sin(G.time * 2 + s.i) * 0.1;
       s.orb.position.y = 4.9 + Math.sin(G.time * 1.5 + s.i) * 0.15;
+      const done = this.cleared(s.i);
+      if (done !== s.wasCleared) {
+        s.wasCleared = done;
+        s.orb.material.color.setHex(done ? 0xffd84a : COLORS[s.def.colors[0]].hex).multiplyScalar(1.5);
+        s.beam.material.color.setHex(done ? 0xffd84a : COLORS[s.def.colors[0]].hex).multiplyScalar(1.4);
+        s.beam.material.opacity = done ? 0.07 : 0.16;
+      }
     }
     for (const r of this.reactives) r.tick?.(dt);
     // Haste shrine: all three braziers burning together opens the gate for good
