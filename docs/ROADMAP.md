@@ -182,7 +182,7 @@ The whole budget goes to this roadmap, worked autonomously in waves. The session
 
 ## Wave twenty-one (final budget share)
 
-89. **Horde night.** Once a week the Grey Moon brings a wave defence at the village: ink creatures march on Palette Hollow and villagers take shelter; defend the plaza for Pigment.
+89. ✅ **Horde night.** Under the Grey Moon, with anyone in the village, three growing waves march on Palette Hollow (host-run, shared through a flag); villagers shelter indoors; holding the plaza pays 25 Pigment and an honour.
 90. **Balance pass.** Review Pigment income against costs, enemy damage on each difficulty, and field-boss health, using the soak harness to sample fights.
 91. **Accessibility pass on new systems.** Captions and reduced-motion handling for sentries' beams, fireworks, blasts and the flyover.
 92. **Final regression and docs.** Full browser, co-op, smoke and soak runs; README and roadmap brought up to date.

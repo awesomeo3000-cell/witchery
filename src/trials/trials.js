@@ -89,6 +89,7 @@ export class Trials {
     if (G.quests) G.quests.onFlag(k, v);
     if (G.puzzles) G.puzzles.onFlag(k, v);
     if (G.towers) G.towers.onFlag(k, v);
+    if (G.siege) G.siege.onFlag(k, v);
     if (k.startsWith('trial_') && v) {
       const t = TRIALS.find((q) => `trial_${q.key}` === k);
       if (t && !this._announced?.[k]) {

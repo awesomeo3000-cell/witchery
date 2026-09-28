@@ -397,3 +397,13 @@ test('Ink Knight shields frontal blows; Spring knocks the shield aside', () => {
   assert.equal(computeHit(k, { dmg: 10, element: 'fire', dir: back }).dmg, 10);
   assert.equal(computeHit(enemy('knight', { yaw: 0, shieldHp: 0 }), { dmg: 10, element: 'fire', dir: front }).dmg, 15);
 });
+
+test('horde night waves grow and need someone in the village', async () => {
+  const { WAVES, nearVillage } = await import('../src/world/siege.js');
+  const { VILLAGE } = await import('../src/world/layout.js');
+  assert.equal(WAVES.length, 3);
+  assert.ok(WAVES[0].length < WAVES[1].length && WAVES[1].length < WAVES[2].length);
+  assert.ok(WAVES.flat().every((t) => ['inkling', 'bounder', 'knight'].includes(t)), 'only marching types');
+  assert.equal(nearVillage({ x: VILLAGE.x + 10, z: VILLAGE.z }), true);
+  assert.equal(nearVillage({ x: VILLAGE.x + 300, z: VILLAGE.z }), false);
+});

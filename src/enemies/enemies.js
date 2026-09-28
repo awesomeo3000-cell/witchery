@@ -930,7 +930,8 @@ export class EnemyManager {
     if (e.introT > 0) { e.introT -= dt; this._physics(e, dt); return; }
     // Alerted enemies look twice as far and can't be fooled by sneaking
     if (e.alertT > 0) e.alertT -= dt;
-    const target = this._nearestPlayer(e, e.def.aggro * (e.alertT > 0 ? 2 : 1), e.alertT > 0);
+    // Horde-night marchers know where the defenders are
+    const target = this._nearestPlayer(e, e.def.aggro * (e.alertT > 0 ? 2 : 1) * (e.siege ? 5 : 1), e.alertT > 0 || e.siege);
     // Spotting someone raises the alarm for the rest of the camp
     if (target && !e.target && e.camp !== undefined && !e.boss) {
       for (const m of this.camps[e.camp]?.members || []) if (m !== e && m.alive) m.alertT = 8;

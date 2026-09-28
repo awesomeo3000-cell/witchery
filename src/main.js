@@ -50,6 +50,7 @@ import { Festival } from './world/festival.js';
 import { Pins } from './ui/pins.js';
 import { Tally } from './ui/tally.js';
 import { MapCursor } from './ui/mapcursor.js';
+import { Siege } from './world/siege.js';
 import { Merchant } from './world/merchant.js';
 import { GreyMoon } from './world/greymoon.js';
 import { WET } from './world/terrain.js';
@@ -264,6 +265,7 @@ class Game {
     G.pins = timed('pins', () => new Pins());
     G.tally = timed('tally', () => new Tally());
     G.mapCursor = timed('mapCursor', () => new MapCursor());
+    G.siege = timed('siege', () => new Siege());
     G.merchant = timed('merchant', () => new Merchant(G.scene));
     G.cine = timed('cine', () => new Cinematic());
     G.guide = timed('guide', () => new Guide());
@@ -769,6 +771,7 @@ class Game {
     G.vault.update(dt);
     G.festival.update(dt);
     G.tally.update(dt);
+    G.siege.update(dt);
     G.merchant.update(dt);
     G.greyMoon.update(dt);
     G.enemies.update(wdt);

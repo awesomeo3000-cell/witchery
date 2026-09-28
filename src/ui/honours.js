@@ -17,6 +17,7 @@ export const HONOURS = [
   { id: 'quests', name: 'Pillar of Palette Hollow', desc: 'Finish every villager quest', check: () => QUESTS.every((q) => G.flags[`q_${q.id}_done`]) },
   { id: 'puzzle', name: 'Riddle Painter', desc: 'Solve an island puzzle', check: () => (G.puzzles?.solvedCount() || 0) >= 1 },
   { id: 'puzzles', name: 'Island Riddler', desc: 'Solve every island puzzle', check: () => G.puzzles && G.puzzles.solvedCount() >= G.puzzles.total },
+  { id: 'siege', name: 'Hollow Guardian', desc: 'Hold Palette Hollow through a horde night', event: 'siege' },
   { id: 'blast', name: 'Kaboom', desc: 'Set off a Spring pad with Ember paint', event: 'blast' },
   { id: 'parry', name: 'Return to Sender', desc: 'Strike a Ruin Sentry\'s bolt back at it', event: 'parry' },
   { id: 'rainmane', name: 'Storm Tamer', desc: 'Defeat Rainmane, Lord of the Painted Plains', check: () => !!G.flags.slain_rainmane },
