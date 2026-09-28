@@ -96,29 +96,39 @@ Bring every 4 sprites to Pip in Palette Hollow for a Heart Container or Stamina 
 
 ## The wider world
 
-- **Enemy camps** have tents, campfires and sometimes a lookout tower with an Inkshot archer. Some are led by a tougher *Great* enemy. Clearing a camp unlocks its chest, which grants a temporary buff: golden hearts, stronger strikes, bottomless ink, or faster movement.
-- **Foraging & cooking.** Apples, sunshrooms, swiftmint, emberpeppers, frostlilies and goldpetals grow by biome and regrow over time. Eat them from the satchel, or cook up to three at a pot (in the village and at every camp) for a stronger meal. Matching buff ingredients make the effect last longer.
+### Exploring
+- **Map exploration.** The map starts as blank parchment and fills in wherever you travel. Flying high reveals more, and activating an easel uncovers the land around it. A rotating minimap in the corner shows the same fog, plus trials, friends, quest targets, pings and race gates. You can turn it off in Accessibility.
 - **Weather** cycles between clear, cloudy, rain and storms. It snows in the mountains, rain puts out fire paint, and storms bring lightning. Wind veers slowly and blows harder in bad weather, pushing gliders and riders (the flight readout shows it). Rain makes vines slick, so climbing is slower and you'll slip now and then. When rain clears in daylight, a rainbow arcs across the sky opposite the sun.
-- **Inkbats** flock out at night away from the village. They circle and swoop, chase you hard while you fly or glide, and melt away at dawn. One glob or strike pops them.
-- **The Chroma Wyrm.** A huge, peaceful rainbow serpent loops the skies over the island (it shows on the compass when near). Hit it with a paint glob to knock loose a Chroma Scale, which drifts to the ground and is worth 40 Pigment. It can drop one every 8 seconds, and everyone in the room sees it in the same place.
+- **Living water.** The sea has rolling swells that grow in storms, sky reflections, caustics in the shallows, and ripples when you splash, swim or paint it.
 - **Shooting stars.** On clear nights a star sometimes streaks down nearby. Follow its light beam to a Star Fragment worth 20 Pigment. It's shared in co-op, so it's first come, first served.
-- **The Grey Moon.** Some nights a violet moon rises at midnight. Every camp and chest refreshes, enemies hit harder, and ink creatures roam until dawn.
-- **Training yard.** Three straw practice dummies stand on the west side of Palette Hollow. Try combos, globs and element reactions on them. They wobble, show damage and pop back to full, and they never fight back or drop loot.
-- **Field bosses.** Blot Giants sleep in the meadows: sneak up for bonus damage and hit the eye up top to topple them. Stone Sentinels pose as boulders until you get close, and only take damage on the crystal on their back, so bounce or glide onto them. Both drop a buff tonic and return after a while.
-- **Pigment & the Brushwright.** Ink creatures drop golden Pigment. Sable the Brushwright, at a market stall in Palette Hollow, turns it into permanent brush upgrades: Stiff Bristles (more damage), Deep Reservoir (faster ink) and Wind Lacquer (cheaper flight). Each upgrade has three levels, and your Pigment total shows in the satchel.
-- **Villager quests.** Four villagers in Palette Hollow have errands, marked with **!** (and **?** when you can turn one in). Gather dyes for Mira, fetch Tilly's kite from a sky islet, bring down both field bosses for Bram, and repaint Painter Ochre's four grey statues out by the ruins. Rewards are permanent: more stamina, a heart container, stronger strikes and faster ink. Active quests are listed in the satchel (I), and their targets appear on the compass.
-- **Sky Races.** Three ring courses for brush flight: Lakeside Loop by the village, Canyon Run through the southern mesas, and Islet Hop around the Sky Citadel. Fly through a golden start gate while riding to begin. Each ring tops up your stamina, and room records are saved and shown on the map.
-- **Paint Fox.** A little fox follows you around. It sits when you rest, fetches Pigment you've left behind, and every so often runs ahead and points toward an unsolved puzzle or a hidden Paint Sprite. You can turn it off in Accessibility.
-- **Revives.** With friends in the room, fainting leaves you down for 12 seconds instead of respawning straight away. A friend holding Interact beside you for a moment picks you back up with half your hearts, or you can press Interact to respawn at the checkpoint.
-- **Pings.** Press V to mark the spot you're looking at. Friends see a beacon and a compass marker.
+- **The Chroma Wyrm.** A huge, peaceful rainbow serpent loops the skies over the island (it shows on the compass when near). Hit it with a paint glob to knock loose a Chroma Scale, which drifts to the ground and is worth 40 Pigment. It can drop one every 8 seconds, and everyone in the room sees it in the same place.
 - **Island puzzles.** Ten small puzzles are hidden around the island:
   - **Colour Totems:** a plinth shows three colours; paint the three pillars to match, in order.
   - **Brazier Rings:** light one brazier with Ember, then the rest before the flames die.
   
   Each one pays Pigment to everyone nearby. Found and solved puzzles show on the map.
-- **Map exploration.** The map starts as blank parchment and fills in wherever you travel. Flying high reveals more, and activating an easel uncovers the land around it. A rotating minimap in the corner shows the same fog, plus trials, friends, quest targets, pings and race gates. You can turn it off in Accessibility.
-- **Living water.** The sea has rolling swells that grow in storms, sky reflections, caustics in the shallows, and ripples when you splash, swim or paint it.
+- **Sky Races.** Three ring courses for brush flight: Lakeside Loop by the village, Canyon Run through the southern mesas, and Islet Hop around the Sky Citadel. Fly through a golden start gate while riding to begin. Each ring tops up your stamina, and room records are saved and shown on the map.
+
+### Creatures and bosses
+- **Enemy camps** have tents, campfires and sometimes a lookout tower with an Inkshot archer. Some are led by a tougher *Great* enemy. Clearing a camp unlocks its chest, which grants a temporary buff: golden hearts, stronger strikes, bottomless ink, or faster movement.
+- **Stealth.** Crouch with C to sneak. Enemies show a **?** while you're inside their normal sight range but unseen, and a **!** when they spot you, and a spotted camp alerts all its members. Sneak strikes on unaware foes deal double damage.
+- **Inkbats** flock out at night away from the village. They circle and swoop, chase you hard while you fly or glide, and melt away at dawn. One glob or strike pops them.
+- **Field bosses.** Blot Giants sleep in the meadows: sneak up for bonus damage and hit the eye up top to topple them. Stone Sentinels pose as boulders until you get close, and only take damage on the crystal on their back, so bounce or glide onto them. Both drop a buff tonic and return after a while.
+- **The Grey Moon.** Some nights a violet moon rises at midnight. Every camp and chest refreshes, enemies hit harder, and ink creatures roam until dawn.
 - **Boss intros**, a colour-draining final fight, and a credits roll with your party's names.
+
+### Village life
+- **Villager quests.** Four villagers in Palette Hollow have errands, marked with **!** (and **?** when you can turn one in). Gather dyes for Mira, fetch Tilly's kite from a sky islet, bring down both field bosses for Bram, and repaint Painter Ochre's four grey statues out by the ruins. Rewards are permanent: more stamina, a heart container, stronger strikes and faster ink. Active quests are listed in the satchel (I), and their targets appear on the compass.
+- **Pigment & the Brushwright.** Ink creatures drop golden Pigment. Sable the Brushwright, at a market stall in Palette Hollow, turns it into permanent brush upgrades: Stiff Bristles (more damage), Deep Reservoir (faster ink) and Wind Lacquer (cheaper flight). Each upgrade has three levels, and your Pigment total shows in the satchel.
+- **Foraging & cooking.** Apples, sunshrooms, swiftmint, emberpeppers, frostlilies and goldpetals grow by biome and regrow over time. Eat them from the satchel, or cook up to three at a pot (in the village and at every camp) for a stronger meal. Matching buff ingredients make the effect last longer.
+- **Training yard.** Three straw practice dummies stand on the west side of Palette Hollow. Try combos, globs and element reactions on them. They wobble, show damage and pop back to full, and they never fight back or drop loot.
+- **Paint Fox.** A little fox follows you around. It sits when you rest, fetches Pigment you've left behind, and every so often runs ahead and points toward an unsolved puzzle or a hidden Paint Sprite. You can turn it off in Accessibility.
+
+### Playing together
+- **Revives.** With friends in the room, fainting leaves you down for 12 seconds instead of respawning straight away. A friend holding Interact beside you for a moment picks you back up with half your hearts, or you can press Interact to respawn at the checkpoint.
+- **Pings.** Press V to mark the spot you're looking at. Friends see a beacon and a compass marker.
+- **Emotes** (B): wave, cheer or sit, and friends see it.
+- Shared progress: shards, quests, puzzles, records and upgrades from Paint Sprites are room-wide. Pigment, brush upgrades and honours are your own.
 
 ## Music
 
@@ -140,7 +150,7 @@ All art is generated in code: painted canvas textures (bark, leaves, stone, shin
 
 ## Painter's Honours
 
-There are twenty achievements, such as First Flight, Soft Bristles (a sneak strike), Record Breaker, Cartographer, Good Samaritan (reviving a friend) and Echo Breaker. Each one pops a toast when earned, is listed with its progress in the satchel, and is saved per player.
+There are twenty-one achievements, such as First Flight, Soft Bristles (a sneak strike), Record Breaker, Cartographer, Good Samaritan (reviving a friend) and Echo Breaker. Each one pops a toast when earned, is listed with its progress in the satchel, and is saved per player.
 
 ## Accessibility
 
@@ -157,9 +167,9 @@ The pause menu's *Accessibility* section has:
 
 ```
 npm run lint    # ESLint
-npm test        # unit tests (math, terrain/collision, combat rules, progress, quests, key bindings) + server protocol tests
+npm test        # unit tests (math, terrain/collision, combat rules, progress, quests, shop, puzzles, map fog, honours, key bindings) + server protocol and hardening tests
 npm run build   # production build into dist/
-npm run smoke   # boots the built game in headless Chromium against the real server (needs `npx playwright install chromium` once)
+npm run smoke   # boots the built game in headless Chromium against the real server and checks a draw-call budget (needs `npx playwright install chromium` once)
 ```
 
 GitHub Actions (`.github/workflows/ci.yml`) runs lint, tests, build and the smoke test on every push and pull request.
@@ -170,15 +180,19 @@ GitHub Actions (`.github/workflows/ci.yml`) runs lint, tests, build and the smok
 server/server.js      static file server + WebSocket rooms (relay, host election, shared flags)
 src/main.js           boot, menus, networking glue, main loop
 src/core/             shared context, input, procedural audio, math/noise, post-processing (haze, bloom, grade)
-src/world/            terrain & biomes, sky/day-night, weather, Grey Moon, billboard clouds, floating islands, water, GPU grass,
-                      painted textures & props, overworld population, Paint Sprites, foraging/cooking, villager quests, collision
+src/world/            terrain & biomes, sky/day-night, weather, rainbows, Grey Moon, clouds, floating islands, water, GPU grass,
+                      painted textures & props, overworld population, Paint Sprites, foraging/cooking, villager quests,
+                      Brushwright shop, Sky Races, island puzzles, Paint Fox, Chroma Wyrm, shooting stars, collision
 src/player/           character model/animation and the player controller (walk, glide, climb, swim, ride, combat)
 src/combat/           paint globs/splats/elemental effects, particles, brush-stroke trails
 src/enemies/          enemy & boss models, AI, camps & chests, projectiles, shockwaves, loot, network snapshots
-src/trials/           the four dungeons, their puzzles and boss arenas, and the final boss trigger
-src/ui/               HUD, tips & objectives, boss cinematics, photo mode, touch controls, accessibility & key bindings, styles
+src/trials/           the four dungeons, their puzzles and boss arenas, the final boss trigger, the Gallery of Echoes
+src/ui/               HUD, minimap, map fog, tips & objectives, boss cinematics, photo mode, touch controls, pings, revives,
+                      honours, adventure log, accessibility & key bindings, styles
 test/                 node:test unit and server tests; test/smoke/ has the headless browser check
 src/core/save.js      local save; src/core/progress.js derives hearts/stamina from shared progress
 ```
 
-Debugging: `?solo` skips the server, and `?god` makes you invulnerable. The game state is exposed as `window.G` in the browser console.
+Debugging: `?solo` skips the server, and `?god` makes you invulnerable. The game state is exposed as `window.G` in the browser console, and `G.bootTimes` shows how long each part of the world took to build.
+
+The development plan and its progress are in [docs/ROADMAP.md](docs/ROADMAP.md).
