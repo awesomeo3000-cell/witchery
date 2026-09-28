@@ -5,7 +5,7 @@
 //   bloom  -> vines (roots enemies; on walls: climbable vine ladder)
 import * as THREE from 'three';
 import { G, COLORS } from '../core/ctx.js';
-import { makeSplatTexture } from '../world/props.js';
+import { makeElementSplat } from '../world/props.js';
 import { brushStats } from '../world/shop.js';
 
 
@@ -20,15 +20,19 @@ export class PaintSystem {
     this.globs = [];
     this.splats = [];
     this.steams = [];
-    this.textures = [makeSplatTexture(3), makeSplatTexture(17), makeSplatTexture(71)];
     this.globGeo = new THREE.IcosahedronGeometry(0.28, 1);
     this.globMats = COLORS.map((c) => new THREE.MeshBasicMaterial({ color: c.hex }));
     this.splatMats = [];
+    // Flat cel splats with a rim and an element pattern (glowing cracks, frost-flowers, rings, leaves)
     for (const c of COLORS) {
-      this.splatMats.push(this.textures.map((t) => new THREE.MeshLambertMaterial({
-        color: c.hex, map: t, transparent: true, alphaTest: 0.35, depthWrite: false,
-        polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2, emissive: c.hex, emissiveIntensity: 0.15,
-      })));
+      this.splatMats.push([3, 17, 71].map((seed) => {
+        const { map, glow } = makeElementSplat(seed, c);
+        return new THREE.MeshLambertMaterial({
+          color: 0xffffff, map, transparent: true, alphaTest: 0.35, depthWrite: false,
+          polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2,
+          emissive: glow ? 0xffffff : 0x000000, emissiveMap: glow, emissiveIntensity: glow ? 1.6 : 0,
+        });
+      }));
     }
     this.padGeo = new THREE.CylinderGeometry(1.2, 1.4, 0.35, 16);
     this.padMat = new THREE.MeshLambertMaterial({ color: 0xf2c229, emissive: 0xa07010, emissiveIntensity: 0.4 });

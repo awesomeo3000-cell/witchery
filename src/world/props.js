@@ -307,6 +307,101 @@ export function makeSplatTexture(seed = 3) {
   return new THREE.CanvasTexture(c);
 }
 
+// Flat cel paint splat with a darker rim and a pattern for its element (art direction in docs/inspo):
+// Ember cools into a dark crust split by glowing cracks, Frost grows white frost-flowers, Spring
+// ripples in rings and Bloom sprouts little leaves. Returns { map, glow } (glow only for Ember).
+export function makeElementSplat(seed, color) {
+  const S = 128;
+  let s = seed;
+  const r = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
+  const blob = (x) => {
+    x.beginPath();
+    const n = 18;
+    for (let i = 0; i <= n; i++) {
+      const a = (i / n) * Math.PI * 2, rr = 38 + r() * 16;
+      const px = 64 + Math.cos(a) * rr, py = 64 + Math.sin(a) * rr;
+      if (i === 0) x.moveTo(px, py); else x.lineTo(px, py);
+    }
+    x.closePath();
+  };
+  const c = document.createElement('canvas');
+  c.width = c.height = S;
+  const x = c.getContext('2d');
+  const s0 = s;
+  blob(x);
+  const drops = [];
+  for (let i = 0; i < 9; i++) { const a = r() * Math.PI * 2, d = 44 + r() * 16; drops.push([64 + Math.cos(a) * d, 64 + Math.sin(a) * d, 3 + r() * 7]); }
+  const el = color.element;
+  const base = { fire: '#8e2a1a', ice: '#a8dcf6', bounce: '#f2c229', vine: '#3fae3a' }[el];
+  const rim = { fire: '#4a1610', ice: '#5aa8e0', bounce: '#c8901a', vine: '#2a7a2a' }[el];
+  x.fillStyle = base;
+  x.fill();
+  x.strokeStyle = rim;
+  x.lineWidth = 5;
+  x.stroke();
+  for (const [dx, dy, rr] of drops) { x.beginPath(); x.arc(dx, dy, rr, 0, Math.PI * 2); x.fillStyle = base; x.fill(); x.strokeStyle = rim; x.lineWidth = 2; x.stroke(); }
+  // Pattern, kept inside the splat
+  x.save();
+  s = s0; blob(x); x.clip();
+  const g = document.createElement('canvas');
+  g.width = g.height = S;
+  const gx = g.getContext('2d');
+  const crack = (ctx, px, py, a, len, w) => {
+    ctx.lineWidth = w;
+    ctx.beginPath();
+    ctx.moveTo(px, py);
+    for (let k = 0; k < 5; k++) { a += (r() - 0.5) * 1.1; px += Math.cos(a) * len / 5; py += Math.sin(a) * len / 5; ctx.lineTo(px, py); }
+    ctx.stroke();
+    return [px, py, a];
+  };
+  if (el === 'fire') {
+    x.strokeStyle = '#ffb040';
+    gx.strokeStyle = '#ffa030';
+    for (let i = 0; i < 7; i++) {
+      const a = r() * Math.PI * 2, len = 22 + r() * 26, w = 2 + r() * 2;
+      const st = [64 + (r() - 0.5) * 20, 64 + (r() - 0.5) * 20];
+      const saved = s;
+      crack(x, st[0], st[1], a, len, w);
+      s = saved;
+      crack(gx, st[0], st[1], a, len, w + 1.5);
+    }
+  } else if (el === 'ice') {
+    x.strokeStyle = 'rgba(255,255,255,0.95)';
+    x.lineCap = 'round';
+    for (let i = 0; i < 4; i++) {
+      const cx = 36 + r() * 56, cy = 36 + r() * 56, R = 9 + r() * 10, rot = r();
+      x.lineWidth = 2.2;
+      for (let k = 0; k < 6; k++) {
+        const a = rot + (k / 6) * Math.PI * 2, ex = cx + Math.cos(a) * R, ey = cy + Math.sin(a) * R;
+        x.beginPath(); x.moveTo(cx, cy); x.lineTo(ex, ey); x.stroke();
+        for (const side of [-1, 1]) {
+          const mx = cx + Math.cos(a) * R * 0.6, my = cy + Math.sin(a) * R * 0.6, b = a + side * 0.7;
+          x.beginPath(); x.moveTo(mx, my); x.lineTo(mx + Math.cos(b) * R * 0.35, my + Math.sin(b) * R * 0.35); x.stroke();
+        }
+      }
+    }
+  } else if (el === 'bounce') {
+    x.strokeStyle = 'rgba(255,246,190,0.9)';
+    for (let k = 1; k <= 3; k++) { x.lineWidth = 3; x.beginPath(); x.arc(64, 64, k * 13, 0, Math.PI * 2); x.stroke(); }
+    x.fillStyle = 'rgba(255,246,190,0.9)'; x.beginPath(); x.arc(64, 64, 5, 0, Math.PI * 2); x.fill();
+  } else {
+    for (let i = 0; i < 9; i++) {
+      const cx = 30 + r() * 68, cy = 30 + r() * 68, a = r() * Math.PI, L = 9 + r() * 7;
+      x.save(); x.translate(cx, cy); x.rotate(a);
+      x.fillStyle = r() < 0.5 ? '#7ad860' : '#5cc24a';
+      x.beginPath(); x.ellipse(0, 0, L, L * 0.45, 0, 0, Math.PI * 2); x.fill();
+      x.strokeStyle = '#2f8a30'; x.lineWidth = 1.2; x.beginPath(); x.moveTo(-L * 0.8, 0); x.lineTo(L * 0.8, 0); x.stroke();
+      x.restore();
+    }
+  }
+  x.restore();
+  const map = new THREE.CanvasTexture(c);
+  map.colorSpace = THREE.SRGBColorSpace;
+  let glow = null;
+  if (el === 'fire') { glow = new THREE.CanvasTexture(g); glow.colorSpace = THREE.SRGBColorSpace; }
+  return { map, glow };
+}
+
 export function makeFlameTexture() {
   const c = document.createElement('canvas');
   c.width = c.height = 64;
