@@ -139,6 +139,8 @@ class Game {
     const canvas = $('game');
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    this.basePR = renderer.getPixelRatio();
+    this.resScale = 1;
     renderer.setSize(innerWidth, innerHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -404,6 +406,8 @@ class Game {
     G.grass.build(c.grass);
     G.post.enabled = c.post;
     G.renderer.setPixelRatio(c.pr);
+    this.basePR = c.pr;
+    this.resScale = 1;
     const sh = G.sky.sun.shadow;
     if (sh.mapSize.x !== c.shadowMap) { sh.mapSize.set(c.shadowMap, c.shadowMap); if (sh.map) { sh.map.dispose(); sh.map = null; } }
     this._resize();
@@ -681,12 +685,13 @@ class Game {
     G.hud.update(dt);
     G.guide.update(dt);
     G.audio.update(dt);
+    this._dynamicResolution(rawDt);
     if (G.settings.fps) {
       this.fpsN = (this.fpsN || 0) + 1;
       this.fpsT = (this.fpsT || 0) + rawDt;
       if (this.fpsT >= 1) {
         const info = G.stats || { calls: 0, triangles: 0 };
-        $('fps').textContent = `${Math.round(this.fpsN / this.fpsT)} fps · ${info.calls} calls · ${(info.triangles / 1000).toFixed(0)}k tris`;
+        $('fps').textContent = `${Math.round(this.fpsN / this.fpsT)} fps · ${info.calls} calls · ${(info.triangles / 1000).toFixed(0)}k tris${this.resScale < 1 ? ` · res ${Math.round(this.resScale * 100)}%` : ''}`;
         this.fpsN = 0; this.fpsT = 0;
       }
     }
@@ -718,6 +723,23 @@ class Game {
     if (G.victoryGlow > 0) { G.victoryGlow -= dt; target = 1.12 + Math.min(0.5, G.victoryGlow * 0.12); }
     this.sat = this.sat === undefined ? 1.12 : this.sat + (target - this.sat) * Math.min(1, dt * 1.5);
     return this.sat;
+  }
+
+  // Dynamic resolution: lower the render scale when frames run slow, raise it again with headroom
+  _dynamicResolution(dt) {
+    if (G.settings.dynRes === false) {
+      if (this.resScale !== 1) { this.resScale = 1; G.renderer.setPixelRatio(this.basePR); this._resize(); }
+      return;
+    }
+    this.drN = (this.drN || 0) + 1;
+    this.drT = (this.drT || 0) + dt;
+    if (this.drT < 2) return;
+    const fps = this.drN / this.drT;
+    this.drN = 0; this.drT = 0;
+    const before = this.resScale;
+    if (fps < 45) this.resScale = Math.max(0.55, this.resScale - 0.1);
+    else if (fps > 57) this.resScale = Math.min(1, this.resScale + 0.05);
+    if (this.resScale !== before) { G.renderer.setPixelRatio(this.basePR * this.resScale); this._resize(); }
   }
 
   _render(fx) {

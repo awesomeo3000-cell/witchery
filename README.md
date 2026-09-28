@@ -133,7 +133,7 @@ Online rooms save their world progress on the server in `data/rooms.json`, so it
 
 ## Graphics options
 
-The pause menu (Esc) has Low / Medium / High presets, plus separate toggles for shadows, grass density and *Atmosphere & bloom* (the post-processing pass that draws the haze, sun glow, bloom and colour grade). "Show FPS" displays the frame rate and draw calls. Try Medium or Low on laptops with integrated graphics.
+The pause menu (Esc) has Low / Medium / High presets, plus separate toggles for shadows, grass density and *Atmosphere & bloom* (the post-processing pass that draws the haze, sun glow, bloom and colour grade). "Show FPS" displays the frame rate and draw calls. *Dynamic resolution* (on by default) lowers the render scale when the frame rate falls below about 45 fps and raises it again when there is headroom. Try Medium or Low on laptops with integrated graphics.
 
 All art is generated in code: painted canvas textures (bark, leaves, stone, shingles, plaster, wood, cloth, strata), leaf-card trees, sculpted boulders, and rounded characters with a soft cel ramp. No asset files need to be downloaded.
 

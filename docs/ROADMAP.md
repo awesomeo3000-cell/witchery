@@ -57,6 +57,6 @@ The development plan being worked through on `claude/friendly-hamilton-cdvh2p`. 
 
 32. ✅ **Training yard.** Paint-splattered practice dummies by the village show damage, combos and element reactions, and never fight back.
 33. ✅ **Gamepad rumble.** Rumble on hits, Flurry Rush, heavy landings, boss slams and taking damage, with a toggle.
-34. **Dynamic resolution.** When the frame rate drops, the render scale lowers to hold about 50 fps and recovers when there's headroom, with a toggle.
+34. ✅ **Dynamic resolution.** When the frame rate drops, the render scale lowers to hold about 50 fps and recovers when there's headroom, with a toggle.
 
 The work continues through this list until the budget is used up.

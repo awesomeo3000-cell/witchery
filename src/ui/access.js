@@ -84,6 +84,7 @@ export class AccessUI {
     s.fox ??= true;
     s.minimap ??= true;
     s.rumble ??= true;
+    s.dynRes ??= true;
     s.binds ??= {};
     const bind = (id, key, parse) => {
       const el = $(id);
@@ -105,6 +106,7 @@ export class AccessUI {
     bind('set-fox', 'fox');
     bind('set-minimap', 'minimap');
     bind('set-rumble', 'rumble');
+    bind('set-dynres', 'dynRes');
     $('binds-reset').onclick = () => { s.binds = {}; applyBindings(); this.render(); this.save(); };
     // Capture the next key press while rebinding
     window.addEventListener('keydown', (e) => {
